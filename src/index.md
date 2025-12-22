@@ -4,94 +4,99 @@ toc: false
 
 # Olympia Oysters! 🦪
 
-<!-- Load and transform the data -->
+---
+<!-- ===================================================== -->
+<!-- Page grid -->
+<!-- ===================================================== -->
+<div class="grid grid-cols-2">
+  
+  <!-- Map card -->
+  <div class="card grid-rowspan-2">
+    <div id="map"></div>
+  </div>
+  
+  <!-- Text card --> 
+  <div class="card">
+
+## Text goes here
+
+  </div>
+  
+  <!-- Plot card --> 
+  <div class="card">
+
+## Data Vis here
+
+  </div>
+  
+</div> <!-- END Page grid -->
+
+<!-- ===================================================== -->
+<!-- Build Map -->
+<!-- ===================================================== -->
 
 ```js
-const launches = FileAttachment("data/launches.csv").csv({typed: true});
-```
+// Load Leaflet library
+import * as L from "npm:leaflet@1.9.4";
 
-<!-- A shared color scale for consistency, sorted by the number of launches -->
+// Salish Sea coordinates
+const center = [47.8, -123.5];
+const zoom = 8;
 
-```js
-const color = Plot.scale({
-  color: {
-    type: "categorical",
-    domain: d3.groupSort(launches, (D) => -D.length, (d) => d.state).filter((d) => d !== "Other"),
-    unknown: "var(--theme-foreground-muted)"
-  }
+// Create map
+const map = L.map("map", {
+  center: center,
+  zoom: zoom,
+  zoomControl: true,
+  scrollWheelZoom: true,
+  attributionControl: false
 });
+
+// CartoDB Positron Basemap (light, clean style)
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap © CartoDB',
+  maxZoom: 20
+}).addTo(map);
+
+// Alternative basemap options:
+
+// Add OpenStreetMap tile layer (classic. busy.)
+// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+//   maxZoom: 19
+// }).addTo(map);
+
+// Esri World Imagery (satellite)
+// L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+//   attribution: 'Tiles © Esri'
+// }).addTo(map);
+
+// Esri Ocean Basemap (soft, marine colors. no place names)
+// L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}', {
+//   attribution: 'Tiles © Esri'
+// }).addTo(map);
+
+// Add a scale bar
+L.control.scale({imperial: true, metric: true}).addTo(map);
+
+// Allow page to render before loading map details
+setTimeout(() => map.invalidateSize(), 100);
 ```
 
-<!-- Cards with big numbers -->
+<!-- Style Map -->
+<!-- Load Leaflet's required CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" /> 
 
-<div class="grid grid-cols-4">
-  <div class="card">
-    <h2>United States 🇺🇸</h2>
-    <span class="big">${launches.filter((d) => d.stateId === "US").length.toLocaleString("en-US")}</span>
-  </div>
-  <div class="card">
-    <h2>Russia 🇷🇺 <span class="muted">/ Soviet Union</span></h2>
-    <span class="big">${launches.filter((d) => d.stateId === "SU" || d.stateId === "RU").length.toLocaleString("en-US")}</span>
-  </div>
-  <div class="card">
-    <h2>China 🇨🇳</h2>
-    <span class="big">${launches.filter((d) => d.stateId === "CN").length.toLocaleString("en-US")}</span>
-  </div>
-  <div class="card">
-    <h2>Other</h2>
-    <span class="big">${launches.filter((d) => d.stateId !== "US" && d.stateId !== "SU" && d.stateId !== "RU" && d.stateId !== "CN").length.toLocaleString("en-US")}</span>
-  </div>
-</div>
-
-<!-- Plot of launch history -->
-
-```js
-function launchTimeline(data, {width} = {}) {
-  return Plot.plot({
-    title: "Launches over the years",
-    width,
-    height: 300,
-    y: {grid: true, label: "Launches"},
-    color: {...color, legend: true},
-    marks: [
-      Plot.rectY(data, Plot.binX({y: "count"}, {x: "date", fill: "state", interval: "year", tip: true})),
-      Plot.ruleY([0])
-    ]
-  });
-}
-```
-
-<div class="grid grid-cols-1">
-  <div class="card">
-    ${resize((width) => launchTimeline(launches, {width}))}
-  </div>
-</div>
-
-<!-- Plot of launch vehicles -->
-
-```js
-function vehicleChart(data, {width}) {
-  return Plot.plot({
-    title: "Popular launch vehicles",
-    width,
-    height: 300,
-    marginTop: 0,
-    marginLeft: 50,
-    x: {grid: true, label: "Launches"},
-    y: {label: null},
-    color: {...color, legend: true},
-    marks: [
-      Plot.rectX(data, Plot.groupY({x: "count"}, {y: "family", fill: "state", tip: true, sort: {y: "-x"}})),
-      Plot.ruleX([0])
-    ]
-  });
-}
-```
-
-<div class="grid grid-cols-1">
-  <div class="card">
-    ${resize((width) => vehicleChart(launches, {width}))}
-  </div>
-</div>
-
-Data: Jonathan C. McDowell, [General Catalog of Artificial Space Objects](https://planet4589.org/space/gcat)
+<style>
+  #map {
+    width: 100%;
+    height: 700px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  /* Inheret map font from main page styles */
+  .leaflet-container {
+    font-family: inherit; 
+  }
+</style>
