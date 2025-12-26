@@ -6,7 +6,7 @@ toc: false
 
 ---
 <!-- ===================================================== -->
-<!-- Page grid -->
+<!-- Page grid layout -->
 <!-- ===================================================== -->
 <div class="grid grid-cols-2">
   
@@ -36,6 +36,9 @@ toc: false
 <!-- ===================================================== -->
 
 ```js
+// Load enhancement map data
+const enh_sites = await FileAttachment("data/enhancements.csv").csv({typed: true});
+
 // Load Leaflet library
 import * as L from "npm:leaflet@1.9.4";
 
@@ -76,6 +79,17 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 //   attribution: 'Tiles © Esri'
 // }).addTo(map);
 
+// Add markers
+enh_sites.forEach(site => {
+  console.log(`Lat: ${site.enhancement_latitude_est}, Lng: ${site.enhancement_longitude_est}`);
+  const marker = L.marker([site.enhancement_latitude_est, site.enhancement_longitude_est]).bindPopup(`
+      <strong>${site.site_name}</strong><br>
+      Type: ${site.enhancement_type}<br>
+      Years: ${site.enhancement_years}
+    `)
+    .addTo(map);
+});
+
 // Add a scale bar
 L.control.scale({imperial: true, metric: true}).addTo(map);
 
@@ -100,3 +114,4 @@ setTimeout(() => map.invalidateSize(), 100);
     font-family: inherit; 
   }
 </style>
+<!-- END map build -->
