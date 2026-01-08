@@ -18,9 +18,7 @@ theme: dashboard
   
   <!-- Top right card --> 
   <div class="card">
-
-## Data Viz here
-
+    ${resize((width) => densityPlot(ann_densities, {width}))}
   </div>
   
   <!-- Bottom right card --> 
@@ -38,7 +36,7 @@ theme: dashboard
 
 ```js
 // Load enhancement map data
-const enh_sites = await FileAttachment("data/enhancements.csv").csv({typed: true});  // Added 'await' - was missing
+const enh_sites = await FileAttachment("data/enhancements.csv").csv({typed: true});
 
 // Load Leaflet library
 import * as L from "npm:leaflet@1.9.4";
@@ -97,7 +95,7 @@ function oysterMap(data, {width} = {}) {
   mainContainer.appendChild(detailContainer);
 
   // Create map ----
-  const map = L.map(mapContainer, {  // FIXED: was 'container', should be 'mapContainer'
+  const map = L.map(mapContainer, {
     center: center,  // Center on coordinates established above
     zoom: zoom,      // Zoom set above as well
   });
@@ -179,11 +177,9 @@ function oysterMap(data, {width} = {}) {
             // Use JavaScript inside template literal with ${}
             photos.map((url, i) => 
               // .map() transforms each photo URL into an HTML img tag
-              // Parameters: url = photo path, i = index (0, 1, 2...)
               
               `<img 
                 src="${url}"                                      // Image source path
-                alt="Photo ${i+1}"                                // Accessibility text (Photo 1, Photo 2, etc.)
                 class="carousel-image ${i === 0 ? 'active' : ''}" 
               >`
               // CSS classes: always gets "carousel-image"
@@ -409,7 +405,7 @@ function oysterMap(data, {width} = {}) {
   background: rgba(255, 255, 255, 0.8);
   border: none;
   font-size: 32px;
-  padding: 10px 15px;
+  padding: 8px 10px;
   cursor: pointer;
   z-index: 10;
   border-radius: 4px;
@@ -461,8 +457,65 @@ function oysterMap(data, {width} = {}) {
 <!-- Build Population Estimate Plot -->
 <!-- ===================================================== -->
 
+<!-- For now, this is going to be an average annual density per m2, until I can talk with HH about project area sizes for estimating pop size -->
 
+```js
+// Load annual density data
+const ann_densities = await FileAttachment("data/assessments.csv").csv({typed: true});
 
+// Load Observable Plot library
+import * as Plot from "npm:@observablehq/plot";
+
+// Create a mutable state for selected location
+const selectedLocation = Mutable(null);
+
+// Build density plot
+function densityPlot(data, {width, selectedLocation} = {}) {
+  return Plot.plot({
+    title: "Annual Olympia Oyster Density",
+    width,
+    height: 400,
+    marginLeft: 50,
+    marginRight: 20,
+    marginTop: 30,
+    marginBottom: 40,
+    x: {
+      label: "Year",
+      tickFormat: "d",
+      ticks: 5 
+    },
+    y: {
+      label: "Density (m⁻²)",
+      grid: true
+    },
+    color: {legend: true},
+    marks: [
+      Plot.line(data, {
+        x: "year",
+        y: "density",
+        stroke: "location",
+        strokeWidth: 2,
+        opacity: d => selectedLocation && selectedLocation !== d.location ? 0.2 : 1
+      }),
+      Plot.dot(data, {
+        x: "year", 
+        y: "density", 
+        fill: "location",
+        r: 5,
+        opacity: d => selectedLocation && selectedLocation !== d.location ? 0.2 : 1,
+        stroke: "white",
+        strokeWidth: 1
+      }),
+      Plot.tip(data, Plot.pointer({
+        x: "year",
+        y: "density",
+        fill: "location",
+        title: d => `${d.location}\nYear: ${d.year}\nDensity: ${d.density.toFixed(2)} m⁻²`
+      }))
+    ]
+  });
+}
+```
 
 <!-- END Population Estimate Plot Build -->
 
