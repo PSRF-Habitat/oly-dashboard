@@ -1,7 +1,7 @@
 ---
 toc: false
+title: "Full page map with Observable Plot"
 theme: dashboard
-title: "Full page map with D3 plot"
 header: "<a href='https://restorationfund.org'><img src='data/images/logo-transwhite.png' alt='Logo' style='height: 120px;'></a>"
 pager: false
 ---
@@ -77,7 +77,7 @@ const ann_densities = await FileAttachment("data/assessments.csv").csv({typed: t
 
 // Import required libraries
 import * as L from "npm:leaflet@1.9.4";  // Leaflet for map
-import * as d3 from "npm:d3";            // D3 for plot
+import * as Plot from "npm:@observablehq/plot"; // Observable Plot
 
 // ===================================================
 // Global State Management
@@ -336,11 +336,10 @@ function oysterMap(enhData, recruitData, densityData, {width} = {}) {
     // Create Oyster Density Plot
     // ===================================================
     const plotContainer = content.querySelector('#density-plot-container');
-    const plotWidth = plotContainer.clientWidth || 400;
-    const plotSvg = createDensityPlot(densityData, site.site_name, plotWidth);
-    plotContainer.appendChild(plotSvg);
+    plotContainer.appendChild(
+    createDensityPlot(densityData, site.site_name)
+    );
   }
-
 
   // ===================================================
   // RESET VIEW FUNCTION
@@ -533,220 +532,69 @@ recruitData.forEach(site => {
 // DENSITY PLOT FUNCTION FOR SIDEBAR
 // This creates a plot that highlights the selected site
 // ===================================================
-function createDensityPlot(data, selectedSite, width) {
-  const height = 350;
-  const marginTop = 30;
-  const marginRight = 50;
-  const marginBottom = 40;
-  const marginLeft = 50;
-
-  const locations = Array.from(new Set(data.map(d => d.location)));
-  const years = Array.from(new Set(data.map(d => d.year))).sort((a, b) => a - b);
-  
-  const color = d3.scaleOrdinal(d3.schemeTableau10).domain(locations);
-
-  const x = d3.scaleLinear()
-    .domain(d3.extent(years))
-    .range([marginLeft, width - marginRight]);
-
-  const y = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d.density)])
-    .nice()
-    .range([height - marginBottom, marginTop]);
-
-  const svg = d3.create("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [0, 0, width, height])
-    .attr("style", "max-width: 100%; height: auto;");
-
-  // X-axis
-  svg.append("g")
-    .attr("transform", `translate(0,${height - marginBottom})`)
-    .call(d3.axisBottom(x)
-      .tickFormat(d3.format("d"))
-      .ticks(5))
-    .call(g => g.select(".domain").remove())
-    .call(g => g.selectAll(".tick line")
-      .attr("stroke", "#e5e5e5")
-      .attr("stroke-width", 1))
-    .call(g => g.selectAll(".tick text")
-      .attr("fill", "#6b7280")
-      .attr("font-size", "11px"));
-
-  // Y-axis  
-  svg.append("g")
-    .attr("transform", `translate(${marginLeft},0)`)
-    .call(d3.axisLeft(y).ticks(5))
-    .call(g => g.select(".domain").remove())
-    .call(g => g.selectAll(".tick line")
-      .attr("stroke", "#e5e5e5")
-      .attr("stroke-width", 1))
-    .call(g => g.selectAll(".tick text")
-      .attr("fill", "#6b7280")
-      .attr("font-size", "11px"));
-
-  // Gridlines
-  svg.append("g")
-    .attr("class", "grid")
-    .attr("transform", `translate(${marginLeft},0)`)
-    .call(d3.axisLeft(y)
-      .ticks(5)
-      .tickSize(-(width - marginLeft - marginRight))
-      .tickFormat(""))
-    .call(g => g.select(".domain").remove())
-    .call(g => g.selectAll(".tick line")
-      .attr("stroke", "#e5e5e5")
-      .attr("stroke-opacity", 1));
-
-  // Axis labels
-  svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", height - 5)
-    .attr("text-anchor", "middle")
-    .attr("font-size", 12)
-    .attr("fill", "#666")
-    .text("Year");
-
-  svg.append("text")
-    .attr("x", -height / 2)
-    .attr("y", 15)
-    .attr("text-anchor", "middle")
-    .attr("transform", "rotate(-90)")
-    .attr("font-size", 12)
-    .attr("fill", "#666")
-    .text("Density (m⁻²)");
-
-  const line = d3.line()
-    .x(d => x(d.year))
-    .y(d => y(d.density));
-
-  const dataByLocation = d3.group(data, d => d.location);
-
-  // Draw all lines in gray
-  dataByLocation.forEach((values, location) => {
-    svg.append("path")
-      .datum(values.sort((a, b) => a.year - b.year))
-      .attr("class", `line-grey line-${location.replace(/\s+/g, '-')}`)
-      .attr("fill", "none")
-      .attr("stroke", "#ddd")
-      .attr("stroke-width", 2)
-      .attr("d", line);
+function createDensityPlot(data, selectedSite) {
+  return Plot.plot({
+    height: 350,
+    marginLeft: 50,
+    marginRight: 50,
+    marginTop: 30,
+    marginBottom: 40,
+    x: {
+      label: "Year",
+      tickFormat: "d"
+    },
+    y: {
+      label: "Density (m⁻²)",
+      grid: true
+    },
+    marks: [
+      // Gray background lines for all sites
+      Plot.line(data, {
+        x: "year",
+        y: "density",
+        z: "location",
+        stroke: "#ddd",
+        strokeWidth: 2
+      }),
+      // Gray dots for all sites
+      Plot.dot(data, {
+        x: "year",
+        y: "density",
+        fill: "#ddd",
+        stroke: "white",
+        strokeWidth: 1.5,
+        r: 4
+      }),
+      // Colored line for selected site
+      Plot.line(
+        data.filter(d => d.location === selectedSite),
+        {
+          x: "year",
+          y: "density",
+          stroke: "#4e79a7",
+          strokeWidth: 3
+        }
+      ),
+      // Colored dots for selected site
+      Plot.dot(
+        data.filter(d => d.location === selectedSite),
+        {
+          x: "year",
+          y: "density",
+          fill: "#4e79a7",
+          stroke: "white",
+          strokeWidth: 2,
+          r: 5
+        }
+      ),
+      // Tooltip for interactivity
+      Plot.tip(data, Plot.pointer({
+        x: "year",
+        y: "density",
+        title: d => `${d.location}, ${d.year}: ${d.density.toFixed(2)} m⁻²`
+      }))
+    ]
   });
-
-  // Draw all dots in gray
-  svg.append("g")
-    .selectAll("circle")
-    .data(data)
-    .join("circle")
-    .attr("class", d => `dot-grey dot-${d.location.replace(/\s+/g, '-')}`)
-    .attr("cx", d => x(d.year))
-    .attr("cy", d => y(d.density))
-    .attr("r", 4)
-    .attr("fill", "#ddd")
-    .attr("stroke", "white")
-    .attr("stroke-width", 1.5);
-
-  // Draw colored lines (initially hidden)
-  dataByLocation.forEach((values, location) => {
-    svg.append("path")
-      .datum(values.sort((a, b) => a.year - b.year))
-      .attr("class", `line-color line-${location.replace(/\s+/g, '-')}`)
-      .attr("fill", "none")
-      .attr("stroke", color(location))
-      .attr("stroke-width", 3)
-      .attr("opacity", location === selectedSite ? 1 : 0)
-      .attr("d", line);
-  });
-
-  // Draw colored dots (initially hidden except for selected)
-  svg.append("g")
-    .selectAll("circle")
-    .data(data)
-    .join("circle")
-    .attr("class", d => `dot-color dot-${d.location.replace(/\s+/g, '-')}`)
-    .attr("cx", d => x(d.year))
-    .attr("cy", d => y(d.density))
-    .attr("r", 5)
-    .attr("fill", d => color(d.location))
-    .attr("stroke", "white")
-    .attr("stroke-width", 2)
-    .attr("opacity", d => d.location === selectedSite ? 1 : 0)
-    .style("pointer-events", "none");
-
-  // Tooltip
-  const tooltip = svg.append("g")
-    .attr("class", "tooltip")
-    .style("display", "none");
-
-  tooltip.append("rect")
-    .attr("fill", "white")
-    .attr("stroke", "#999")
-    .attr("stroke-width", 1)
-    .attr("rx", 4)
-    .attr("filter", "drop-shadow(0 2px 4px rgba(0,0,0,0.1))");
-
-  tooltip.append("text")
-    .attr("class", "tooltip-text")
-    .attr("x", 8)
-    .attr("y", 18)
-    .attr("font-size", 13)
-    .attr("fill", "#333");
-
-  // Voronoi for hover
-  const voronoi = d3.Delaunay
-    .from(data, d => x(d.year), d => y(d.density))
-    .voronoi([marginLeft, marginTop, width - marginRight, height - marginBottom]);
-
-  svg.append("g")
-    .attr("class", "voronoi")
-    .selectAll("path")
-    .data(data)
-    .join("path")
-    .attr("d", (d, i) => voronoi.renderCell(i))
-    .attr("fill", "none")
-    .attr("pointer-events", "all")
-    .attr("cursor", "pointer")
-    .on("mouseover", function(event, d) {
-      const location = d.location;
-      
-      // Temporarily highlight hovered line
-      svg.selectAll(`.line-color`).attr("opacity", 0);
-      svg.selectAll(`.dot-color`).attr("opacity", 0);
-      
-      const safeName = location.replace(/\s+/g, '-');
-      svg.selectAll(`.line-color.line-${safeName}`).attr("opacity", 1);
-      svg.selectAll(`.dot-color.dot-${safeName}`).attr("opacity", 1);
-
-      // Show tooltip
-      tooltip.style("display", null);
-      tooltip.select(".tooltip-text")
-        .text(`${location}, ${d.year}: ${d.density.toFixed(2)} m⁻²`);
-      
-      const bbox = tooltip.select("text").node().getBBox();
-      tooltip.select("rect")
-        .attr("width", bbox.width + 16)
-        .attr("height", bbox.height + 12)
-        .attr("x", bbox.x - 8)
-        .attr("y", bbox.y - 6);
-      
-      tooltip.attr("transform", `translate(${x(d.year) - 85}, ${y(d.density) - 32})`);
-    })
-    .on("mouseout", function() {
-      // Return to highlighting only the selected site
-      svg.selectAll(`.line-color`).attr("opacity", 0);
-      svg.selectAll(`.dot-color`).attr("opacity", 0);
-      
-      if (selectedSite) {
-        const safeName = selectedSite.replace(/\s+/g, '-');
-        svg.selectAll(`.line-color.line-${safeName}`).attr("opacity", 1);
-        svg.selectAll(`.dot-color.dot-${safeName}`).attr("opacity", 1);
-      }
-      
-      tooltip.style("display", "none");
-    });
-
-  return svg.node();
 }
 ```
 
@@ -848,6 +696,11 @@ function createDensityPlot(data, selectedSite, width) {
     display: block;
     background: #f0f0f0;
   }
+  
+    #density-plot-container {
+    width: 100%;
+    }
+
 </style>
 
 

@@ -1,5 +1,6 @@
 ---
 toc: false
+title: "Side-by-side maps and plots with interactivity"
 theme: dashboard
 ---
 
