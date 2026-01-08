@@ -1,0 +1,159 @@
+site,location,pop_type,date,time_start,time_end,surveyor_name,contact,method,quadrat_size_m2,n_flips,total_sample_area_m2,latitude,longitude,tidal_elev_ft_mllw,sample_id,percent_cover_pacific_shell,live_oly_count,dead_oly_count,live_pac_count,dead_pac_count,live_unid_count,dead_unid_count,pacific_shell_piece,notes
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,55,10,2,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,3,85,13,0,0,0,NA,NA,NA,pool of standing water
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,44,77,5,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,43,60,0,0,0,0,NA,NA,NA,standing/draining water
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,79,90,22,1,0,0,NA,NA,NA,standing/draining water
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,82,45,11,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,84,5,1,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,76,2.5,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,9,2.5,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,33,45,1,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,21,15,2,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,86,40,3,2,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,46,30,4,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,1,65,4,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,77,85,16,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,12,40,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,83,20,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,32,5,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,35,5,4,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,45,5,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,56,10,1,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,22,80,6,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,19,85,4,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,20,40,1,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,37,5,2,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,94,75,9,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,80,75,1,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,60,5,2,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,7,5,3,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,87,5,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,73,20,0,2,0,0,NA,NA,NA,whelk eggs
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,30,65,1,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,11,85,1,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,17,25,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,85,20,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,65,30,2,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,52,60,3,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Hayley Aronson, Jessi Florendo",NA,random points,0.25,1,0.25,NA,NA,NA,42,40,3,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,61,15,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,50,20,1,0,0,0,NA,NA,NA,just outside large shell patch
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,97,20,4,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,13,5,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,14,98,25,3,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,38,10,7,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,34,25,5,0,0,0,NA,NA,NA,edge of ulva
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,99,20,0,0,0,0,NA,NA,NA,some ulva
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,47,0,0,0,0,0,NA,NA,NA,"ulva, no shell, mud"
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,29,15,5,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,25,0,2,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,62,8,2,0,0,0,NA,NA,NA,next to recruitment
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,91,5,8,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,5,85,5,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,92,5,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,24,2,5,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,16,85,13,1,0,0,NA,NA,NA,drill! x2; dead oly with drill hold :(
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,28,2,0,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,31,25,7,2,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,41,15,0,0,0,0,NA,NA,NA,drill eggs nearby
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,67,70,12,0,0,0,NA,NA,NA,some standing water
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,39,80,3,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,68,65,27,3,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,49,85,33,2,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,69,15,3,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,40,70,33,11,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,72,25,28,3,0,0,NA,NA,NA,edge of footprint
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,48,10,5,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,6,55,18,2,0,0,NA,NA,NA,drill!
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,26,35,4,0,0,0,NA,NA,NA,lots of muscles
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,90,20,20,1,0,0,NA,NA,NA,drill!
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,100,30,9,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,64,50,3,0,0,0,NA,NA,NA,drill x2
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,27,50,4,6,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,36,95,28,0,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,15,10,0,1,0,0,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2025-05-28,10:32:00,2:30:00,"Sophie Schwager, Alex Harnick, Kari Inch",NA,random points,0.25,1,0.25,NA,NA,NA,70,0,1,0,0,0,NA,NA,NA,barnacle heavy
+Sinclair Inlet,Sinclair Inlet,ref,2019-07-16,NA,NA,Stephen,NA,NA,1,3,3,NA,NA,NA,1,NA,7,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,ref,2019-07-16,NA,NA,Stephen,NA,NA,1,9,9,NA,NA,NA,2,NA,2,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,ref,2019-07-16,NA,NA,Stephen,NA,NA,1,9,9,NA,NA,NA,3,NA,11,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,ref,2019-07-16,NA,NA,Stephen,NA,NA,1,12,12,NA,NA,NA,4,NA,9,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,ref,2019-07-16,NA,NA,Stephen,NA,NA,1,12,12,NA,NA,NA,5,NA,1,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,ref,2019-07-16,NA,NA,Stephen,NA,NA,1,12,12,NA,NA,NA,6,NA,7,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,ref,2019-07-16,NA,NA,Stephen,NA,NA,1,4,4,NA,NA,NA,7,NA,1,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,project,2020-08-19,11:30:00,14:00:00,"Gray, Hilary",NA,haphazard sampling,1,1,1,NA,NA,NA,1,NA,0,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,project,2020-08-19,11:30:00,14:00:00,"Gray, Hilary",NA,haphazard sampling,1,1,1,NA,NA,NA,2,NA,1,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,project,2020-08-19,11:30:00,14:00:00,"Gray, Hilary",NA,haphazard sampling,1,1,1,NA,NA,NA,3,NA,0,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,project,2020-08-19,11:30:00,14:00:00,"Gray, Hilary",NA,haphazard sampling,1,1,1,NA,NA,NA,4,NA,0,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,project,2020-08-19,11:30:00,14:00:00,"Gray, Hilary",NA,haphazard sampling,1,1,1,NA,NA,NA,5,NA,1,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,project,2020-08-19,11:30:00,14:00:00,"Gray, Hilary",NA,haphazard sampling,1,1,1,NA,NA,NA,6,NA,0,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,project,2020-08-19,11:30:00,14:00:00,"Gray, Hilary",NA,haphazard sampling,1,1,1,NA,NA,NA,7,NA,1,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,project,2020-08-19,11:30:00,14:00:00,"Gray, Hilary",NA,haphazard sampling,1,1,1,NA,NA,NA,8,NA,9,NA,NA,NA,NA,NA,NA,NA
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,9:12:00,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,33,NA,1,0,NA,NA,NA,NA,0,Counts are taken in quadrats that are 0.25m^2. Sample ID's correspond to randomly scattered GPS points marked in ArcGIS fieldmaps app. Also recorded Oly shell pieces (not articulated) that are > half-dollar size.
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,29,NA,1,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,1,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,31,NA,1,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,5,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,21,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,17,NA,4,0,NA,NA,NA,NA,1,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,23,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,13,NA,2,0,NA,NA,NA,NA,0,Single Oly oysters and Oly oysters attached to Pacific shell
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,15,NA,0,0,NA,NA,NA,NA,0,"So many of this one species of dorid, likely Onchidoris bilamellata (https://www.inaturalist.org/guide_taxa/1588641), could be leather limpet, and also many mossy chitons on this Pacific shell"
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,35,NA,0,0,NA,NA,NA,NA,0,So many juvenile limpets (maybe the shield limpet Lottia pelta)
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,7,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,37,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,11,NA,1,1,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,27,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,19,NA,9,4,NA,NA,NA,NA,8,"There was a piece of wood in this quadrat covered in Olys. There were juvenile Olys settled on adult Olys in this quadrat. Datasheet says 8 Olys but there are 9 shell height measurements, so the number was corrected to 9 Olys."
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,25,NA,1,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,3,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,A,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,B,NA,0,1,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,C,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,D,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,E,NA,0,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,13:30:00,NA,"Kathy Burnham, Jessi Florendo",jessi@restoration.org,random points,0.25,1,0.25,NA,NA,NA,F,NA,1,0,NA,NA,NA,NA,0,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,9:15:00,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,8,NA,1,0,NA,NA,NA,NA,1,"Many mussels. In seep. Species present at this site include: Onchidella borealis (leather limpet), Ulva, Mytillus, Crescent Gunnel, Platyhelminthes, Polychaete worms, Tube worms, small unID snail (Amphisa?), Alia spp."
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,20,NA,0,0,NA,NA,NA,NA,0,In seep
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,9,NA,5,2,NA,NA,NA,NA,8,"Mussels, barnacles, and Ulva"
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,39,NA,2,0,NA,NA,NA,NA,15,In seep
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,24,NA,2,0,NA,NA,NA,NA,33,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,26,NA,2,0,NA,NA,NA,NA,29,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,2,NA,0,0,NA,NA,NA,NA,5,In drainage
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,28,NA,0,0,NA,NA,NA,NA,29,"Barnacles, in drainage"
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,10,NA,0,0,NA,NA,NA,NA,14,In drainage
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,4,NA,0,0,NA,NA,NA,NA,16,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,18,NA,0,0,NA,NA,NA,NA,7,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,36,NA,0,0,NA,NA,NA,NA,13,Ocinebrellus inornatus oustide quadrat
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,12,NA,0,0,NA,NA,NA,NA,14,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,40,NA,0,0,NA,NA,NA,NA,3,100% Ulva cover
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,34,NA,4,0,NA,NA,NA,NA,62,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,14,NA,2,0,NA,NA,NA,NA,9,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,32,NA,2,1,NA,NA,NA,NA,38,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,38,NA,0,0,NA,NA,NA,NA,19,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,30,NA,0,0,NA,NA,NA,NA,21,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,16,NA,2,3,NA,NA,NA,NA,30,100% Ulva cover. Lots of anoxic mud and etching on shells for Quadrats 22-W
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,22,NA,4,0,NA,NA,NA,NA,4,100% Ulva cover
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,6,NA,1,0,NA,NA,NA,NA,18,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,Z,NA,20,6,NA,NA,NA,NA,2,
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,Y,NA,4,1,NA,NA,NA,NA,33,In seep
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,NA,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,X,NA,0,0,NA,NA,NA,NA,13,100% Ulva cover
+Sinclair Inlet,Sinclair Inlet,project,2022-07-13,13:30:00,NA,"Gray McKenna, Hilary Hayford",gray@restorationfund.org,random points,0.25,1,0.25,NA,NA,NA,W,NA,0,0,NA,NA,NA,NA,0,Ulva and sand dollars.
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,2,2,NA,NA,NA,58,NA,17,NA,NA,NA,NA,NA,NA,From Brian's files includes both transect & haphazard points. Assuming quadrat size from total area.
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,1,1,NA,NA,NA,59,NA,8,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,5,5,NA,NA,NA,60,NA,9,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,9,9,NA,NA,NA,61,NA,9,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,5,5,NA,NA,NA,62,NA,11,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,5,5,NA,NA,NA,63,NA,10,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,9,9,NA,NA,NA,64,NA,6,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,20,20,NA,NA,NA,65,NA,10,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,11,11,NA,NA,NA,66,NA,12,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,11,11,NA,NA,NA,68,NA,12,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,15,15,NA,NA,NA,70,NA,10,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,13,13,NA,NA,NA,71,NA,10,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,1,1,NA,NA,NA,72,NA,18,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,1,1,NA,NA,NA,73,NA,26,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,10,10,NA,NA,NA,74,NA,13,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,6,6,NA,NA,NA,75,NA,15,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,2,2,NA,NA,NA,76,NA,10,NA,NA,NA,NA,NA,NA,
+Sinclair Inlet,Sinclair Inlet,project,2019-06-18,12:30:00,NA,Brian Allen,,transect or haphazard,1,1,1,NA,NA,NA,77,NA,15,NA,NA,NA,NA,NA,NA,
