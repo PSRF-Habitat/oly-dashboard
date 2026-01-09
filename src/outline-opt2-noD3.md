@@ -57,6 +57,8 @@ body {
   </div>
 </div>
 
+---
+
 <!-- =================================================== -->
 <!-- Big 'ol Map! -->
 <!-- =================================================== -->
@@ -145,15 +147,97 @@ const recruitmentIcon = L.divIcon({
 });
 
 // ===================================================
+// FILTER PANEL COMPONENT
+// This creates the filter controls that will go in the left card
+// ===================================================
+function createFilterPanel(enhancementLayer, recruitmentLayer) {
+  const panel = document.createElement("div");
+  
+  panel.innerHTML = `
+    <div style="padding: 10px;">
+      <h3 style="margin-top: 0; margin-bottom: 15px; color: #045B4C;">Map Filters</h3>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: flex; align-items: center; cursor: pointer; padding: 8px; border-radius: 4px; transition: background 0.2s;">
+          <input type="checkbox" id="enhancement-toggle" checked style="margin-right: 10px; cursor: pointer; width: 18px; height: 18px;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <div style="
+              background-color: #4e79a7;
+              width: 14px;
+              height: 14px;
+              border-radius: 50%;
+              border: 2px solid white;
+              box-shadow: 0 0 3px rgba(0,0,0,0.3);
+            "></div>
+            Enhancement Sites
+          </span>
+        </label>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label style="display: flex; align-items: center; cursor: pointer; padding: 8px; border-radius: 4px; transition: background 0.2s;">
+          <input type="checkbox" id="recruitment-toggle" checked style="margin-right: 10px; cursor: pointer; width: 18px; height: 18px;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <div style="
+              width: 0;
+              height: 0;
+              border-left: 7px solid transparent;
+              border-right: 7px solid transparent;
+              border-bottom: 12px solid #e15759;
+              margin-left: 3px;
+            "></div>
+            Recruitment Sites
+          </span>
+        </label>
+      </div>
+      
+      <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+      
+      <div style="color: #666; font-size: 14px;">
+        <p style="margin: 5px 0;"><strong>Potential Filters to Add:</strong></p>
+        <ul style="margin: 10px 0; padding-left: 20px; font-size: 13px;">
+          <li>Enhancement type</li>
+          <li>Site drop down</li>
+        </ul>
+      </div>
+    </div>
+  `;
+  
+  // Add event listeners for the checkboxes
+  const enhToggle = panel.querySelector('#enhancement-toggle');
+  const recToggle = panel.querySelector('#recruitment-toggle');
+  
+  enhToggle.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      enhancementLayer.addTo(enhancementLayer._map);
+    } else {
+      enhancementLayer.remove();
+    }
+  });
+  
+  recToggle.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      recruitmentLayer.addTo(recruitmentLayer._map);
+    } else {
+      recruitmentLayer.remove();
+    }
+  });
+  
+  return panel;
+}
+
+// ===================================================
 // MAIN MAP FUNCTION
 // This creates the entire map and detail panels with plots embedded
 // ===================================================
 function oysterMap(enhData, recruitData, densityData, {width} = {}) {
   // Create the main container that holds both map and story panel
   const mainContainer = document.createElement("div");
+
   Object.assign(mainContainer.style, {
     width: `${width}px`,
-    height: "900px",
+    height: "90vh",
+    minHeight: "600px", // Ensure it doesn't get too small
   });
 
   // Container for the leaflet map
@@ -462,15 +546,15 @@ recruitData.forEach(site => {
   // ADD LAYER CONTROL
   // This creates the checkbox to toggle layers on/off
   // ===================================================
-  const overlays = {
-    "Enhancement Sites": enhancementLayer,
-    "Recruitment Sites": recruitmentLayer
-  };
+//   const overlays = {
+//     "Enhancement Sites": enhancementLayer,
+//     "Recruitment Sites": recruitmentLayer
+//   };
   
-  L.control.layers(null, overlays, {
-    collapsed: false,  // Keep it expanded so users see it
-    position: 'topright'
-  }).addTo(map);
+//   L.control.layers(null, overlays, {
+//     collapsed: false,  // Keep it expanded so users see it
+//     position: 'topright'
+//   }).addTo(map);
 
   // ===================================================
   // ADD LEGEND
@@ -522,8 +606,19 @@ recruitData.forEach(site => {
   // Add scalebars
   L.control.scale({imperial: true, metric: true}).addTo(map);
 
+ // Simple resize handler for when window size changes
+  const handleResize = () => {
+    setTimeout(() => map.invalidateSize(), 100);
+  };
+  
+  window.addEventListener('resize', handleResize);
+  
   // Small delay to allow data to load before rendering map
   setTimeout(() => map.invalidateSize(), 100);
+
+   // Store the layers on the main container so we can access them later
+  mainContainer._enhancementLayer = enhancementLayer;
+  mainContainer._recruitmentLayer = recruitmentLayer;
   
   return mainContainer;
 }
@@ -596,6 +691,22 @@ function createDensityPlot(data, selectedSite) {
     ]
   });
 }
+
+window.addEventListener('resize', () => {
+  const map = document.querySelector('.leaflet-container');
+  if (map && map._leaflet_map) {
+    map._leaflet_map.invalidateSize();
+  }
+});
+
+
+const mapInstance = resize((width) => {
+  const container = oysterMap(enh_sites, recruit_sites, ann_densities, {width});
+  // Store reference globally so filter panel can access it
+  window.currentMapInstance = container;
+  return container;
+});
+
 ```
 
 <!-- Link to Leaflet CSS -->
@@ -704,7 +815,30 @@ function createDensityPlot(data, selectedSite) {
 </style>
 
 
-<!-- Full-width Map -->
-<div class="card">
-  ${resize((width) => oysterMap(enh_sites, recruit_sites, ann_densities, {width}))}
+<!-- Display Map in Card -->
+<div class="grid grid-cols-4">
+  <div class="card">
+    <h2 style="margin-top: 0;">Filters</h2>
+    ${(function() {
+      // Wait for map to load, then create filter panel
+      setTimeout(() => {
+        const container = document.querySelector('#filter-container');
+        if (window.currentMapInstance && container) {
+          container.appendChild(
+            createFilterPanel(
+              window.currentMapInstance._enhancementLayer,
+              window.currentMapInstance._recruitmentLayer
+            )
+          );
+        }
+      }, 500);
+      const div = document.createElement('div');
+      div.id = 'filter-container';
+      return div;
+    })()}
+  </div>
+
+  <div class="card grid-colspan-3">
+    ${mapInstance}
+  </div>
 </div>
