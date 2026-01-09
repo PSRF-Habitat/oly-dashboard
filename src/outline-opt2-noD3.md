@@ -1,6 +1,6 @@
 ---
 toc: false
-title: "Full page map with Observable Plot"
+title: "Full page map with Filter Panel"
 theme: dashboard
 header: "<a href='https://restorationfund.org'><img src='data/images/logo-transwhite.png' alt='Logo' style='height: 120px;'></a>"
 pager: false
@@ -150,7 +150,7 @@ const recruitmentIcon = L.divIcon({
 // FILTER PANEL COMPONENT
 // This creates the filter controls that will go in the left card
 // ===================================================
-function createFilterPanel(enhancementLayer, recruitmentLayer) {
+function createFilterPanel(enhancementLayer, recruitmentLayer, map) {
   const panel = document.createElement("div");
   
   panel.innerHTML = `
@@ -209,7 +209,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer) {
   
   enhToggle.addEventListener('change', (e) => {
     if (e.target.checked) {
-      enhancementLayer.addTo(enhancementLayer._map);
+      enhancementLayer.addTo(map);
     } else {
       enhancementLayer.remove();
     }
@@ -217,7 +217,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer) {
   
   recToggle.addEventListener('change', (e) => {
     if (e.target.checked) {
-      recruitmentLayer.addTo(recruitmentLayer._map);
+      recruitmentLayer.addTo(map);
     } else {
       recruitmentLayer.remove();
     }
@@ -271,6 +271,8 @@ function oysterMap(enhData, recruitData, densityData, {width} = {}) {
 
   // Initialize the Leaflet map
   const map = L.map(mapContainer, { center, zoom });
+
+  mainContainer._map = map;
   
   // Add basemap tiles
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -827,7 +829,8 @@ const mapInstance = resize((width) => {
           container.appendChild(
             createFilterPanel(
               window.currentMapInstance._enhancementLayer,
-              window.currentMapInstance._recruitmentLayer
+              window.currentMapInstance._recruitmentLayer,
+              window.currentMapInstance._map
             )
           );
         }
