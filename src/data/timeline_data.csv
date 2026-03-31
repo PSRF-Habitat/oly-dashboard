@@ -1,13 +1,9 @@
-site_name,year,timeline_text
-Port Gamble Bay,2014,XX bags of seeded cultch placed
-Port Gamble Bay,2015,10 acres of bulk shell amendment spread along the South shores of Port Gamble Bay
-Port Gamble Bay,2016,Singles added to enhancement site bringing us to 1.2 million oyster seed spread
-Port Gamble Bay,2022,"100 bags of bulk shell supplied to Port Gamble Tribe, adding even more ... "
-Legion Park,2020,15 acres of bulk shell spread
-Chico Bay,2018,500 seeded cultch bags and 500 cubic yards of shell spread on tidelands covering 5 acres
-Fidalgo Bay,2002,"The first Olympia oyster seeds planted near the trestle, signifying the first Olympia oyster restoration effort in the North Sound"
-Fidalgo Bay,2003,Seeding round two
-Fidalgo Bay,2004,"Third round of seeding. Evidence found of natural spawning on recruitment station!"
-Fidalgo Bay,2006,"Additional seed and bulk Pacific oyster shell added to help in oyster bed building and
-encourage post-larval recruitment"
-Fidalgo Bay,2016,Bags of seeded cultch added to two new plots within Fidalgo Bay, hoping to add larvae to the west side of the Bay
+site_name,year,label,description
+Fidalgo Bay,2002,Seeded cultch,"Bags of Pacific Oyster shell covered in Olympia oyster seed spread near the trestle, signifying the first Oly restoration effort in North Puget Sound!"
+Fidalgo Bay,2003,Seeded cultch,Additional seeded cultch spread near the trestle.
+Fidalgo Bay,2004,Seeded cultch,Additional seeded cultch spread near the trestle.
+Fidalgo Bay,2006,Bulk shell & Seeded cultch,"Non-seed bearing Pacific Oyster shell spread at the trestle site to enhance the substrate, giving Olympia oyster larvae something to settle to."
+Fidalgo Bay,2008,Bulk shell,Additional bulk shell spread near the trestle.
+Fidalgo Bay,2013,"2.5 acres bulk shell",Bulk shell added to 4 plots along the eastern shore of the bay.
+Fidalgo Bay,2016,20 bags of seeded cultch,"Seeded cultch added to the western shore of the bay in attempt to increase recruitment on the western shore."
+Fidalgo Bay,2018,"1 acre bulk shell & 56 bags seeded cultch","1/2 acre bulk shell to the western shore with additional seeded cultch. 1/2 acre to the eastern shore."
