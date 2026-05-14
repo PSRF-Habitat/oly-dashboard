@@ -80,7 +80,7 @@ const enh_sites_metadata = await FileAttachment("data/enhancement_sites_metadata
 const recruit_sites = await FileAttachment("data/recruitment_station_info.csv").csv({typed: true});
 
 // Oly assessment data. MIGHT CHANGE IF DATA BECOMES SITE SPECIFIC
-const ann_densities = await FileAttachment("data/assessments.csv").csv({typed: true});
+//const ann_densities = await FileAttachment("data/assessments.csv").csv({typed: true});
 
 // Data for timeline
 const timeline_data = await FileAttachment("data/timeline_data.csv").csv({typed: true});
@@ -1617,7 +1617,7 @@ setTimeout(() => {
     const container = oysterMap(
         enh_sites_metadata,
         recruit_sites,
-        ann_densities,
+        //ann_densities,
         { width: initialWidth }
     );
     window.currentMapInstance = container;
