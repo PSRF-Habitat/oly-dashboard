@@ -128,11 +128,21 @@ const story_sites = new Set([
 // TOOLTIP PHOTOS
 // ===================================================
 const tooltipPhotos = {
-  "Port Gamble Bay":  FileAttachment("data/images/port_gamble_SAMPLE_tooltip.jpg").href,
-  "Quilcene Bay":     FileAttachment("data/images/quilcene_SAMPLE_tooltip.jpg").href,
-  "Sinclair Inlet":   FileAttachment("data/images/sinclair_SAMPLE_tooltip.jpg").href,
+  "Port Gamble Bay":  FileAttachment("data/images/portgamble_tooltip.jpg").href,
+  "Quilcene Bay":     FileAttachment("data/images/quilcene_tooltip.jpg").href,
+  "Sinclair Inlet":   FileAttachment("data/images/sinclair_tooltip.jpg").href,
   "Legion Park":      FileAttachment("data/images/legion_SAMPLE_tooltip.jpg").href,
-  "Fidalgo Bay":      FileAttachment("data/images/fidalgo_tooltip.jpeg").href
+  "Fidalgo Bay":      FileAttachment("data/images/fidalgo_tooltip.jpeg").href,
+  "Chico Bay":        FileAttachment("data/images/chicobay_tooltip.jpg").href,
+  "Dogfish Bay":      FileAttachment("data/images/dogfish_tooltip.jpg").href,
+  "Kiket and Lone Tree Lagoons": FileAttachment("data/images/lonetree.jpg").href,
+  "Liberty Bay":      FileAttachment("data/images/libertybay_tooltip.jpg").href,
+  "Oyster Bay":       FileAttachment("data/images/oysterbay_tooltip.jpg").href,
+  "Samish Bay":       FileAttachment("data/images/samish_tooltip.jpg").href,
+  "Scanida":          FileAttachment("data/images/scandia_tooltip.jpg").href,
+  "Silverdale":       FileAttachment("data/images/silverdale_tooltip.jpg").href,
+  "Smith Cove":       FileAttachment("data/images/smithcove_tooltip.jpg").href,
+  "Drayton Harbor":   FileAttachment("data/images/drayton_tooltip.jpg").href,
   // Add more here
 };
 
@@ -1604,7 +1614,7 @@ function oysterMap(enhData, recruitData, densityData, {width} = {}) {
 // INSTANTIATE MAP
 // Build once, place in a persistent div, use
 // ResizeObserver to keep width in sync without
-// ever rebuilding the map or touching its DOM node.
+// ever rebuilding the map or touching its DOM.
 // ===================================================
 
 // Wait for the placeholder card to exist in the DOM
@@ -1644,7 +1654,6 @@ setTimeout(() => {
     // Watch the placeholder for size changes using ResizeObserver.
     // This fires when the card changes width — e.g. on window resize.
     // We just update the container width and tell Leaflet to redraw.
-    // Nothing is rebuilt, no state is lost.
     const observer = new ResizeObserver(entries => {
         for (const entry of entries) {
             const newWidth = entry.contentRect.width;
