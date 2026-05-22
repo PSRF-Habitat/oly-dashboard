@@ -365,7 +365,7 @@ function createShellHeightHistogram(sizeData) {
 function createEnhancementTimeline(data, selectedSite) {
 
     // Filter data to the selected site
-    const siteData = data.filter(d => d.site_name === selectedSite);
+    const siteData = data.filter(d => d.site === selectedSite && d.year);
 
     // Return an empty div if there is no data
     if (siteData.length === 0) {
@@ -469,6 +469,140 @@ function createEnhancementTimeline(data, selectedSite) {
         ]
     });
 } // END TIMELINE BUILDER FUNCTION
+
+// ===================================================
+// ===================================================
+// SHARED FUNCTION: TOOLTIP CONTENT BUILDER
+// Builds HTML string for enhancement marker tooltip.
+// 3 cases:
+//      1. Story site: includes 'click to explore' banner
+//      2. Non-story site: no banner
+//      3. No timeline data: photo only + note
+// ===================================================
+// ===================================================
+function buildTooltipHTML(site, timelineData, isStorySite, photoUrl) {
+
+    // --- PHOTO BLOCK ---
+    // Full width image at top of tooltip
+    // If no photo exists, render nothing
+    const photoHTML = photoUrl ? `
+        <img src="${photoUrl}" style="
+            width: 100%; height: 130px; object-fit: cover;
+            display: block;">
+    ` : "";
+
+    // --- Meta Rows ---
+    // Total acres
+    // Grab only rows for this site
+    const siteRows = timelineData
+        .filter(d => d.site === site.site_name && d.year)  // skip rows with no year
+        .sort((a, b) => a.year - b.year);                  // sort oldest to newest
+        
+    // Add up acres column from timeline data
+    const totalAcres = siteRows.reduce((sum, d) => {
+        const val = parseFloat(d.acres);
+        return sum + (isNaN(val) ? 0 : val);
+    }, 0);
+
+    // Only show total acres line if there is a value, else -
+    const acresDisplay = totalAcres > 0
+        ? `${totalAcres.toFixed(2)} acres enhanced`
+        : "—"; 
+
+    // Enhancement types
+    const typeDisplay = site.enhancement_actions
+        ? site.enhancement_actions.split(',').map(t => t.trim()).join(' · ')
+        : "—";
+    
+    // HTML styling for these rows
+    const metaHTML = `
+    <div style="display:flex; align-items:center; gap:6px;
+        font-size:12px; color:#555; margin-bottom:4px;">
+        <span style="color:#045B4C; font-weight:600; font-size:11px; 
+            text-transform:uppercase; letter-spacing:0.4px; flex-shrink:0;">Area</span>
+        ${acresDisplay}
+    </div>
+    <div style="display:flex; align-items:center; gap:6px;
+        font-size:12px; color:#555; margin-bottom:4px;">
+        <span style="color:#045B4C; font-weight:600; font-size:11px;
+            text-transform:uppercase; letter-spacing:0.4px; flex-shrink:0;">Type</span>
+        ${typeDisplay}
+    </div>
+    `;
+
+    // --- Timeline rows ---
+    // Story sites: show up to 4 rows, then a "more on site page" hint to click
+    // Non-story sites: show all rows bc tooltip is the full story
+    // No timeline info at all: No data note
+    let timelineHTML = "";
+
+    if (siteRows.length === 0) {
+        // Fallback for no timeline data recorded for this site
+        timelineHTML = `
+            <p style="font-size:12px; color:#999; font-style:italic; margin:0;">
+                No timeline data recorded
+            </p>
+        `;
+    } else {
+        // Cap at 4 rows for story sites, show all for non-story
+        const visibleRows = isStorySite ? siteRows.slice(0, 4) : siteRows;
+        const hiddenCount = siteRows.length - visibleRows.length;
+
+        // Build one row per visible timeline entry
+        const rowsHTML = visibleRows.map(d => `
+            <div style="display:flex; align-items:baseline; gap:8px;
+                font-size:12px; margin-bottom:5px;">
+                <span style="color:#045B4C; font-weight:600;
+                    min-width:34px; flex-shrink:0;">${d.year}</span>
+                <span style="color:#ccc; font-size:10px; flex-shrink:0;">●</span>
+                <span style="line-height:1.4; color:#444;">${d.label}</span>
+            </div>
+        `).join('');
+
+        // "More actions" nudge when rows were cut for story site
+        const moreHint = hiddenCount > 0 ? `
+            <p style="font-size:11px; color:#999; font-style:italic; margin:4px 0 0 0;">
+                + ${hiddenCount} more action${hiddenCount > 1 ? 's' : ''} on site page
+            </p>
+        ` : "";
+
+        timelineHTML = `
+            <p style="font-size:11px; font-weight:600; color:#045B4C;
+                text-transform:uppercase; letter-spacing:0.5px; margin:0 0 7px 0;">
+                Enhancement history
+            </p>
+            ${rowsHTML}
+            ${moreHint}
+        `;
+    }
+
+    // --- Explore banner ---
+    // Only for story sites, telling user they can click
+    const exploreBanner = isStorySite ? `
+        <div style="margin-top:10px; padding:7px 10px;
+            background:#f0f7f5; border-radius:6px;
+            font-size:12px; font-weight:600; color:#045B4C; text-align:center;">
+            &#x25B6; Click to explore this site
+        </div>
+    ` : "";
+
+    // --- Assemble full tooltip ---
+    return `
+        <div style="min-width:240px; max-width:260px;">
+            ${photoHTML}
+            <div style="padding:12px;">
+                <p style="font-size:15px; font-weight:600; color:#222;
+                    text-align:center; margin:0 0 10px 0;">
+                    ${site.site_name}
+                </p>
+                ${metaHTML}
+                <div style="height:1px; background:#e8e8e8; margin:8px 0;"></div>
+                ${timelineHTML}
+                ${exploreBanner}
+            </div>
+        </div>
+    `;
+} // END TOOLTIP CONTENT BUILDER FUNCTION
 
 // ===================================================
 // ===================================================
@@ -1133,11 +1267,12 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData) {
 // Arguments:
 //  - enhData: Enhancement sites metadata CSV
 //  - recruitData: Recruitment data CSV
-//  - densityData: The population assessments CSV with density .... MAY CHANGE THIS
+//  - densityData: The population assessments CSV with density .... MAY CHANGE THIS, CURRENTLY NOT USING
+//  - timelineData: Enhancement timeline CSV
 //  - {width}: the current container width which dynamically comes from resize()
 // ===================================================
 // ===================================================
-function oysterMap(enhData, recruitData, densityData, {width} = {}) {
+function oysterMap(enhData, recruitData, densityData, timelineData, {width} = {}) {
     
     // -----------------------------------------------
     // BUILD THE CONTAINER DIVS
@@ -1441,26 +1576,7 @@ function oysterMap(enhData, recruitData, densityData, {width} = {}) {
         // This is called a ternary: condition ? value_if_true : value_if_false
         const icon = isStorySite ? enhancementStoryIcon : enhancementIcon;
 
-        // Build photo HTML for the tooltip if this site has a photo
-        // tooltipPhotos is defined at the top
-        // If no photo exists, it renders as nothing
         const photoUrl = tooltipPhotos[site.site_name];
-        const photoHTML = photoUrl ? `
-            <img src="${photoUrl}" style="
-            width: 100%; height: 120px; object-fit: cover;
-            border-radius: 4px; border: 2px solid #ddd;
-            margin-top: 8px; margin-bottom: 8px;">
-        ` : "";
-
-        // Story sites get a green "click to explore" banner at the bottom of tooltip
-        const clickHint = isStorySite ? `
-            <div style="
-                margin-top: 8px; padding: 6px 8px;
-                background: #f0f7f6; border-radius: 4px;
-                font-size: 11px; color: #045B4C; font-weight: 600;
-                text-align: center;
-            ">▶ Click to explore this site</div>
-        ` : "";
 
         // Create the marker with the right icon
         // By using an arrow function to build the tooltip, we allow
@@ -1470,23 +1586,14 @@ function oysterMap(enhData, recruitData, densityData, {width} = {}) {
             [site.latitude, site.longitude],
             { icon: icon }
         )
-        .bindTooltip(() => `
-            <div style="min-width: 200px; padding: 12px;">
-                <div style="font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 4px;">
-                ${site.site_name}
-                </div>
-                ${photoHTML}
-                <div style="font-size: 12px; margin-top: 4px;">
-                    Type: ${site.enhancement_actions}<br>
-                    Years: ${site.enhancement_years}
-                    </div>
-                ${clickHint}
-            </div>
-        `, {
-            direction: 'top',
-            permanent: false,
-            className: 'custom-tooltip'   // picks up the custom CSS in the <style> block
-        })
+        .bindTooltip(
+            () => buildTooltipHTML(site, timelineData, isStorySite, photoUrl),
+            {
+                direction: 'auto',
+                permanent: false,
+                className: 'custom-tooltip'
+            }
+        )
         .addTo(enhancementLayer);
 
         // Only story sites get a click handler and a pointer cursor
@@ -1627,7 +1734,8 @@ setTimeout(() => {
     const container = oysterMap(
         enh_sites_metadata,
         recruit_sites,
-        //ann_densities,
+        null,
+        timeline_data,
         { width: initialWidth }
     );
     window.currentMapInstance = container;
@@ -1759,7 +1867,7 @@ setTimeout(() => {
   /* -----------------------------------------------
      TOOLTIP
   ----------------------------------------------- */
-  .custom-tooltip { padding: 0 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .custom-tooltip { padding: 0 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; border-radius: 8px;}
   .custom-tooltip .leaflet-tooltip-content { padding: 0 !important; margin: 0; }
   .custom-tooltip img { display: block; background: #f0f0f0; }
 
