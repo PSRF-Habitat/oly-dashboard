@@ -118,9 +118,9 @@ const zoom = 8;
 // ===================================================
 const story_sites = new Set([
   "Fidalgo Bay",
-//   "Silverdale",
-//   "Chico Bay",
-//   "Oyster Bay"
+  "Oyster Bay",
+  //   "Silverdale",
+  //   "Chico Bay",
   // Add more here as stories are written
 ]);
 
@@ -617,6 +617,7 @@ function buildTooltipHTML(site, timelineData, isStorySite, photoUrl) {
 function buildSitePanel(siteName) {
   switch (siteName) {
     case "Fidalgo Bay":  return buildFidalgoBayPanel();
+    case "Oyster Bay":  return buildOysterBayPanel();
     // case "Silverdale":   return buildSilverdalePanel();
     // case "Chico Bay":    return buildChicoBayPanel();
     // case "Oyster Bay":   return buildOysterBayPanel();
@@ -917,6 +918,205 @@ function createFidalgoBayPopulationPlot(data) {
 // ===================================================
 
 // Add that code in here
+
+// ===================================================
+// ===================================================
+//
+// SITE PANEL: OYSTER BAY
+// Layout:
+//
+// ===================================================
+// ===================================================
+function buildOysterBayPanel() {
+    const panel = document.createElement("div");
+
+    // --- Narrative ---
+    const narrative = {
+        intro: `After stumbling upon one of the most dense Oly beds the team had yet to find in Central Puget Sound just around the spit, the team wanted to see what could be found tucked away in other reaches of Dyes Inlet. The first place to look, just around the point and south to Oyster Bay.`,
+
+        context: `On the first visit however, we struck out. Within the typical tidal height we would expect to find Olys, none were to be found, so we continued on to search farther reaches within Dyes Inlet with little luck. On a whim at a much lower tide, PSRF's Brian Allen made a return visit to Oyster Bay, unable to shake the hunch that we were missing something. In the center of the bay, this time uncovered by the tide, was a small peninsula absolutely covered in Olympias!`,
+
+        ourWork: `In 2011, we added a 1/2 acre plot of bulk shell adjacent to the existing aggregation in an attempt to expand the existing bed higher into the intertidal. At this point in our restoration work, adding bulk shell to enhance habitat was a fairly new tool. Because of this we spent a little more time here, taking the time to pay close attention, culminating in this project in Oyster Bay to be really formative to our learning.`,
+
+        dataCallout: `As soon as that following spring, the added shell was absolutely loaded with juvenile oysters.`,
+
+        impact: `Skip forward 8 more years: When the team returned in 2020, the added shell had largely been buried into the mud! The oysters, though, had gone everywhere: spread across the beach, moving from the deep zone where they’d originally lived all the way up to the 1+ foot elevation. Dense aggregations, more than 100 olys/m2 in many places, now occupied the full normal intertidal range of the species, down to the -2 foot mark and perhaps deeper.`,
+
+        sizeContext: `Other formative information we were gathering for the first time about a population were sizes of oysters in the population. Through collecting this data at Oyster Bay, we were able to learn the differences in how size is distributed between young and mature beds, quickly realizing that the mode associated YOY typically signifiied a developing population. A mature landscape looks far more normally distributed.`,
+
+        future: `hmm`,
+
+        partnersLead: `hmm`,
+
+        partnersList: `Partners for this project?`
+    };
+
+    // --- Layout HTML ---
+    // Some of these are placeholder divs for dynamic content like plots
+    panel.innerHTML =  `
+        <!-- Site title 
+        <h2 style="
+        font-size: 32px; font-weight: 700; color: #045B4C;
+        text-align: center; margin: 0 0 24px 0;
+        letter-spacing: 0.5px; line-height: 1.2;
+        ">Oyster Bay</h2> -->
+
+        <!-- Carousel placeholder -->
+        <div id="oysterbay-carousel"></div> 
+
+        <!-- Intro quote -->
+        <div style="
+        font-size: 16px; line-height: 1.8; color: #333;
+        margin-bottom: 32px; padding: 24px;
+        background: linear-gradient(to right, #f0f7f6, transparent);
+        border-left: 4px solid #045B4C; font-style: italic;
+        ">${narrative.intro}</div>
+
+        <!-- About This Site -->
+        <div style="margin-bottom: 40px;">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">About</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.context}
+        </p>
+        </div>
+
+        <!-- Our Work -->
+        <div style="
+        background: #f8f9fa; padding: 24px; border-radius: 8px; margin-bottom: 40px;
+        ">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Our Work</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.ourWork}
+        </p>
+        </div>
+
+        <!-- Data callout -->
+        <div style="
+        padding: 20px;
+        background: linear-gradient(135deg, #e8f4f2 0%, #f0f7f6 100%);
+        border-radius: 8px; border-left: 4px solid #045B4C; margin-bottom: 24px;
+        ">
+        <p style="font-size: 15px; line-height: 1.7; color: #333; margin: 0; font-weight: 500;">
+            ${narrative.dataCallout}
+        </p>
+        </div>
+
+        <!-- Population density plot -->
+        <div style="
+        background: white; padding: 24px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 40px;
+        ">
+        <h3 style="
+            font-size: 16px; font-weight: 700; color: #045B4C;
+            margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Oyster density over time</h3>
+        <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
+            Estimated density of oysters at Oyster Bay, XXXX to XXXX
+        </p>
+        <div id="oysterbay-population-plot"></div>
+        </div>
+
+        <!-- Impact text -->
+        <div style="margin-bottom: 40px;">
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.impact}
+        </p>
+        </div>
+
+        <!-- Shell height section -->
+        <div style="
+        background: white; padding: 24px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px;
+        ">
+        <h3 style="
+            font-size: 16px; font-weight: 700; color: #045B4C;
+            margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Oyster Size Class Distribution</h3>
+        <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
+            Most recent distribution of individual oyster shell heights, measured XXXX
+        </p>
+        <div id="oysterbay-size-plot"></div>
+        </div>
+
+        <!-- Size context text -->
+        <div style="margin-bottom: 40px;">
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.sizeContext}
+        </p>
+        </div>
+
+        <!-- Looking Ahead -->
+        <div style="
+        background: linear-gradient(135deg, #f0f7f6 0%, #e8f4f2 100%);
+        padding: 28px; border-radius: 8px;
+        border-left: 4px solid #045B4C; margin-bottom: 40px;
+        ">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Looking Ahead</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.future}
+        </p>
+        </div>
+
+        <!-- Partners -->
+        <div style="
+            border-top: 1px solid #e0e0e0;
+            padding-top: 32px;
+            margin-bottom: 40px;
+        ">
+            <h3 style="
+                font-size: 14px; font-weight: 700; color: #045B4C;
+                margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px;
+            ">A Huge Thank You</h3>
+            <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0 0 12px 0;">
+                ${narrative.partnersLead}
+            </p>
+            <p style="font-size: 14px; line-height: 1.8; color: #666; margin: 0;">
+                ${narrative.partnersList}
+            </p>
+        </div>
+    `;
+
+    // Insert dyanmic content (plots!!) into placeholder divs built above
+
+    // Photos for the carousel
+    const photos = [
+        tooltipPhotos["Oyster Bay"], // First photo is the tooltip photos
+        // Add more photos in like this once we have them:
+        // FileAttachment("data/images/fidalgo_2.jpg").href, 
+        // etc,
+        // etc
+        // FileAttachment("data/images/fidalgo2.jpeg").href
+    ].filter(Boolean);
+    buildCarousel(panel.querySelector("#oysterbay-carousel"), photos);
+
+    // Timeline
+   // panel.querySelector("#fidalgo-timeline")
+   //     .appendChild(createEnhancementTimeline(timeline_data, "Fidalgo Bay"));
+        
+    // Population plot
+   // panel.querySelector("#fidalgo-population-plot")
+   //     .appendChild(createFidalgoBayPopulationPlot(fidalgo_pop_est)); // (defined below)
+
+    // Shell height histogram
+    // Not yet 100% sure what this will look like, but this is one idea
+    // const fidalgoSizeData = fidalgo_heights; // Data will go in here when we have it!! 
+    // example for above: 
+    // [ann_densities.filter(d => d.location === "Fidalgo Bay" && d.shell_height_mm)]
+    //panel.querySelector("#fidalgo-size-plot")
+    //    .appendChild(createShellHeightHistogram(fidalgo_heights));
+
+    return panel;
+} // END BUILD OYSTER BAY PANEL
+
 
 // ===================================================
 // ===================================================
