@@ -1128,7 +1128,10 @@ function buildOysterBayPanel() {
         // FileAttachment("data/images/fidalgo_2.jpg").href, 
         // etc,
         // etc
-        // FileAttachment("data/images/fidalgo2.jpeg").href
+        FileAttachment("data/images/oysterbay_enhancement.jpg").href,
+        FileAttachment("data/images/oysterbay_2012.JPG").href,
+        FileAttachment("data/images/oysterbay_survey_2026.jpg").href,
+        FileAttachment("data/images/oysterbay_loads_of_olys_2026.HEIC").href
     ].filter(Boolean);
     buildCarousel(panel.querySelector("#oysterbay-carousel"), photos);
 
