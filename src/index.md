@@ -91,6 +91,12 @@ const fidalgo_pop_est = await FileAttachment("data/fidalgo_population_estimates.
 // Fidalgo Bay shell height
 const fidalgo_heights = await FileAttachment("data/fidalgo_heights_2023.csv").csv({typed: true});
 
+// Oyster Bay population estimates
+const oysterbay_pop_est = await FileAttachment("data/oysterbay_population_estimates.csv").csv({typed: true});
+
+// Oyster Bay shell height
+const oysterbay_heights = await FileAttachment("data/oysterbay_2026_heights.csv").csv({typed: true});
+
 // ===================================================
 // IMPORT LIBRARIES
 // ===================================================
@@ -118,9 +124,9 @@ const zoom = 8;
 // ===================================================
 const story_sites = new Set([
   "Fidalgo Bay",
-//   "Silverdale",
-//   "Chico Bay",
-//   "Oyster Bay"
+  "Oyster Bay",
+  //   "Silverdale",
+  //   "Chico Bay",
   // Add more here as stories are written
 ]);
 
@@ -617,6 +623,7 @@ function buildTooltipHTML(site, timelineData, isStorySite, photoUrl) {
 function buildSitePanel(siteName) {
   switch (siteName) {
     case "Fidalgo Bay":  return buildFidalgoBayPanel();
+    case "Oyster Bay":  return buildOysterBayPanel();
     // case "Silverdale":   return buildSilverdalePanel();
     // case "Chico Bay":    return buildChicoBayPanel();
     // case "Oyster Bay":   return buildOysterBayPanel();
@@ -641,7 +648,7 @@ function buildFidalgoBayPanel() {
 
     // --- Narrative ---
     const narrative = {
-        intro: `White clouds rise from grey smokestacks, blurring a sprawling refinery into the distant silhouette of Koma Kulshan. A retired railroad trestle cuts across the bay like an old scar. Human ambition is written plainly on the shoreline, and yet, millions of Olympia oysters tell a remarkable success story.`,
+        intro: `White clouds rise from grey smokestacks, blurring a sprawling refinery into the distant silhouette of Mount Baker. A retired railroad trestle cuts across the bay like an old scar. Human ambition is written plainly on the shoreline, and yet, millions of Olympia oysters tell a remarkable success story.`,
 
         context: `The story of Fidalgo Bay begins with a rumor: that Olympia oysters once resided in these shallow waters. By the early 2000s, none remained, but the bay’s protected shorelines and limited predators made it an ideal candidate for restoration. In 2002, alongside a strong network of partners, we spread Pacific oyster shell covered in Olympia oyster seed beside the old trestle on the eastern shore, marking the first Olympia oyster restoration effort in northern Puget Sound.`,
 
@@ -847,6 +854,309 @@ function createFidalgoBayPopulationPlot(data) {
         return null; 
     }
 
+    const cleanData = data.filter(d => d.population_estimate != null && d.population_estimate !== "NA");
+
+    if (cleanData.length === 0) {
+        return null;
+    }
+
+    return Plot.plot({
+        height: 350,
+        marginLeft: 60,
+        marginRight: 30,
+        marginTop: 15,
+        marginBottom: 30,
+        insetBottom: 20,
+        insetTop: 10, 
+        x: {
+            label: null,
+            tickFormat: "d",
+            tickSpacing: 60,
+            padding: 0.1
+        },
+        y: {
+            label: "Estimated Population",
+            grid: true,
+            padding: 0.2,
+            tickFormat: d => {    // "5.5M" instead of "5,500,000-"
+                if (d >= 1_000_000) return (d / 1_000_000).toFixed(1) + "M";
+                if (d >= 1_000)     return (d / 1_000).toFixed(0) + "K";
+                return d;
+            }
+        },
+        marks: [
+            // Soft filled area under the line
+            Plot.areaY(cleanData, {
+                x: "year",
+                y: "population_estimate",
+                fill: "#045B4C",
+                fillOpacity: 0.08
+            }),
+            Plot.line(cleanData, {
+                x: "year",
+                y: "population_estimate",
+                stroke: "#045B4C",
+                strokeWidth: 2.5
+            }),
+            Plot.dot(cleanData, {
+                x: "year",
+                y: "population_estimate",
+                fill: "#045B4C",
+                stroke: "white",
+                strokeWidth: 2,
+                r: 4
+            }),
+            Plot.tip(cleanData, Plot.pointer({
+                x: "year",
+                y: "population_estimate",
+                title: d => `${d.year}: ${d.population_estimate.toLocaleString()}`
+            }))
+        ],
+        style: { fontFamily: "inherit", fontSize: "14px" }
+    });
+} // END Fidlago Bay pop line plot
+
+// ===================================================
+// ===================================================
+//
+// SITE PANEL: DYES INLET GROUP (Silverdale, Chico Bay, Oyster Bay)
+//
+// These panels can cross-reference each other and share
+// a combined view. Each has its own builder function,
+// but they all call the same shared Dyes Inlet plot
+// that shows all three sites together. (MAY CHANGE LATER)
+//
+// ===================================================
+// ===================================================
+
+// Add that code in here
+
+// ===================================================
+// ===================================================
+//
+// SITE PANEL: OYSTER BAY
+// Layout:
+//
+// ===================================================
+// ===================================================
+function buildOysterBayPanel() {
+    const panel = document.createElement("div");
+
+    // --- Narrative ---
+    const narrative = {
+        intro: `In 2010, the discovery of one of the most prolific Olympia oyster beds the team had yet encountered, sitting near the mouth of Dyes Inlet in Mud Bay, offered a vivid demonstration of what this inlet could hold. Naturally, the team was anxious to know what else might be tucked away in its farther reaches. Just around the point was a place with a promising name: Oyster Bay.`,
+
+        context: `The first visit was a strikeout. Within the tidal heights where Olys typically thrive, none were to be found. The team continued deeper into Dyes Inlet with little luck finding a bed nearly as dense as what Mud had to offer. But, PSRF’s Brian Allen couldn’t shake the hunch that they were missing something. On a whim, at a much lower tide than before, he made a return visit. There, in the center of Oyster Bay, uncovered by the receding water, was a small peninsula absolutely covered in Olympia oysters.`,
+
+        ourWork: `In 2011, the team placed a half-acre plot of bulk Pacific oyster shell adjacent to this small but dense natural aggregation, hoping to expand available habitat and coax the population higher into the intertidal. It was one of our earliest uses of bulk shell as a restoration tool, and Oyster Bay became a place to pay close attention, and a site that would prove formative to our learning.`,
+
+        dataCallout: `Results came quicker than expected. That following spring, the added shell was absolutely loaded with juvenile oysters, a striking early expansion that suggested something special about this bay.`, 
+        
+        results: `Low exposure, calm water, no major terrestrial inputs, and the kind of hydrodynamics favorable for larval retention made Oyster Bay an exceptional environment for these animals. The Olys here, as the team would come to learn, tend to dance to their own beat, recruiting strongly in years when settlement elsewhere in the Sound lays low.`,
+
+        impact: `For the next several years, Brian returned regularly to keep an eye on things. Then, in 2020, the team returned and what they found was unexpected: the shell placed in 2011 had largely been buried into the sediment. But the oysters, they had gone everywhere. From the deep zone where they’d originally lived, the population had spread across the beach, climbing all the way up to the +1 foot elevation and filling the full normal intertidal range of the species, down to the -2 feet and perhaps even deeper. And this wasn’t a scattered population, but rather dense, semi-structured aggregations boasting more than 100 Olys per square meter in many places.`,
+
+        restorationQuestion: `The question the team carried home was one that follows many restoration projects: did the 2011 project kick this off, or did the team act at precisely the right moment, just as a broader upswing in natural reproduction was already underway?`,
+
+        sizeIntro: `Oyster Bay also became a classroom. In the early years of working here, the team collected some of their first systematic data on Oly size distributions within a population, data that went on to reveal a meaningful pattern. `,
+
+        sizeContext: `Young, developing beds show a size distribution skewed toward smaller individuals, a pronounced mode associated with young-of-year recruits. Mature, established beds look more normally distributed across size classes. This insight, developed in part by careful observation at Oyster Bay, gave the team a new lens for reading the health and trajectory of populations across the Sound.`,
+        
+        habitatDescription: `Since the first population survey in 2011 estimated roughly 400,000 individuals in the natural aggregation, the population has doubled to over 800,000 as of 2026. But population estimates, by their nature, capture only what can be counted within a defined survey area at a fixed point in time. Walk the beach at Oyster Bay today and the numbers feel like an understatement. Olys sprawl across the substrate in dense, layered masses, spilling into areas well beyond any of our formal survey boundaries. The habitat is absolutely incredible, showing what a restored Olympia oyster bed, fully realized, looks like.`,
+
+        closing: `Oyster Bay remains an active monitoring site, tracked through both population surveys and recruitment monitoring. The team isn’t the only ones keeping a close eye on things - a resident population of Canada geese has claimed a small island in the bay as their own, and they take their oversight role seriously (sometimes, a little too seriously). After 15 years, it has become one of the richest Olympia oyster habitats in Dyes Inlet, a quiet bay that has, by any measure, earned its name. `
+    };
+
+    // --- Layout HTML ---
+    // Some of these are placeholder divs for dynamic content like plots
+    panel.innerHTML =  `
+        <!-- Site title 
+        <h2 style="
+        font-size: 32px; font-weight: 700; color: #045B4C;
+        text-align: center; margin: 0 0 24px 0;
+        letter-spacing: 0.5px; line-height: 1.2;
+        ">Oyster Bay</h2> -->
+
+        <!-- Carousel placeholder -->
+        <div id="oysterbay-carousel"></div> 
+
+        <!-- Intro quote -->
+        <div style="
+        font-size: 16px; line-height: 1.8; color: #333;
+        margin-bottom: 32px; padding: 24px;
+        background: linear-gradient(to right, #f0f7f6, transparent);
+        border-left: 4px solid #045B4C; font-style: italic;
+        ">${narrative.intro}</div>
+ 
+        <!-- About -->
+        <div style="margin-bottom: 40px;">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">About</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.context}
+        </p>
+        </div>
+ 
+        <!-- Our Work -->
+        <div style="
+        background: #f8f9fa; padding: 24px; border-radius: 8px; margin-bottom: 40px;
+        ">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Our Work</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.ourWork}
+        </p>
+        </div>
+ 
+        <!-- Callout -->
+        <div style="
+        padding: 20px;
+        background: linear-gradient(135deg, #e8f4f2 0%, #f0f7f6 100%);
+        border-radius: 8px; border-left: 4px solid #045B4C; margin-bottom: 24px;
+        ">
+        <p style="font-size: 15px; line-height: 1.7; color: #333; margin: 0; font-weight: 500;">
+            ${narrative.dataCallout}
+        </p>
+        </div>
+ 
+        <!-- Rest of early results + hydrology context, plain prose -->
+        <div style="margin-bottom: 40px;">
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.results}
+        </p>
+        </div>
+ 
+        <!-- Impact text -->
+        <div style="margin-bottom: 40px;">
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.impact}
+        </p>
+        </div>
+ 
+        <!-- Population plot -->
+        <div style="
+        background: white; padding: 24px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px;
+        ">
+        <h3 style="
+            font-size: 16px; font-weight: 700; color: #045B4C;
+            margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Population Size Over Time</h3>
+        <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
+            Estimated population size at Oyster Bay, 2011 to 2026
+        </p>
+        <div id="oysterbay-population-plot"></div>
+        </div>
+ 
+        <!-- Restoration question -->
+         <div style="
+        background: #f8f9fa; padding: 24px; border-radius: 8px; margin-bottom: 24px;
+        ">
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.restorationQuestion}
+        </p>
+        </div>
+ 
+        <!-- Reading the Population -->
+        <div style="margin-bottom: 40px;">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Reading the Population</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.sizeIntro}
+        </p>
+        </div>
+ 
+        <!-- Size class distribution chart -->
+        <div style="
+        background: white; padding: 24px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px;
+        ">
+        <h3 style="
+            font-size: 16px; font-weight: 700; color: #045B4C;
+            margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Oyster Size Class Distribution</h3>
+        <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
+            Most recent distribution of individual oyster shell heights, measured 2026
+        </p>
+        <div id="oysterbay-size-plot"></div>
+        </div>
+ 
+        <!-- Size context -->
+        <div style="margin-bottom: 40px;">
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.sizeContext}
+        </p>
+        </div>
+ 
+        <!-- The Bed Today -->
+         <div style="
+        background: #f8f9fa; padding: 24px; border-radius: 8px; margin-bottom: 24px;
+        ">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">The Bed Today</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.habitatDescription}
+        </p>
+        </div>
+ 
+        <!-- Still Watching -->
+        <div style="margin-bottom: 40px;">
+            <h3 style="
+                font-size: 18px; font-weight: 700; color: #045B4C;
+                margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+            ">Still Watching</h3>
+            <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+                ${narrative.closing}
+            </p>
+        </div>
+    `;
+
+    // Insert dyanmic content (plots!!) into placeholder divs built above
+
+    // Photos for the carousel
+    const photos = [
+        tooltipPhotos["Oyster Bay"], // First photo is the tooltip photos
+        // Add more photos in like this once we have them:
+        // FileAttachment("data/images/fidalgo_2.jpg").href, 
+        // etc,
+        // etc
+        // FileAttachment("data/images/fidalgo2.jpeg").href
+    ].filter(Boolean);
+    buildCarousel(panel.querySelector("#oysterbay-carousel"), photos);
+
+    // Timeline
+   // panel.querySelector("#fidalgo-timeline")
+   //     .appendChild(createEnhancementTimeline(timeline_data, "Fidalgo Bay"));
+        
+    // Population plot
+   panel.querySelector("#oysterbay-population-plot")
+       .appendChild(createFidalgoBayPopulationPlot(oysterbay_pop_est)); // (defined above, reusing code from Fidalgo)
+
+    // Shell height histogram
+    // Not yet 100% sure what this will look like, but this is one idea
+    // const fidalgoSizeData = fidalgo_heights; // Data will go in here when we have it!! 
+    // example for above: 
+    // [ann_densities.filter(d => d.location === "Fidalgo Bay" && d.shell_height_mm)]
+    panel.querySelector("#oysterbay-size-plot")
+       .appendChild(createShellHeightHistogram(oysterbay_heights));
+
+    return panel;
+} // END BUILD OYSTER BAY PANEL
+
+// --- Oyster Bay Population line chart ---
+function createOysterBayPopulationPlot(data) {
+    if (data.length === 0) {
+        return null; 
+    }
+
     return Plot.plot({
         height: 350,
         marginLeft: 60,
@@ -901,22 +1211,8 @@ function createFidalgoBayPopulationPlot(data) {
         ],
         style: { fontFamily: "inherit", fontSize: "14px" }
     });
-} // END Fidlago Bay pop line plot
+} // END Oyster Bay pop line plot
 
-// ===================================================
-// ===================================================
-//
-// SITE PANEL: DYES INLET GROUP (Silverdale, Chico Bay, Oyster Bay)
-//
-// These panels can cross-reference each other and share
-// a combined view. Each has its own builder function,
-// but they all call the same shared Dyes Inlet plot
-// that shows all three sites together. (MAY CHANGE LATER)
-//
-// ===================================================
-// ===================================================
-
-// Add that code in here
 
 // ===================================================
 // ===================================================
