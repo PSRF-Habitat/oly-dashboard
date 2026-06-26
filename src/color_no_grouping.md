@@ -1,6 +1,6 @@
 ---
 toc: false
-title: "No recruitment grouping - size & color"
+title: "No recruitment grouping - color only"
 theme: dashboard
 header: "<a href='https://restorationfund.org'><img src='data/images/logo-transwhite.png' alt='Logo' style='height: 120px;'></a>"
 pager: false
@@ -67,69 +67,6 @@ pager: false
 <!-- =================================================== -->
 
 ---
-
-```html
-
-<div style="
-  background: #FFFFFF;
-  border: 1px solid #DFDFE0;
-  border-radius: 16px;
-  padding: 2rem;
-  margin: 1rem 0 2rem 0;
-">
-
-  <div style="
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 2rem;
-    align-items: start;
-  ">
-
-    <!-- LEFT -->
-    <div>
-
-      <h1 style="margin-top:0;">
-        Olympia Oyster Restoration in Puget Sound
-      </h1>
-
-      <p>
-        The Olympia oyster is Puget Sound's only native oyster — and by the early 1900s,
-        it had nearly disappeared due to overharvesting, habitat loss, and pollution.
-        Puget Sound Restoration Fund has been working to bring them back,
-        one beach at a time.
-      </p>
-
-    </div>
-
-    <!-- RIGHT -->
-    <div>
-
-      <div class="intro-card intro-card--enhancement" style="margin-bottom:1rem;">
-        <div class="intro-card-label" style="color:#4e79a7; font-size:1rem;">Enhancement Sites</div>
-        <p>
-          Places where we've actively restored oyster habitat by adding shell, juvenile, or adult oysters.
-        </p>
-      </div>
-
-      <div class="intro-card intro-card--recruitment">
-        <div class="intro-card-label" style="color:#c0392b; font-size:1rem;">Recruitment Monitoring</div>
-        <p>
-          Annual monitoring of juvenile oyster settlement across Puget Sound.
-        </p>
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="intro-tip">
-  💡 Use the <strong>Enhancement</strong> and <strong>Recruitment</strong> tabs in the panel on the left to switch between views. Click any site or station on the map to learn more. <span style="color:#E1975C; font-weight:600;">Orange dots</span> have full stories — select one from the dropdown or click it directly.
-</div>
-
-
-</div>
-
-```
 
 ```js
 // ===================================================
@@ -1313,9 +1250,7 @@ function spatToColor(value, maxValue) {
 
 // Circle radius scaled to index value
 function spatToRadius(value) {
-    if (value === null || isNaN(value)) return 5;
-    if (value === 0) return 5;
-    return 5 + Math.sqrt(value) * 1.8;
+    return 7;
 }
 
 // ===================================================
@@ -1466,9 +1401,9 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
         });
 
         const stats = [
-            { label: "All-time avg",  value: avgAll.toFixed(1),          unit: "live olys / shell" },
-            { label: "Best year",     value: maxYear ? maxYear.year : "—", unit: maxYear ? `${parseFloat(maxYear.index).toFixed(1)} live olys` : "" },
-            { label: "Lowest year",   value: minYear ? minYear.year : "—", unit: minYear ? `${parseFloat(minYear.index).toFixed(1)} live olys` : "" }
+            { label: "All-time avg",  value: avgAll.toFixed(1),          unit: "spat / shell" },
+            { label: "Best year",     value: maxYear ? maxYear.year : "—", unit: maxYear ? `${parseFloat(maxYear.index).toFixed(1)} spat` : "" },
+            { label: "Lowest year",   value: minYear ? minYear.year : "—", unit: minYear ? `${parseFloat(minYear.index).toFixed(1)} spat` : "" }
         ];
 
         stats.forEach(stat => {
@@ -1592,7 +1527,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                 Recruitment Over Time
             </h3>
             <p style="font-size:13px; color:#666; margin:0 0 16px 0; font-style:italic;">
-                Average live olys per shell per year
+                Average spat per shell per year
             </p>
         `;
 
@@ -1658,7 +1593,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     tickSpacing: 60
                 },
                 y: {
-                    label: "Avg live olys / shell",
+                    label: "Avg spat / shell",
                     labelAnchor: "top",
                     grid: true,
                     nice: true, 
@@ -1693,7 +1628,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     allArrowPoints.length > 0 ? Plot.tip(allArrowPoints, Plot.pointer({
                         x: "year",
                         y: () => yMax,
-                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index.toFixed(1)} avg live olys/shell`
+                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index.toFixed(1)} avg spat/shell`
                     })) : null,
 
                     // Comparison dots — clamped, but skip points that have an arrow
@@ -1742,8 +1677,8 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                                 x: "year",
                                 y: "index",
                                 title: d => d.standard_station === station.standard_station
-                                    ? `★ ${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index.toFixed(1)} avg live olys/shell`
-                                    : `${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index.toFixed(1)} avg live olys/shell`
+                                    ? `★ ${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index.toFixed(1)} avg spat/shell`
+                                    : `${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index.toFixed(1)} avg spat/shell`
                             })
                         )
                     ],
@@ -1765,7 +1700,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
         } else {
             const noData = document.createElement("p");
             noData.textContent = stationData.length === 1
-                ? `Only one year of data available (${stationData[0].year}: ${stationData[0].index.toFixed(1)} live olys/shell).`
+                ? `Only one year of data available (${stationData[0].year}: ${stationData[0].index.toFixed(1)} spat/shell).`
                 : "No recruitment data recorded for this station.";
             Object.assign(noData.style, { fontSize: "13px", color: "#999", fontStyle: "italic", margin: "0" });
             chartWrapper.appendChild(noData);
@@ -1873,21 +1808,9 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                 fillOpacity: 0.5
             });
 
-            marker.bindTooltip(`
-                <div style="padding:10px 12px; min-width:160px;">
-                    <p style="font-size:13px; font-weight:600; color:#222;
-                        margin:0 0 4px 0; text-align:center;">
-                        ${stationName.replaceAll("_", " ")}
-                    </p>
-                    <p style="font-size:11px; color:#888; text-align:center;
-                        margin:0; text-transform:uppercase; letter-spacing:0.4px;">
-                        Recruitment Station
-                    </p>
-                </div>
-            `, {
+            marker.bindTooltip(`<strong>${stationName}</strong>`, {
                 direction: "top",
-                permanent: false,
-                className: "custom-tooltip"
+                permanent: false
             });
 
             marker.on("click", () => onStationClick(stationRow));
@@ -1930,30 +1853,9 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
             });
 
             marker.setTooltipContent(
-                value !== null ? `
-                    <div style="padding:10px 12px; min-width:180px;">
-                        <p style="font-size:13px; font-weight:600; color:#222;
-                            margin:0 0 6px 0; text-align:center;">
-                            ${stationName.replaceAll("_", " ")}
-                        </p>
-                        <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
-                        <div style="display:flex; justify-content:space-between;
-                            font-size:12px; color:#555;">
-                            <span style="color:#045B4C; font-weight:600;">${year}</span>
-                            <span>${value.toFixed(1)} avg live olys/shell</span>
-                        </div>
-                    </div>
-                ` : `
-                    <div style="padding:10px 12px; min-width:160px;">
-                        <p style="font-size:13px; font-weight:600; color:#222;
-                            margin:0 0 4px 0; text-align:center;">
-                            ${stationName.replaceAll("_", " ")}
-                        </p>
-                        <p style="font-size:12px; color:#aaa; text-align:center; margin:0;">
-                            No data for ${year}
-                        </p>
-                    </div>
-                `
+                value !== null
+                    ? `<strong>${stationName}</strong><br>${year}: ${value.toFixed(1)} avg spat/shell`
+                    : `<strong>${stationName}</strong><br>No data for ${year}`
             );
         });
     }
@@ -1985,7 +1887,7 @@ function addRecruitmentLegend(map, maxValue) {
 
         <div style="font-weight:700; color:#045B4C; font-size:11px;
             text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">
-            Avg Live Olys / Shell
+            Avg Spat / Shell
         </div>
 
         ${[
@@ -2055,8 +1957,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     Object.assign(tabBar.style, {
         display: "flex",
         gap: "8px",
-        marginBottom: "12px",
-        marginTop: "12px"
+        marginBottom: "24px"
     });
 
     // Helper: creates one tab button
@@ -2086,18 +1987,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     const recruitTab = makeTabBtn("Recruitment", "recruitment");
     tabBar.appendChild(enhTab);
     tabBar.appendChild(recruitTab);
-    const tabHeader = document.createElement("div");
-    tabHeader.style.cssText = "font-size:12px; font-weight:600; color:#045B4C; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;";
-    tabHeader.textContent = "Choose Map View";
-    panel.appendChild(tabHeader);
-
     panel.appendChild(tabBar);
-
-    const tabSubtext = document.createElement("div");
-    tabSubtext.style.cssText = "font-size:11px; color:#666; font-style:italic; line-height:1.6; margin-bottom:24px;";
-    tabSubtext.textContent = "Enhancement shows restoration sites. Recruitment shows long-term monitoring stations tracking annual oyster settlement.";
-    panel.appendChild(tabSubtext);
-
 
     // -----------------------------------------------
     // ENHANCEMENT TAB CONTENT
@@ -2109,8 +1999,21 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     enhContent.innerHTML = `
         <div style="padding: 0;">
 
-            <!-- Decorative horizontal divider line -->
-            <div style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
+            <!-- Navigation instructions box -->
+            <div style="
+                background: linear-gradient(135deg, #f0f7f6 0%, #e8f4f2 100%);
+                padding: 16px; border-radius: 6px; border-left: 4px solid #045B4C; margin-bottom: 24px;">
+                <div style="font-size: 12px; font-weight: 600; color: #045B4C; margin-bottom: 10px;
+                    text-transform: uppercase; letter-spacing: 0.5px;">Navigate the Map</div>
+                <div style="font-size: 13px; color: #555; line-height: 1.7;">
+                    <p style="margin: 0 0 10px 0;">
+                        <strong style="color: #045B4C;">Pan and Zoom:</strong> Click and drag to explore, scroll to zoom
+                    </p>
+                    <p style="margin: 0;">
+                        <strong style="color: #045B4C;">Quick Jump:</strong> Use the dropdown to jump to a story site
+                    </p>
+                </div>
+            </div>
 
             <!-- Story Site Dropdown (static HTML here, dynamic content added below) -->
             <div style="margin-bottom: 24px;">
@@ -2130,6 +2033,17 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
             <!-- Decorative horizontal divider line -->
             <div style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
 
+            <!-- "Customize Your View" instructions box -->
+            <div style="
+                background: linear-gradient(135deg, #f0f7f6 0%, #e8f4f2 100%);
+                padding: 16px; border-radius: 6px; border-left: 4px solid #045B4C; margin-bottom: 24px;
+            ">
+                <div style="font-size: 12px; font-weight: 600; color: #045B4C; margin-bottom: 10px;
+                    text-transform: uppercase; letter-spacing: 0.5px;">Customize Your View</div>
+                <div style="font-size: 13px; color: #555; line-height: 1.7;">
+                    <p style="margin: 0;">Use the controls below to filter the map</p>
+                </div>
+            </div>
 
             <!-- Enhancement Type filter: oblong toggle buttons -->
             <div style="margin-bottom: 20px;">
@@ -2164,8 +2078,25 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     const recruitContent = document.createElement("div");
     recruitContent.style.display = "none";
 
-    // Waterbody jump dropdown (only shows waterbodies that have coordinates)
+    // Intro description
+    const recruitDesc = document.createElement("div");
+    recruitDesc.innerHTML = `
+        <div style="background:linear-gradient(135deg,#f0f7f6 0%,#e8f4f2 100%);
+            padding:16px; border-radius:6px; border-left:4px solid #045B4C; margin-bottom:24px;">
+            <div style="font-size:12px; font-weight:600; color:#045B4C; margin-bottom:8px;
+                text-transform:uppercase; letter-spacing:0.5px;">About This View</div>
+            <p style="font-size:13px; color:#555; line-height:1.7; margin:0;">
+                A blurb about why we do recruitment monitoring, and what "index" value means.
+                <strong style="color:#045B4C;">Darker circles = more recruitment.</strong>
+                Faded circles had no data that year. Click any station to see its full history.
+            </p>
+        </div>
+    `;
+    recruitContent.appendChild(recruitDesc);
+
+     // Waterbody jump dropdown (only shows waterbodies that have coordinates)
     const wbDropdownWrapper = document.createElement("div");
+    wbDropdownWrapper.style.marginBottom = "20px";
     wbDropdownWrapper.innerHTML = `
         <label style="display:block; font-size:13px; font-weight:600; color:#045B4C;
             margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Jump to Waterbody</label>
@@ -2173,9 +2104,8 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
             border-radius:6px; font-size:14px; background:white; cursor:pointer; color:#333;">
             <option value="">Select a waterbody...</option>
         </select>
-        <div style="font-size:11px; color:#666; margin-top:6px; font-style:italic;">
-            Zoom to a waterbody and view its stations</div>
     `;
+    recruitContent.appendChild(wbDropdownWrapper);
 
     // Populate the dropdown from the recruitment data
     const uniqueWaterbodies = [...new Set(
@@ -2197,6 +2127,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
         const wb = e.target.value;
         if (!wb) return;
 
+        // Get all stations for this waterbody and build a bounding box
         const stations = recruitData.filter(d =>
             d.waterbody === wb &&
             d.latitude && d.latitude !== "NA" &&
@@ -2232,30 +2163,26 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
         wbSelector.style.boxShadow = "none";
     });
 
-    // Year slider
+    // Year slider placeholder
     const sliderContainer = document.createElement("div");
+    sliderContainer.style.marginBottom = "8px";
 
+    // Build the slider using the years array from the layer manager
     if (recruitLayerManager && recruitLayerManager.years.length > 0) {
         const years = recruitLayerManager.years;
         const latestYear = years[years.length - 1];
 
         const slider = buildYearSlider(years, latestYear, (year) => {
+            // Update the map markers to show data for the chosen year
             recruitLayerManager.updateYear(year);
         });
         sliderContainer.appendChild(slider);
+
+        // Initialize map to the latest year on load
         recruitLayerManager.updateYear(latestYear);
     }
 
-    const sliderNote = document.createElement("p");
-    sliderNote.textContent = "Drag the slider to explore recruitment across different years. Circle size and color reflect the average number of spat settled per shell at each station.";
-    Object.assign(sliderNote.style, {
-        fontSize: "11px",
-        color: "#666",
-        lineHeight: "1.5",
-        margin: "4px 0 0 0",
-        fontStyle: "italic"
-    });
-    sliderContainer.appendChild(sliderNote);
+    recruitContent.appendChild(sliderContainer);
 
     // Note about clicking stations
     const clickHint = document.createElement("div");
@@ -2265,27 +2192,6 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
             ▶ Click any station to view its recruitment history
         </div>
     `;
-
-    // -----------------------------------------------
-    // Append all recruitment sections with dividers
-    // -----------------------------------------------
-
-    const divider1 = document.createElement("div");
-    divider1.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
-    recruitContent.appendChild(divider1);
-
-    recruitContent.appendChild(wbDropdownWrapper);
-
-    const divider2 = document.createElement("div");
-    divider2.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
-    recruitContent.appendChild(divider2);
-
-    recruitContent.appendChild(sliderContainer);
-
-    const divider3 = document.createElement("div");
-    divider3.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
-    recruitContent.appendChild(divider3);
-
     recruitContent.appendChild(clickHint);
 
     // -----------------------------------------------
@@ -2921,39 +2827,6 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     // Add scale bar
     L.control.scale({ imperial: true, metric: true }).addTo(map);
 
-    // -----------------------------------------------
-    // RESET VIEW BUTTON on map
-    // Returns map to default center + zoom
-    // -----------------------------------------------
-    const resetBtn = L.control({ position: "topleft" });
-    resetBtn.onAdd = function() {
-        const btn = L.DomUtil.create("button", "leaflet-reset-btn");
-        btn.title = "Reset zoom level";
-        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 3h6M3 3v6M21 3h-6M21 3v6M3 21h6M3 21v-6M21 21h-6M21 21v-6"/>
-        </svg>`;
-        Object.assign(btn.style, {
-            background: "white",
-            border: "2px solid rgba(0,0,0,0.2)",
-            borderRadius: "4px",
-            width: "32px",
-            height: "32px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#333",
-            padding: "0"
-        });
-        btn.onclick = () => map.setView(center, zoom, { animate: true });
-        // Prevent map clicks from firing when clicking button
-        L.DomEvent.disableClickPropagation(btn);
-        return btn;
-    };
-    resetBtn.addTo(map);
-
     // When the browser window is resized, tell Leaflet to
     // recalculate the map's pixel dimensions after 100ms
     // The delay prevents it running dozens of times during a drag resize!
@@ -3170,80 +3043,6 @@ setTimeout(() => {
   .custom-tooltip { padding: 0 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; border-radius: 8px;}
   .custom-tooltip .leaflet-tooltip-content { padding: 0 !important; margin: 0; }
   .custom-tooltip img { display: block; background: #f0f0f0; }
-
-  .leaflet-reset-btn:hover {
-    background: #f4f4f4 !important;
-}
-@media (prefers-color-scheme: dark) {
-    .leaflet-reset-btn {
-        background: #222 !important;
-        color: #e0e0e0 !important;
-        border-color: rgba(255,255,255,0.3) !important;
-    }
-}
-
-  /* -----------------------------------------------
-   Intro cards
------------------------------------------------ */
-.intro-cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin: 16px 0;
-}
-
-@media (max-width: 700px) {
-    .intro-cards { grid-template-columns: 1fr; }
-}
-
-.intro-card {
-    padding: 20px;
-    border-radius: 8px;
-    background: var(--theme-background-alt);
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--theme-foreground-muted);
-}
-
-.intro-card p { margin: 0; }
-
-.intro-card--enhancement { 
-    border-left: 4px solid #4e79a7;
-    background: #e6effa;
-}
-.intro-card--recruitment { 
-    border-left: 4px solid #f03b20; 
-    background: #fbefed;
-}
-
-.intro-card-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-}
-
-.intro-tip {
-    margin-top: 16px;
-    padding: 14px 18px;
-    background: #fffce8;
-    border-radius: 8px;
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--theme-foreground-muted);
-}
-
-.leaflet-reset-btn:hover {
-    background: #f4f4f4 !important;
-}
-@media (prefers-color-scheme: dark) {
-    .leaflet-reset-btn {
-        background: #222 !important;
-        color: #e0e0e0 !important;
-        border-color: rgba(255,255,255,0.3) !important;
-    }
-}
 
 </style>
 
