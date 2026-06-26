@@ -1,6 +1,6 @@
 ---
 toc: false
-title: "No recruitment grouping - size & color"
+title: "Size & Color with grouping"
 theme: dashboard
 header: "<a href='https://restorationfund.org'><img src='data/images/logo-transwhite.png' alt='Logo' style='height: 120px;'></a>"
 pager: false
@@ -236,7 +236,7 @@ const enhancementIcon = L.divIcon({
   iconAnchor: [9, 9]
 });
 
-// --- Enhancement: story site (purple circle) ---
+// --- Enhancement: story site (orange circle) ---
 // Distinguishing visually sites with stories
 const enhancementStoryIcon = L.divIcon({
   className: '',
@@ -1296,6 +1296,13 @@ function buildYearSlider(years, currentYear, onChange) {
 //   >=20: deep red
 // ===================================================
 // ===================================================
+// Circle radius scaled to index value using square-root scale
+function spatToRadius(value) {
+    if (value === null || isNaN(value)) return 5;
+    if (value === 0) return 5;
+    return 5 + Math.sqrt(value) * 1.8;
+}
+
 function spatToColor(value, maxValue) {
     // No data
     if (value === null || isNaN(value)) return "#c8c8c8";
@@ -1310,13 +1317,6 @@ function spatToColor(value, maxValue) {
     if (value <= 20)        return "#bd0026";  // 10–20
     return                         "#67000d";  // >=20
 } // END recruitment color scale
-
-// Circle radius scaled to index value
-function spatToRadius(value) {
-    if (value === null || isNaN(value)) return 5;
-    if (value === 0) return 5;
-    return 5 + Math.sqrt(value) * 1.8;
-}
 
 // ===================================================
 // ===================================================
@@ -1817,29 +1817,69 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
     // Sorted list of all unique years
     const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
 
-    // Build deduplicated station lookup: stationName -> { lat, lng }
-    const stationInfo = {};
+    // -----------------------------------------------
+    // GROUP STATIONS BY WATERBODY
+    // Used to build the grouped markers
+    // waterbodyStations["Fidalgo Bay"] = ["Station A", "Station B", ...]
+    // waterbodyCenter["Fidalgo Bay"] = { lat, lng }  (mean of all station coords)
+    // -----------------------------------------------
+    const waterbodyStations = {}; // waterbody - array of station names
+    const waterbodyCenter = {}; // waterbody - { lat, lng } centroid
+    const stationInfo = {}; // station name - { lat, lng, waterbody }
+
+    // Build a deduplicated station list first
     const seen = new Set();
     recruitData.forEach(row => {
         if (seen.has(row.standard_station)) return;
         if (!row.latitude || !row.longitude ||
             row.latitude === "NA" || row.longitude === "NA" ||
             isNaN(parseFloat(row.latitude))) return;
+
         seen.add(row.standard_station);
+
+        const wb = row.waterbody || "Unknown";
+        if (!waterbodyStations[wb]) waterbodyStations[wb] = [];
+        waterbodyStations[wb].push(row.standard_station);
+
         stationInfo[row.standard_station] = {
             lat: parseFloat(row.latitude),
-            lng: parseFloat(row.longitude)
+            lng: parseFloat(row.longitude),
+            waterbody: wb
         };
     });
 
-    
+    // Compute centroid for each waterbody (mean of lat/lng)
+    Object.entries(waterbodyStations).forEach(([wb, stations]) => {
+        const lats = stations.map(s => stationInfo[s].lat);
+        const lngs = stations.map(s => stationInfo[s].lng);
+        waterbodyCenter[wb] = {
+            lat: lats.reduce((a, b) => a + b, 0) / lats.length,
+            lng: lngs.reduce((a, b) => a + b, 0) / lngs.length
+        };
+    });
+
     // -----------------------------------------------
     // Store the markers
     // -----------------------------------------------
     const individualMarkers  = {};  // station name - L.circleMarker
+    const waterbodyMarkers   = {};  // waterbody name -  L.circleMarker
 
     // Track which mode we're in
+    let currentMode = "grouped";   // "grouped" or "individual"
     let currentYear = years[years.length - 1];  // start at latest year
+
+    // -----------------------------------------------
+    // HELPER: compute average index for a waterbody
+    // in a given year
+    // -----------------------------------------------
+    function waterbodyAvg(wb, yearData) {
+        const stations = waterbodyStations[wb] || [];
+        const values = stations
+            .map(s => yearData[s] ? yearData[s].index : null)
+            .filter(v => v !== null && !isNaN(v));
+        if (values.length === 0) return null;
+        return values.reduce((a, b) => a + b, 0) / values.length;
+    }
 
     // -----------------------------------------------
     // HELPER: build yearData lookup for a given year
@@ -1897,14 +1937,148 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
 
             // Start hidden (grouped mode is default)
             // (don't add to recruitLayer yet)
-            marker.addTo(recruitLayer);
-            individualMarkers[stationName] = marker;        
+            individualMarkers[stationName] = marker;
         });
 
+        // --- Build waterbody grouped markers ---
+        Object.entries(waterbodyCenter).forEach(([wb, center]) => {
+            const stationCount = waterbodyStations[wb].length;
+
+            // divIcon lets us overlay a number on the circle.
+            // The outer ring is the circle, the inner span is the count.
+            function makeBadgeIcon(color, count, size = 28) {
+                return L.divIcon({
+                    className: "",
+                    html: `
+                        <div style="position:relative; width:${size}px; height:${size}px;">
+                            <div style="
+                                width:${size}px; height:${size}px;
+                                border-radius:50%;
+                                background:${color};
+                                border:2px solid white;
+                                box-shadow:0 1px 4px rgba(0,0,0,0.25);
+                                box-sizing:border-box;
+                            "></div>
+                            <div style="
+                                position:absolute; bottom:-3px; right:-3px;
+                                background:white; color:#045B4C;
+                                font-size:9px; font-weight:700;
+                                width:14px; height:14px; border-radius:50%;
+                                display:flex; align-items:center; justify-content:center;
+                                border:1.5px solid #045B4C; line-height:1;
+                            ">${count}</div>
+                        </div>`,
+                    iconSize: [size, size],
+                    iconAnchor: [size / 2, size / 2]
+                });
+            }
+
+            // Store the icon builder on the marker so updateYear() can call it
+            const marker = L.marker([center.lat, center.lng], {
+                icon: makeBadgeIcon("#e0e0e0", stationCount)
+            });
+
+            // Attach the builder so updateYear() can refresh the icon color
+            marker._makeBadgeIcon = makeBadgeIcon;
+            marker._stationCount  = stationCount;
+
+            // marker.bindTooltip(`<strong>${wb}</strong><br>Click or zoom in to see stations`, {
+            //     direction: "top",
+            //     permanent: false
+            // });
+
+            marker.bindTooltip(`
+                <div style="padding:10px 12px; min-width:160px;">
+                    <p style="font-size:13px; font-weight:600; color:#222;
+                        margin:0 0 4px 0; text-align:center;">
+                        ${wb}
+                    </p>
+                    <p style="font-size:11px; color:#888; text-align:center;
+                        margin:0; text-transform:uppercase; letter-spacing:0.4px;">
+                        Click or zoom in to see stations
+                    </p>
+                </div>
+            `, {
+                direction: "top",
+                permanent: false,
+                className: "custom-tooltip"
+            });
+
+            marker.on("click", () => {
+                const stations = waterbodyStations[wb];
+                const lats = stations.map(s => stationInfo[s].lat);
+                const lngs = stations.map(s => stationInfo[s].lng);
+                const bounds = L.latLngBounds(
+                    [Math.min(...lats) - 0.02, Math.min(...lngs) - 0.02],
+                    [Math.max(...lats) + 0.02, Math.max(...lngs) + 0.02]
+                );
+                map.fitBounds(bounds, { animate: true, padding: [20, 20] });
+            });
+
+            marker.on("mouseover", () => {
+                if (marker.getElement()) marker.getElement().style.cursor = "pointer";
+            });
+
+            marker.addTo(recruitLayer);
+            waterbodyMarkers[wb] = marker;
+        });
 
         // Apply the latest year's data immediately
         updateYear(currentYear);
-            
+
+        // -----------------------------------------------
+        // ZOOM LISTENER
+        // Switch modes automatically based on zoom level
+        // -----------------------------------------------
+        map.on("zoomend", () => {
+            if (map.getZoom() >= 10 && currentMode === "grouped") {
+                switchToIndividual();
+            } else if (map.getZoom() < 10 && currentMode === "individual") {
+                switchToGrouped();
+            }
+        });
+    }
+
+    // -----------------------------------------------
+    // SWITCH TO INDIVIDUAL MODE
+    // Remove waterbody markers, show station markers
+    // -----------------------------------------------
+    function switchToIndividual() {
+        currentMode = "individual";
+
+        // Remove all waterbody markers from the layer
+        Object.values(waterbodyMarkers).forEach(m => {
+            if (recruitLayer.hasLayer(m)) recruitLayer.removeLayer(m);
+        });
+
+        // Add all individual markers
+        Object.values(individualMarkers).forEach(m => {
+            if (!recruitLayer.hasLayer(m)) m.addTo(recruitLayer);
+        });
+
+        // Re-apply current year styling to individual markers
+        updateYear(currentYear);
+    }
+
+    // -----------------------------------------------
+    // SWITCH TO GROUPED MODE
+    // Remove station markers, show waterbody markers
+    // -----------------------------------------------
+    function switchToGrouped() {
+        currentMode = "grouped";
+
+        // Remove all individual markers
+        Object.values(individualMarkers).forEach(m => {
+            if (recruitLayer.hasLayer(m)) recruitLayer.removeLayer(m);
+        });
+
+        // Add waterbody markers back
+        Object.values(waterbodyMarkers).forEach(m => {
+            if (!recruitLayer.hasLayer(m)) m.addTo(recruitLayer);
+        });
+
+        // Re-apply current year styling to waterbody markers
+        updateYear(currentYear);
     }
 
     // -----------------------------------------------
@@ -1916,47 +2090,95 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
         currentYear = year;
         const yearData = getYearData(year);
 
-        Object.entries(individualMarkers).forEach(([stationName, marker]) => {
-            const row = yearData[stationName];
-            const value = (row && row.index !== null && !isNaN(row.index)) ? row.index : null;
+        if (currentMode === "grouped") {
+            // Style waterbody markers by average index
+            Object.entries(waterbodyMarkers).forEach(([wb, marker]) => {
+                const avg = waterbodyAvg(wb, yearData);
+                const color = spatToColor(avg);
 
-            marker.setRadius(spatToRadius(value));
-            marker.setStyle({
-                fillColor: spatToColor(value),
-                color: value !== null ? "white" : "#999",
-                weight: 1.5,
-                opacity: 1,
-                fillOpacity: value !== null ? 0.9 : 0.5
+                // Rebuild the divIcon with the new color
+                const badgeSize = avg !== null ? Math.max(20, Math.min(44, 20 + Math.sqrt(avg) * 2.5)) : 20;
+                marker.setIcon(marker._makeBadgeIcon(color, marker._stationCount, badgeSize));
+
+                const stationCount = waterbodyStations[wb].length;
+                // marker.setTooltipContent(
+                //     avg !== null
+                //         ? `<strong>${wb}</strong><br>${year}: ${avg.toFixed(1)} avg spat/shell<br><span style="font-size:11px;color:#999;">${stationCount} station${stationCount > 1 ? "s" : ""} — click or zoom in</span>`
+                //         : `<strong>${wb}</strong><br>No data for ${year}<br><span style="font-size:11px;color:#999;">${stationCount} station${stationCount > 1 ? "s" : ""} — click or zoom in</span>`
+                // );
+                marker.setTooltipContent(
+                    avg !== null ? `
+                        <div style="padding:10px 12px; min-width:180px;">
+                            <p style="font-size:13px; font-weight:600; color:#222;
+                                margin:0 0 6px 0; text-align:center;">
+                                ${wb}
+                            </p>
+                            <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
+                            <div style="display:flex; justify-content:space-between;
+                                font-size:12px; color:#555;">
+                                <span style="color:#045B4C; font-weight:600;">${year}</span>
+                                <span>${avg.toFixed(1)} avg live olys/shell</span>
+                            </div>
+                        </div>
+                    ` : `
+                        <div style="padding:10px 12px; min-width:160px;">
+                            <p style="font-size:13px; font-weight:600; color:#222;
+                                margin:0 0 4px 0; text-align:center;">
+                                ${wb}
+                            </p>
+                            <p style="font-size:12px; color:#aaa; text-align:center; margin:0;">
+                                No data for ${year}
+                            </p>
+                        </div>
+                    `
+                );
             });
 
-            marker.setTooltipContent(
-                value !== null ? `
-                    <div style="padding:10px 12px; min-width:180px;">
-                        <p style="font-size:13px; font-weight:600; color:#222;
-                            margin:0 0 6px 0; text-align:center;">
-                            ${stationName.replaceAll("_", " ")}
-                        </p>
-                        <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
-                        <div style="display:flex; justify-content:space-between;
-                            font-size:12px; color:#555;">
-                            <span style="color:#045B4C; font-weight:600;">${year}</span>
-                            <span>${value.toFixed(1)} avg live olys/shell</span>
+        } else {
+            // Style individual station markers
+            Object.entries(individualMarkers).forEach(([stationName, marker]) => {
+                const row = yearData[stationName];
+                const value = (row && row.index !== null && !isNaN(row.index)) ? row.index : null;
+
+                marker.setRadius(spatToRadius(value));
+                marker.setStyle({
+                    fillColor: spatToColor(value),
+                    color: value !== null ? "white" : "#999",
+                    weight: 1.5,
+                    opacity: 1,
+                    fillOpacity: value !== null ? 0.9 : 0.5
+                });
+
+                marker.setTooltipContent(
+                    value !== null ? `
+                        <div style="padding:10px 12px; min-width:180px;">
+                            <p style="font-size:13px; font-weight:600; color:#222;
+                                margin:0 0 6px 0; text-align:center;">
+                                ${stationName.replaceAll("_", " ")}
+                            </p>
+                            <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
+                            <div style="display:flex; justify-content:space-between;
+                                font-size:12px; color:#555;">
+                                <span style="color:#045B4C; font-weight:600;">${year}</span>
+                                <span>${value.toFixed(1)} avg live olys/shell</span>
+                            </div>
                         </div>
-                    </div>
-                ` : `
-                    <div style="padding:10px 12px; min-width:160px;">
-                        <p style="font-size:13px; font-weight:600; color:#222;
-                            margin:0 0 4px 0; text-align:center;">
-                            ${stationName.replaceAll("_", " ")}
-                        </p>
-                        <p style="font-size:12px; color:#aaa; text-align:center; margin:0;">
-                            No data for ${year}
-                        </p>
-                    </div>
-                `
-            );
-        });
+                    ` : `
+                        <div style="padding:10px 12px; min-width:160px;">
+                            <p style="font-size:13px; font-weight:600; color:#222;
+                                margin:0 0 4px 0; text-align:center;">
+                                ${stationName.replaceAll("_", " ")}
+                            </p>
+                            <p style="font-size:12px; color:#aaa; text-align:center; margin:0;">
+                                No data for ${year}
+                            </p>
+                        </div>
+                    `
+                );
+            });
+        }
     }
+
     // Show
     return { years, updateYear, init };
 

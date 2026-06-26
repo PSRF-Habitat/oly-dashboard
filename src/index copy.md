@@ -1,10 +1,11 @@
 ---
 toc: false
-title: "No recruitment grouping - size & color"
+title: "Final updates before sharing with team"
 theme: dashboard
 header: "<a href='https://restorationfund.org'><img src='data/images/logo-transwhite.png' alt='Logo' style='height: 120px;'></a>"
 pager: false
 ---
+
 
 <!-- =================================================== -->
 <!-- Header & footer syling -->
@@ -123,13 +124,14 @@ pager: false
   </div>
 
   <div class="intro-tip">
-  💡 Use the <strong>Enhancement</strong> and <strong>Recruitment</strong> tabs in the panel on the left to switch between views. Click any site or station on the map to learn more. <span style="color:#E1975C; font-weight:600;">Orange dots</span> have full stories — select one from the dropdown or click it directly.
+  💡 Use the <strong>Enhancement</strong> and <strong>Recruitment</strong> tabs in the panel on the left to switch between views. Click any site or station on the map to learn more. <span style="color:#705697; font-weight:600;">Purple dots</span> have full stories — select one from the dropdown or click it directly.
 </div>
 
 
 </div>
 
 ```
+
 
 ```js
 // ===================================================
@@ -751,7 +753,7 @@ function buildFidalgoBayPanel() {
         </p>
         </div>
 
-         <!-- Enhancement timeline -->
+         <!-- Enhancement timeline 
         <div style="
         background: white; padding: 24px; border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 40px;
@@ -764,7 +766,7 @@ function buildFidalgoBayPanel() {
             Timeline of restoration actions
         </p>
         <div id="fidalgo-timeline"></div>
-        </div>
+        </div> -->
 
         <!-- Data callout -->
         <div style="
@@ -868,13 +870,15 @@ function buildFidalgoBayPanel() {
     ].filter(Boolean);
     buildCarousel(panel.querySelector("#fidalgo-carousel"), photos);
 
-    // Timeline
-    panel.querySelector("#fidalgo-timeline")
-        .appendChild(createEnhancementTimeline(timeline_data, "Fidalgo Bay"));
+    // // Timeline
+    // panel.querySelector("#fidalgo-timeline")
+    //     .appendChild(createEnhancementTimeline(timeline_data, "Fidalgo Bay"));
         
-    // Population plot
+    // // Population plot
+    // panel.querySelector("#fidalgo-population-plot")
+    //     .appendChild(createFidalgoBayPopulationPlot(fidalgo_pop_est)); // (defined below)
     panel.querySelector("#fidalgo-population-plot")
-        .appendChild(createFidalgoBayPopulationPlot(fidalgo_pop_est)); // (defined below)
+    .appendChild(createAnnotatedPopulationPlot(fidalgo_pop_est, timeline_data, "Fidalgo Bay"));
 
     // Shell height histogram
     // Not yet 100% sure what this will look like, but this is one idea
@@ -887,26 +891,102 @@ function buildFidalgoBayPanel() {
     return panel;
 } // END BUILD FIDALGO BAY PANEL
 
-// --- Fidlago Bay Population line chart ---
-function createFidalgoBayPopulationPlot(data) {
-    if (data.length === 0) {
-        return null; 
-    }
+// // --- Fidlago Bay Population line chart ---
+// function createFidalgoBayPopulationPlot(data) {
+//     if (data.length === 0) {
+//         return null; 
+//     }
 
-    const cleanData = data.filter(d => d.population_estimate != null && d.population_estimate !== "NA");
+//     const cleanData = data.filter(d => d.population_estimate != null && d.population_estimate !== "NA");
 
-    if (cleanData.length === 0) {
-        return null;
-    }
+//     if (cleanData.length === 0) {
+//         return null;
+//     }
+
+//     return Plot.plot({
+//         height: 350,
+//         marginLeft: 60,
+//         marginRight: 30,
+//         marginTop: 15,
+//         marginBottom: 30,
+//         insetBottom: 20,
+//         insetTop: 10, 
+//         x: {
+//             label: null,
+//             tickFormat: "d",
+//             tickSpacing: 60,
+//             padding: 0.1
+//         },
+//         y: {
+//             label: "Estimated Population",
+//             grid: true,
+//             padding: 0.2,
+//             tickFormat: d => {    // "5.5M" instead of "5,500,000-"
+//                 if (d >= 1_000_000) return (d / 1_000_000).toFixed(1) + "M";
+//                 if (d >= 1_000)     return (d / 1_000).toFixed(0) + "K";
+//                 return d;
+//             }
+//         },
+//         marks: [
+//             // Soft filled area under the line
+//             Plot.areaY(cleanData, {
+//                 x: "year",
+//                 y: "population_estimate",
+//                 fill: "#045B4C",
+//                 fillOpacity: 0.08
+//             }),
+//             Plot.line(cleanData, {
+//                 x: "year",
+//                 y: "population_estimate",
+//                 stroke: "#045B4C",
+//                 strokeWidth: 2.5
+//             }),
+//             Plot.dot(cleanData, {
+//                 x: "year",
+//                 y: "population_estimate",
+//                 fill: "#045B4C",
+//                 stroke: "white",
+//                 strokeWidth: 2,
+//                 r: 4
+//             }),
+//             Plot.tip(cleanData, Plot.pointer({
+//                 x: "year",
+//                 y: "population_estimate",
+//                 title: d => `${d.year}: ${d.population_estimate.toLocaleString()}`
+//             }))
+//         ],
+//         style: { fontFamily: "inherit", fontSize: "14px" }
+//     });
+// } // END Fidlago Bay pop line plot
+
+function createAnnotatedPopulationPlot(popData, timelineData, siteName) {
+    if (!popData || popData.length === 0) return null;
+
+    const cleanPop = popData.filter(d => d.population_estimate != null && d.population_estimate !== "NA");
+    if (cleanPop.length === 0) return null;
+
+    // Filter timeline to this site and sort
+    const events = timelineData
+        .filter(d => d.site === siteName && d.year)
+        .sort((a, b) => a.year - b.year);
+
+    // For each event, find the closest population estimate year to position the dot
+    // If no population data exists for that year, place it at 0 (bottom of chart)
+    const popByYear = {};
+    cleanPop.forEach(d => { popByYear[d.year] = d.population_estimate; });
+
+    const annotatedEvents = events.map(d => ({
+        ...d,
+        // Find nearest pop year if exact match doesn't exist
+        pop_y: popByYear[d.year] ?? 0
+    }));
 
     return Plot.plot({
-        height: 350,
-        marginLeft: 60,
+        height: 380,
+        marginLeft: 70,
         marginRight: 30,
-        marginTop: 15,
-        marginBottom: 30,
-        insetBottom: 20,
-        insetTop: 10, 
+        marginTop: 20,
+        marginBottom: 40,
         x: {
             label: null,
             tickFormat: "d",
@@ -915,29 +995,44 @@ function createFidalgoBayPopulationPlot(data) {
         },
         y: {
             label: "Estimated Population",
+            labelAnchor: "top",
             grid: true,
-            padding: 0.2,
-            tickFormat: d => {    // "5.5M" instead of "5,500,000-"
+            padding: 0.15,
+            tickFormat: d => {
                 if (d >= 1_000_000) return (d / 1_000_000).toFixed(1) + "M";
                 if (d >= 1_000)     return (d / 1_000).toFixed(0) + "K";
                 return d;
             }
         },
         marks: [
-            // Soft filled area under the line
-            Plot.areaY(cleanData, {
+            // Soft fill under population line
+            Plot.areaY(cleanPop, {
                 x: "year",
                 y: "population_estimate",
                 fill: "#045B4C",
-                fillOpacity: 0.08
+                fillOpacity: 0.07
             }),
-            Plot.line(cleanData, {
+
+            // Timeline event vertical rules — drawn before the line so line sits on top
+            // These are the "annotation stems" 
+            events.length > 0 ? Plot.ruleX(annotatedEvents, {
+                x: "year",
+                stroke: "var(--theme-foreground-muted, #aaa)",
+                strokeWidth: 1.5,
+                strokeDasharray: "3 3",
+                opacity: 0.6
+            }) : null,
+
+            // Population line
+            Plot.line(cleanPop, {
                 x: "year",
                 y: "population_estimate",
                 stroke: "#045B4C",
                 strokeWidth: 2.5
             }),
-            Plot.dot(cleanData, {
+
+            // Population dots
+            Plot.dot(cleanPop, {
                 x: "year",
                 y: "population_estimate",
                 fill: "#045B4C",
@@ -945,15 +1040,52 @@ function createFidalgoBayPopulationPlot(data) {
                 strokeWidth: 2,
                 r: 4
             }),
-            Plot.tip(cleanData, Plot.pointer({
+
+            // Event dots on the line (or at bottom if no pop data for that year)
+            // These are larger, styled differently to signal "there's a story here"
+            events.length > 0 ? Plot.dot(annotatedEvents, {
+                x: "year",
+                y: "pop_y",
+                fill: "white",
+                stroke: "#045B4C",
+                strokeWidth: 2.5,
+                r: 6,
+                symbol: "circle"
+            }) : null,
+
+            // Invisible wide hover targets on the event years — this is what captures the pointer
+            events.length > 0 ? Plot.dot(annotatedEvents, {
+                x: "year",
+                y: "pop_y",
+                fill: "transparent",
+                stroke: "transparent",
+                r: 16
+            }) : null,
+
+            // Tooltip on event dots showing the action label and description
+            events.length > 0 ? Plot.tip(annotatedEvents, Plot.pointer({
+                x: "year",
+                y: "pop_y",
+                title: d => `${d.year}: ${d.label}${d.description ? "\n" + "─".repeat(18) + "\n" + d.description : ""}`,
+                fontSize: 13,
+                fontFamily: "inherit",
+                maxWidth: 200,
+                lineHeight: 1.4
+            })) : null,
+
+            // Population tooltip (only fires away from event dots, since pointer
+            // priority goes to whichever mark is listed last and closest)
+            Plot.tip(cleanPop, Plot.pointer({
                 x: "year",
                 y: "population_estimate",
-                title: d => `${d.year}: ${d.population_estimate.toLocaleString()}`
+                title: d => `${d.year}: ${d.population_estimate.toLocaleString()}`,
+                fontSize: 13,
+                fontFamily: "inherit"
             }))
         ],
         style: { fontFamily: "inherit", fontSize: "14px" }
     });
-} // END Fidlago Bay pop line plot
+}
 
 // ===================================================
 // ===================================================
@@ -1164,8 +1296,8 @@ function buildOysterBayPanel() {
    //     .appendChild(createEnhancementTimeline(timeline_data, "Fidalgo Bay"));
         
     // Population plot
-   panel.querySelector("#oysterbay-population-plot")
-       .appendChild(createFidalgoBayPopulationPlot(oysterbay_pop_est)); // (defined above, reusing code from Fidalgo)
+//    panel.querySelector("#oysterbay-population-plot")
+//        .appendChild(createFidalgoBayPopulationPlot(oysterbay_pop_est)); // (defined above, reusing code from Fidalgo)
 
     // Shell height histogram
     // Not yet 100% sure what this will look like, but this is one idea
@@ -1466,9 +1598,9 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
         });
 
         const stats = [
-            { label: "All-time avg",  value: avgAll.toFixed(1),          unit: "live olys / shell" },
-            { label: "Best year",     value: maxYear ? maxYear.year : "—", unit: maxYear ? `${parseFloat(maxYear.index).toFixed(1)} live olys` : "" },
-            { label: "Lowest year",   value: minYear ? minYear.year : "—", unit: minYear ? `${parseFloat(minYear.index).toFixed(1)} live olys` : "" }
+            { label: "All-time avg",  value: avgAll.toFixed(1),          unit: "spat / shell" },
+            { label: "Best year",     value: maxYear ? maxYear.year : "—", unit: maxYear ? `${parseFloat(maxYear.index).toFixed(1)} spat` : "" },
+            { label: "Lowest year",   value: minYear ? minYear.year : "—", unit: minYear ? `${parseFloat(minYear.index).toFixed(1)} spat` : "" }
         ];
 
         stats.forEach(stat => {
@@ -1592,7 +1724,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                 Recruitment Over Time
             </h3>
             <p style="font-size:13px; color:#666; margin:0 0 16px 0; font-style:italic;">
-                Average live olys per shell per year
+                Average spat per shell per year
             </p>
         `;
 
@@ -1658,7 +1790,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     tickSpacing: 60
                 },
                 y: {
-                    label: "Avg live olys / shell",
+                    label: "Avg spat / shell",
                     labelAnchor: "top",
                     grid: true,
                     nice: true, 
@@ -1693,7 +1825,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     allArrowPoints.length > 0 ? Plot.tip(allArrowPoints, Plot.pointer({
                         x: "year",
                         y: () => yMax,
-                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index.toFixed(1)} avg live olys/shell`
+                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index.toFixed(1)} avg spat/shell`
                     })) : null,
 
                     // Comparison dots — clamped, but skip points that have an arrow
@@ -1742,8 +1874,8 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                                 x: "year",
                                 y: "index",
                                 title: d => d.standard_station === station.standard_station
-                                    ? `★ ${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index.toFixed(1)} avg live olys/shell`
-                                    : `${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index.toFixed(1)} avg live olys/shell`
+                                    ? `★ ${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index.toFixed(1)} avg spat/shell`
+                                    : `${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index.toFixed(1)} avg spat/shell`
                             })
                         )
                     ],
@@ -1765,7 +1897,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
         } else {
             const noData = document.createElement("p");
             noData.textContent = stationData.length === 1
-                ? `Only one year of data available (${stationData[0].year}: ${stationData[0].index.toFixed(1)} live olys/shell).`
+                ? `Only one year of data available (${stationData[0].year}: ${stationData[0].index.toFixed(1)} spat/shell).`
                 : "No recruitment data recorded for this station.";
             Object.assign(noData.style, { fontSize: "13px", color: "#999", fontStyle: "italic", margin: "0" });
             chartWrapper.appendChild(noData);
@@ -1940,7 +2072,7 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                         <div style="display:flex; justify-content:space-between;
                             font-size:12px; color:#555;">
                             <span style="color:#045B4C; font-weight:600;">${year}</span>
-                            <span>${value.toFixed(1)} avg live olys/shell</span>
+                            <span>${value.toFixed(1)} avg spat/shell</span>
                         </div>
                     </div>
                 ` : `
@@ -1985,7 +2117,7 @@ function addRecruitmentLegend(map, maxValue) {
 
         <div style="font-weight:700; color:#045B4C; font-size:11px;
             text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">
-            Avg Live Olys / Shell
+            Avg Spat / Shell
         </div>
 
         ${[
@@ -3170,17 +3302,6 @@ setTimeout(() => {
   .custom-tooltip { padding: 0 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; border-radius: 8px;}
   .custom-tooltip .leaflet-tooltip-content { padding: 0 !important; margin: 0; }
   .custom-tooltip img { display: block; background: #f0f0f0; }
-
-  .leaflet-reset-btn:hover {
-    background: #f4f4f4 !important;
-}
-@media (prefers-color-scheme: dark) {
-    .leaflet-reset-btn {
-        background: #222 !important;
-        color: #e0e0e0 !important;
-        border-color: rgba(255,255,255,0.3) !important;
-    }
-}
 
   /* -----------------------------------------------
    Intro cards
