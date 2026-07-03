@@ -2054,6 +2054,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     const tabBar = document.createElement("div");
     Object.assign(tabBar.style, {
         display: "flex",
+        flexWrap: "wrap",
         gap: "8px",
         marginBottom: "12px",
         marginTop: "12px"
