@@ -1655,7 +1655,8 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                 x: {
                     label: null,
                     tickFormat: "d",
-                    tickSpacing: 60
+                    interval: 1,
+                    insetLeft: 15
                 },
                 y: {
                     label: "Avg live olys / shell",
