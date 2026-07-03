@@ -1,7 +1,7 @@
 ---
 toc: false
 title: "No recruitment grouping - size & color"
-theme: dashboard
+theme: [dashboard, light]
 header: "<a href='https://restorationfund.org'><img src='data/images/logo-transwhite.png' alt='Logo' style='height: 120px;'></a>"
 pager: false
 ---
@@ -1655,7 +1655,8 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                 x: {
                     label: null,
                     tickFormat: "d",
-                    tickSpacing: 60
+                    interval: 1,
+                    insetLeft: 15
                 },
                 y: {
                     label: "Avg live olys / shell",
@@ -2054,6 +2055,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     const tabBar = document.createElement("div");
     Object.assign(tabBar.style, {
         display: "flex",
+        flexWrap: "wrap",
         gap: "8px",
         marginBottom: "12px",
         marginTop: "12px"
