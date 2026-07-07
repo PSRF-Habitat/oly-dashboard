@@ -44,20 +44,20 @@ pager: false
 <!-- =================================================== -->
 <!-- Cards with flashy facts -->
 <!-- =================================================== -->
-<div class="grid grid-cols-4" style="text-align: center;">
+<div class="stats-grid">
   <div class="card">
     <h1 class="muted">Acres Restored</h1>
     <span class="big" style="color: #045B4C">141.3</span>
   </div>
-  <div class="card" style="text-align: center;">
+  <div class="card">
     <h1 class="muted">Sites Visited</h1>
     <span class="big" style="color: #045B4C">777</span>
   </div>
-  <div class="card" style="text-align: center;">
+  <div class="card">
     <h1 class="muted">Some Other</h1>
     <span class="big" style="color: #045B4C">222</span>
   </div>
-  <div class="card" style="text-align: center;">
+  <div class="card">
     <h1 class="muted">Catchy Facts</h1>
     <span class="big" style="color: #045B4C">999</span>
   </div>
@@ -1355,19 +1355,38 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     // -----------------------------------------------
     mainContainer.style.display = "flex";
     mainContainer.style.gap = "10px";
+    mainContainer.classList.add("detail-open");
     mapContainer.style.width = "30%";
     mapContainer.style.flexShrink = "0";
     detailContainer.style.display = "flex";
     setTimeout(() => detailContainer.style.opacity = "1", 10);
 
-    setTimeout(() => {
-        map.invalidateSize();
+    // Wait for the map container's width transition to actually finish
+    // before telling Leaflet to resize + recenter — same fix as showDetail()
+    const handleRecruitResize = (e) => {
+        // Only react to the width transition, not other properties
+        if (e.propertyName !== "width") return;
+        mapContainer.removeEventListener("transitionend", handleRecruitResize);
+        map.invalidateSize({ pan: false });
         map.setView(
-            [station.latitude, parseFloat(station.longitude) + 0.02],
+            [station.latitude, parseFloat(station.longitude)],
             13,
             { animate: false }
         );
-    }, 50);
+    };
+    mapContainer.addEventListener("transitionend", handleRecruitResize);
+
+    // Fallback in case transitionend doesn't fire (e.g. width was
+    // already 30% and no transition actually occurs)
+    setTimeout(() => {
+        mapContainer.removeEventListener("transitionend", handleRecruitResize);
+        map.invalidateSize({ pan: false });
+        map.setView(
+            [station.latitude, parseFloat(station.longitude)],
+            13,
+            { animate: false }
+        );
+    }, 300); // slightly longer than the 0.25s CSS transition
 
     // Clear any previously shown content
     detailContainer.innerHTML = "";
@@ -2109,13 +2128,11 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 
     // Write all static HTML for filter panel
     enhContent.innerHTML = `
-        <div style="padding: 0;">
-
             <!-- Decorative horizontal divider line -->
-            <div style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
+            <div class="filter-divider" style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
 
             <!-- Story Site Dropdown (static HTML here, dynamic content added below) -->
-            <div style="margin-bottom: 24px;">
+            <div class="filter-section" style="margin-bottom: 24px;">
                 <label style="display: block; font-size: 13px; font-weight: 600; color: #045B4C;
                     margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Read a Story</label>
                 <!-- Empty selector, options are added by the JavaScript below -->
@@ -2130,11 +2147,10 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
             </div>
 
             <!-- Decorative horizontal divider line -->
-            <div style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
-
+            <div class="filter-divider" style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
 
             <!-- Enhancement Type filter: oblong toggle buttons -->
-            <div style="margin-bottom: 20px;">
+            <div class="filter-section" style="margin-bottom: 20px;">
                 <label style="display: block; font-size: 13px; font-weight: 600; color: #045B4C;
                     margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
                     Filter by Enhancement Type</label>
@@ -2156,7 +2172,6 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
                 <div style="font-size: 11px; color: #666; margin-top: 6px; font-style: italic;">
                     Select which enhancement methods are displayed</div>
             </div>
-        </div>
     `; // END HTML for filter panel
 
     // -----------------------------------------------
@@ -2164,10 +2179,12 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     // Year slider + explanatory text. Hidden by default.
     // -----------------------------------------------
     const recruitContent = document.createElement("div");
-    recruitContent.style.display = "none";
+    recruitContent.className = "filter-tab-content hidden";
+    enhContent.className = "filter-tab-content";
 
     // Waterbody jump dropdown (only shows waterbodies that have coordinates)
     const wbDropdownWrapper = document.createElement("div");
+    wbDropdownWrapper.className = "filter-section";
     wbDropdownWrapper.innerHTML = `
         <label style="display:block; font-size:13px; font-weight:600; color:#045B4C;
             margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Jump to Waterbody</label>
@@ -2236,6 +2253,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 
     // Year slider
     const sliderContainer = document.createElement("div");
+    sliderContainer.className = "filter-section";
 
     if (recruitLayerManager && recruitLayerManager.years.length > 0) {
         const years = recruitLayerManager.years;
@@ -2261,6 +2279,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 
     // Note about clicking stations
     const clickHint = document.createElement("div");
+    clickHint.className = "filter-section";
     clickHint.innerHTML = `
         <div style="font-size:12px; color:#666; font-style:italic;
             padding:10px 12px; background:#f8f9fa; border-radius:6px;">
@@ -2273,18 +2292,21 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     // -----------------------------------------------
 
     const divider1 = document.createElement("div");
+    divider1.className = "filter-divider";
     divider1.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
     recruitContent.appendChild(divider1);
 
     recruitContent.appendChild(wbDropdownWrapper);
 
     const divider2 = document.createElement("div");
+    divider2.className = "filter-divider";
     divider2.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
     recruitContent.appendChild(divider2);
 
     recruitContent.appendChild(sliderContainer);
 
     const divider3 = document.createElement("div");
+    divider3.className = "filter-divider";
     divider3.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
     recruitContent.appendChild(divider3);
 
@@ -2317,8 +2339,8 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 
         if (tabId === "enhancement") {
             // Show enhancement content, hide recruitment content
-            enhContent.style.display = "block";
-            recruitContent.style.display = "none";
+            enhContent.classList.remove("hidden");
+            recruitContent.classList.add("hidden");
 
             // Show enhancement layer, hide recruitment layer
             enhancementLayer.addTo(map);
@@ -2333,8 +2355,8 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 
         } else {
             // Show recruitment content, hide enhancement content
-            enhContent.style.display = "none";
-            recruitContent.style.display = "block";
+            enhContent.classList.add("hidden");
+            recruitContent.classList.remove("hidden");
 
             // Show recruitment layer, hide enhancement layer
             recruitmentLayer.addTo(map);
@@ -2557,6 +2579,7 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     // Width comes from resize() which passes the current pade width
     // so the map will fill the available space
     const mainContainer = document.createElement("div");
+    mainContainer.className = "map-main-container";
     Object.assign(mainContainer.style, {
         width: `${width}px`,
         height: "90vh", // 90% of the browser window for height
@@ -2566,6 +2589,7 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     // The div for the Leaflet map
     // Starts at full width but shrinks to 40% when a story panel opens
     const mapContainer = document.createElement("div");
+    mapContainer.className = "map-pane";
     Object.assign(mapContainer.style, {
         width: "100%",
         height: "100%",
@@ -2577,6 +2601,7 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     // When a story site icon is clicked it displays ("flex")
     // There is a frozen button bar at the top and the rest scrolls vertically
     const detailContainer = document.createElement("div");
+    detailContainer.className = "detail-pane";
     Object.assign(detailContainer.style, {
         display: "none",   // invisible until showDetail() is called
         width: "80%",   // takes 60% of mainContainer when visible
@@ -2644,6 +2669,7 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         // to "flex" layout (two inner panels side by side)
         mainContainer.style.display = "flex";
         mainContainer.style.gap = "10px";   // small gap between map and story panel
+        mainContainer.classList.add("detail-open");
 
         // Shrink the map to 40% width
         mapContainer.style.width = "30%";
@@ -2656,15 +2682,32 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         // 10ms delay makes sure display:flex is initiated before we try and animate
         setTimeout(() => detailContainer.style.opacity = "1", 10);
 
-        // Tell leaflet the map container changed size, then zoom to the site
-        setTimeout(() => {
-            map.invalidateSize();  // recalc map dimensions after resize
+        // Wait for the map container's width transition to actually finish
+        // before telling Leaflet to resize + recenter. Trying to fix weird centering issue
+        const handleResize = (e) => {
+            // Only react to the width transition, not other properties
+            if (e.propertyName !== "width") return;
+            mapContainer.removeEventListener("transitionend", handleResize);
+            map.invalidateSize({ pan: false });
             map.setView(
-                [site.latitude, site.longitude + 0.02],  // Recenter the map here
-                13,  // At this zoom level
-                { animate: false }  // Jump instantly without an animation
+                [site.latitude, site.longitude],
+                13,
+                { animate: false }
             );
-        }, 50);
+        };
+        mapContainer.addEventListener("transitionend", handleResize);
+
+        // Fallback in case transitionend doesn't fire (e.g. width was
+        // already 30% and no transition actually occurs)
+        setTimeout(() => {
+            mapContainer.removeEventListener("transitionend", handleResize);
+            map.invalidateSize({ pan: false });
+            map.setView(
+                [site.latitude, site.longitude],
+                13,
+                { animate: false }
+            );
+        }, 300); // slightly longer than the 0.25s CSS transition
 
         // Clear any previously shown site content before building the new one
         detailContainer.innerHTML = "";
@@ -2779,6 +2822,10 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
 
         // Wait a sec for the fade to finish before restructering layot
         setTimeout(() => {
+            // Remove narrow-screen override class now — detail panel is
+            // already invisible (opacity 0) so no visible jump occurs
+            mainContainer.classList.remove("detail-open");
+
             mainContainer.style.display = "block";  // reset to a single column so the map is full width
             Object.assign(mapContainer.style, {
                 width: "100%",
@@ -3097,6 +3144,15 @@ setTimeout(() => {
         pointer-events: none;
     }
 
+    /* -----------------------------------------------
+    Hide map legend whenever a story/station detail
+    panel is open, regardless of screen width
+    ----------------------------------------------- */
+    .map-main-container.detail-open .map-legend,
+    .map-main-container.detail-open .recruit-legend {
+    display: none !important;
+    }
+
   /* -----------------------------------------------
      CAROUSEL
   ----------------------------------------------- */
@@ -3246,6 +3302,117 @@ setTimeout(() => {
         border-color: rgba(255,255,255,0.3) !important;
     }
 }
+/* -----------------------------------------------
+   DASHBOARD GRID: filter panel + map
+----------------------------------------------- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) 3fr; /* filter : map roughly 1:3 */
+  gap: 1rem;
+  align-items: start;
+}
+
+.dashboard-grid > * {
+  min-width: 0;
+}
+
+/* Below this width, filter panel moves above the map
+   and reorients its contents horizontally */
+@media (max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr; /* stack: filter bar on top, map below */
+  }
+
+  /* Whichever tab content is active becomes a wrapping row */
+  .filter-tab-content:not(.hidden) {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  /* Each labeled "control" takes a flexible chunk of the row instead of full width */
+  .filter-section {
+    flex: 1 1 220px;
+    margin-bottom: 0 !important;
+  }
+
+  /* Hide vertical dividers in the horizontal layout */
+  .filter-divider {
+    display: none;
+  }
+}
+
+.filter-tab-content.hidden {
+  display: none;
+}
+
+/* -----------------------------------------------
+   STATS CARDS: 4-col grid, collapsing to 2-col
+   at narrow widths
+----------------------------------------------- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  text-align: center;
+}
+
+.stats-grid > * {
+  min-width: 0;
+}
+
+.stats-grid .card {
+  padding: 12px 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.stats-grid .big {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stats-grid h1.muted {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 4px 0;
+}
+
+@media (max-width: 800px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* -----------------------------------------------
+   NARROW SCREENS: detail panel fills the whole
+   map container instead of sharing space with map
+----------------------------------------------- */
+@media (max-width: 1100px) {
+  .map-main-container.detail-open {
+    gap: 0 !important;
+  }
+
+  .map-main-container.detail-open .map-pane {
+    width: 0 !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .map-main-container.detail-open .detail-pane {
+    width: 100% !important;
+  }
+}
 
 </style>
 
@@ -3254,7 +3421,7 @@ setTimeout(() => {
 <!-- Map card div lives here permanently, outside Observable's control to fix wonkyness with resizing -->
 <div id="persistent-map-card" style="grid-column: span 3;"></div>
 
-<div class="grid grid-cols-4">
+<div class="dashboard-grid">
   <div class="card">
     ${(function() {
       const div = document.createElement('div');
@@ -3262,5 +3429,5 @@ setTimeout(() => {
       return div;
     })()}
   </div>
-  <div class="card grid-colspan-3" id="map-card-placeholder"></div>
+  <div class="card" id="map-card-placeholder"></div>
 </div>
