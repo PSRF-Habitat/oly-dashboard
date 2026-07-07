@@ -1361,14 +1361,32 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     detailContainer.style.display = "flex";
     setTimeout(() => detailContainer.style.opacity = "1", 10);
 
-    setTimeout(() => {
-        map.invalidateSize();
+    // Wait for the map container's width transition to actually finish
+    // before telling Leaflet to resize + recenter — same fix as showDetail()
+    const handleRecruitResize = (e) => {
+        // Only react to the width transition, not other properties
+        if (e.propertyName !== "width") return;
+        mapContainer.removeEventListener("transitionend", handleRecruitResize);
+        map.invalidateSize({ pan: false });
         map.setView(
-            [station.latitude, parseFloat(station.longitude) + 0.02],
+            [station.latitude, parseFloat(station.longitude)],
             13,
             { animate: false }
         );
-    }, 50);
+    };
+    mapContainer.addEventListener("transitionend", handleRecruitResize);
+
+    // Fallback in case transitionend doesn't fire (e.g. width was
+    // already 30% and no transition actually occurs)
+    setTimeout(() => {
+        mapContainer.removeEventListener("transitionend", handleRecruitResize);
+        map.invalidateSize({ pan: false });
+        map.setView(
+            [station.latitude, parseFloat(station.longitude)],
+            13,
+            { animate: false }
+        );
+    }, 300); // slightly longer than the 0.25s CSS transition
 
     // Clear any previously shown content
     detailContainer.innerHTML = "";
@@ -2664,15 +2682,32 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         // 10ms delay makes sure display:flex is initiated before we try and animate
         setTimeout(() => detailContainer.style.opacity = "1", 10);
 
-        // Tell leaflet the map container changed size, then zoom to the site
-        setTimeout(() => {
-            map.invalidateSize();  // recalc map dimensions after resize
+        // Wait for the map container's width transition to actually finish
+        // before telling Leaflet to resize + recenter. Trying to fix weird centering issue
+        const handleResize = (e) => {
+            // Only react to the width transition, not other properties
+            if (e.propertyName !== "width") return;
+            mapContainer.removeEventListener("transitionend", handleResize);
+            map.invalidateSize({ pan: false });
             map.setView(
-                [site.latitude, site.longitude + 0.02],  // Recenter the map here
-                13,  // At this zoom level
-                { animate: false }  // Jump instantly without an animation
+                [site.latitude, site.longitude],
+                13,
+                { animate: false }
             );
-        }, 50);
+        };
+        mapContainer.addEventListener("transitionend", handleResize);
+
+        // Fallback in case transitionend doesn't fire (e.g. width was
+        // already 30% and no transition actually occurs)
+        setTimeout(() => {
+            mapContainer.removeEventListener("transitionend", handleResize);
+            map.invalidateSize({ pan: false });
+            map.setView(
+                [site.latitude, site.longitude],
+                13,
+                { animate: false }
+            );
+        }, 300); // slightly longer than the 0.25s CSS transition
 
         // Clear any previously shown site content before building the new one
         detailContainer.innerHTML = "";
@@ -2782,14 +2817,15 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         // Clear the selected site record
         window.selectedSite = null;
 
-        // No longer showing a detail panel
-        mainContainer.classList.remove("detail-open");
-
         // Start the fade oout
         detailContainer.style.opacity = "0";
 
         // Wait a sec for the fade to finish before restructering layot
         setTimeout(() => {
+            // Remove narrow-screen override class now — detail panel is
+            // already invisible (opacity 0) so no visible jump occurs
+            mainContainer.classList.remove("detail-open");
+
             mainContainer.style.display = "block";  // reset to a single column so the map is full width
             Object.assign(mapContainer.style, {
                 width: "100%",
@@ -3106,6 +3142,15 @@ setTimeout(() => {
     ----------------------------------------------- */
     .recruit-legend {
         pointer-events: none;
+    }
+
+    /* -----------------------------------------------
+    Hide map legend whenever a story/station detail
+    panel is open, regardless of screen width
+    ----------------------------------------------- */
+    .map-main-container.detail-open .map-legend,
+    .map-main-container.detail-open .recruit-legend {
+    display: none !important;
     }
 
   /* -----------------------------------------------
