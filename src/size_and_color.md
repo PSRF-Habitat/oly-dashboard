@@ -1,6 +1,6 @@
 ---
 toc: false
-title: "Size & Color with grouping"
+title: "Grouped to waterbody"
 theme: dashboard
 header: "<a href='https://restorationfund.org'><img src='data/images/logo-transwhite.png' alt='Logo' style='height: 120px;'></a>"
 pager: false

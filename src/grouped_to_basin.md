@@ -1,7 +1,7 @@
 ---
 toc: false
-title: "No recruitment grouping - size & color"
-theme: [dashboard, light]
+title: "Grouped to Basin"
+theme: dashboard
 header: "<a href='https://restorationfund.org'><img src='data/images/logo-transwhite.png' alt='Logo' style='height: 120px;'></a>"
 pager: false
 ---
@@ -44,20 +44,20 @@ pager: false
 <!-- =================================================== -->
 <!-- Cards with flashy facts -->
 <!-- =================================================== -->
-<div class="stats-grid">
+<div class="grid grid-cols-4" style="text-align: center;">
   <div class="card">
     <h1 class="muted">Acres Restored</h1>
     <span class="big" style="color: #045B4C">141.3</span>
   </div>
-  <div class="card">
+  <div class="card" style="text-align: center;">
     <h1 class="muted">Sites Visited</h1>
     <span class="big" style="color: #045B4C">777</span>
   </div>
-  <div class="card">
+  <div class="card" style="text-align: center;">
     <h1 class="muted">Some Other</h1>
     <span class="big" style="color: #045B4C">222</span>
   </div>
-  <div class="card">
+  <div class="card" style="text-align: center;">
     <h1 class="muted">Catchy Facts</h1>
     <span class="big" style="color: #045B4C">999</span>
   </div>
@@ -70,7 +70,9 @@ pager: false
 
 ```html
 
-<div id="intro-hero" style="
+<div style="
+  background: #FFFFFF;
+  border: 1px solid #DFDFE0;
   border-radius: 16px;
   padding: 2rem;
   margin: 1rem 0 2rem 0;
@@ -79,34 +81,40 @@ pager: false
   <div style="
     display: grid;
     grid-template-columns: 1.3fr 1fr;
-    gap: 1.5rem;
+    gap: 2rem;
     align-items: start;
   ">
 
-    <!-- LEFT: title + intro text, its own card -->
-    <div class="intro-panel">
-      <h1 style="margin-top:0; color:#045B4C;">
-        Mapping Olympia Oyster Restoration Across Puget Sound
-      </h1>
-      <p style="color:#333; margin-bottom:0;">
-        This map tracks over two decades of work to restore Puget Sound's only native oyster. Explore where we've added shell and oysters to build habitat and reestablish populations, where larvae are settling and growing into new oysters each year, and how populations have changed at individual sites over time.
-      </p>
-    </div>
-
-    <!-- RIGHT: two stacked callout cards -->
+    <!-- LEFT -->
     <div>
 
-      <div class="intro-card intro-card--enhancement" style="margin-bottom:1.5rem;">
-        <div class="intro-card-label" style="color:#045B4C; font-size:1rem;">Enhancement Sites</div>
+      <h1 style="margin-top:0;">
+        Olympia Oyster Restoration in Puget Sound
+      </h1>
+
+      <p>
+        The Olympia oyster is Puget Sound's only native oyster — and by the early 1900s,
+        it had nearly disappeared due to overharvesting, habitat loss, and pollution.
+        Puget Sound Restoration Fund has been working to bring them back,
+        one beach at a time.
+      </p>
+
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+
+      <div class="intro-card intro-card--enhancement" style="margin-bottom:1rem;">
+        <div class="intro-card-label" style="color:#4e79a7; font-size:1rem;">Enhancement Sites</div>
         <p>
-          Places where we've added shell, juvenile, or adult oysters to build habitat and reestablish populations.
+          Places where we've actively restored oyster habitat by adding shell, juvenile, or adult oysters.
         </p>
       </div>
 
       <div class="intro-card intro-card--recruitment">
-        <div class="intro-card-label" style="color:#045B4C; font-size:1rem;">Recruitment Monitoring</div>
+        <div class="intro-card-label" style="color:#c0392b; font-size:1rem;">Recruitment Monitoring</div>
         <p>
-          Annual tracking of where and how many juvenile oysters are settling across the Sound.
+          Annual monitoring of juvenile oyster settlement across Puget Sound.
         </p>
       </div>
 
@@ -115,10 +123,9 @@ pager: false
   </div>
 
   <div class="intro-tip">
-  <span class="intro-tip-icon">💡</span>
-  <span class="intro-tip-text">Use the <strong>tabs</strong> in the panel on the left of the map to switch between exploring <strong>enhancement projects</strong> and <strong>recruitment monitoring</strong>. In the Enhancement view, sites marked with an <span style="color:#EE934F; font-weight:600;">orange dot</span> have a story — select one from the dropdown or click it directly. In the Recruitment view, click any station to see its settlement history.</span>
-    </div>
-  </div>
+  💡 Use the <strong>Enhancement</strong> and <strong>Recruitment</strong> tabs in the panel on the left to switch between views. Click any site or station on the map to learn more. <span style="color:#E1975C; font-weight:600;">Orange dots</span> have full stories — select one from the dropdown or click it directly.
+</div>
+
 
 </div>
 
@@ -128,14 +135,6 @@ pager: false
 // ===================================================
 // LOAD DATA
 // ===================================================
-
-// Cover photo
-const coverPhoto = FileAttachment("data/images/cover.jpg").href;
-
-const introHero = document.querySelector("#intro-hero");
-if (introHero) {
-  introHero.style.backgroundImage = `url(${coverPhoto})`;
-}
 
 // Enhancement sites metadata for map points and tooltips
 const enh_sites_metadata = await FileAttachment("data/enhancement_sites_metadata.csv").csv({typed: true});
@@ -237,7 +236,7 @@ const enhancementIcon = L.divIcon({
   iconAnchor: [9, 9]
 });
 
-// --- Enhancement: story site (purple circle) ---
+// --- Enhancement: story site (orange circle) ---
 // Distinguishing visually sites with stories
 const enhancementStoryIcon = L.divIcon({
   className: '',
@@ -752,7 +751,7 @@ function buildFidalgoBayPanel() {
         </p>
         </div>
 
-        <!-- Population growth + enhancement timeline, combined -->
+         <!-- Enhancement timeline -->
         <div style="
         background: white; padding: 24px; border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 40px;
@@ -760,15 +759,11 @@ function buildFidalgoBayPanel() {
         <h3 style="
             font-size: 16px; font-weight: 700; color: #045B4C;
             margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
-        ">Population Growth &amp; Restoration Timeline</h3>
-        <p style="font-size: 14px; color: #666; margin: 0 0 12px 0; font-style: italic;">
-            Estimated population size at Fidalgo Bay, 2001 to 2023
+        ">Enhancement History</h3>
+        <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
+            Timeline of restoration actions
         </p>
-        <div id="fidalgo-population-plot"></div>
-        <div style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:12px; color:#888;">
-            <span style="display:inline-block; width:18px; height:0; border-top:2px dashed #999;"></span>
-            Enhancement action — hover the line for details
-        </div>
+        <div id="fidalgo-timeline"></div>
         </div>
 
         <!-- Data callout -->
@@ -780,6 +775,21 @@ function buildFidalgoBayPanel() {
         <p style="font-size: 15px; line-height: 1.7; color: #333; margin: 0; font-weight: 500;">
             ${narrative.dataCallout}
         </p>
+        </div>
+
+        <!-- Population density plot -->
+        <div style="
+        background: white; padding: 24px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 40px;
+        ">
+        <h3 style="
+            font-size: 16px; font-weight: 700; color: #045B4C;
+            margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Population Size Over Time</h3>
+        <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
+            Estimated population size at Fidalgo Bay, 2001 to 2023
+        </p>
+        <div id="fidalgo-population-plot"></div>
         </div>
 
         <!-- Impact text -->
@@ -859,9 +869,12 @@ function buildFidalgoBayPanel() {
     buildCarousel(panel.querySelector("#fidalgo-carousel"), photos);
 
     // Timeline
-    // Combined population growth + enhancement timeline plot
+    panel.querySelector("#fidalgo-timeline")
+        .appendChild(createEnhancementTimeline(timeline_data, "Fidalgo Bay"));
+        
+    // Population plot
     panel.querySelector("#fidalgo-population-plot")
-        .appendChild(createPopulationTimelinePlot(fidalgo_pop_est, timeline_data, "Fidalgo Bay"));
+        .appendChild(createFidalgoBayPopulationPlot(fidalgo_pop_est)); // (defined below)
 
     // Shell height histogram
     // Not yet 100% sure what this will look like, but this is one idea
@@ -941,277 +954,6 @@ function createFidalgoBayPopulationPlot(data) {
         style: { fontFamily: "inherit", fontSize: "14px" }
     });
 } // END Fidlago Bay pop line plot
-
-// ===================================================
-// ===================================================
-// SHARED FUNCTION: POPULATION + TIMELINE COMBINED PLOT
-// Overlays enhancement action markers (dashed vertical
-// lines) onto a site's population-over-time chart.
-// Uses a custom floating HTML tooltip (not Plot's built-in
-// SVG tip) so we get full styling control — bold text,
-// color accents, wrapped paragraphs — matching the look
-// of the Leaflet marker tooltips elsewhere in this file.
-// ===================================================
-// ===================================================
-function createPopulationTimelinePlot(popData, timelineData, siteName) {
-    const cleanPop = (popData || []).filter(
-        d => d.population_estimate != null && d.population_estimate !== "NA"
-    );
-    if (cleanPop.length === 0) return null;
-
-    const events = (timelineData || [])
-        .filter(d => d.site === siteName && d.year)
-        .sort((a, b) => a.year - b.year);
-
-    const maxPop = Math.max(...cleanPop.map(d => d.population_estimate));
-    const yMax = maxPop * 1.08;
-
-    // Find each event's population value (or nearest year) so its
-    // dashed line can start right at the population trend
-    const eventsWithY = events.map(event => {
-        let match = cleanPop.find(p => p.year === event.year);
-        if (!match) {
-            match = cleanPop.reduce((closest, p) =>
-                Math.abs(p.year - event.year) < Math.abs(closest.year - event.year) ? p : closest
-            , cleanPop[0]);
-        }
-        return { ...event, popAtYear: match ? match.population_estimate : 0 };
-    });
-
-    // -----------------------------------------------
-    // Build the Plot chart (no Plot.tip marks — hover
-    // is handled entirely by our custom tooltip below)
-    // -----------------------------------------------
-    const chart = Plot.plot({
-        height: 380,
-        marginLeft: 60,
-        marginRight: 30,
-        marginTop: 15,
-        marginBottom: 30,
-        insetBottom: 20,
-        insetTop: 10,
-        x: {
-            label: null,
-            tickFormat: "d",
-            tickSpacing: 60,
-            padding: 0.1
-        },
-        y: {
-            label: "Estimated Population",
-            grid: true,
-            domain: [0, yMax],
-            tickFormat: d => {
-                if (d >= 1_000_000) return (d / 1_000_000).toFixed(1) + "M";
-                if (d >= 1_000)     return (d / 1_000).toFixed(0) + "K";
-                return d;
-            }
-        },
-        marks: [
-            Plot.areaY(cleanPop, {
-                x: "year",
-                y: "population_estimate",
-                fill: "#045B4C",
-                fillOpacity: 0.08
-            }),
-            Plot.ruleX(eventsWithY, {
-                x: "year",
-                y1: "popAtYear",
-                y2: yMax,
-                stroke: "#999",
-                strokeWidth: 2,
-                strokeDasharray: "6,4",
-                strokeOpacity: 0.85
-            }),
-            Plot.line(cleanPop, {
-                x: "year",
-                y: "population_estimate",
-                stroke: "#045B4C",
-                strokeWidth: 2.5
-            }),
-            Plot.dot(cleanPop, {
-                x: "year",
-                y: "population_estimate",
-                fill: "#045B4C",
-                stroke: "white",
-                strokeWidth: 2,
-                r: 4
-            }),
-            Plot.dot(eventsWithY, {
-                x: "year",
-                y: yMax,
-                r: 6,
-                fill: "#999",
-                stroke: "white",
-                strokeWidth: 2
-            })
-        ],
-        style: { fontFamily: "inherit", fontSize: "14px", overflow: "visible" }
-    });
-
-    // -----------------------------------------------
-    // Wrap the chart in a positioned container so our
-    // floating tooltip div can be absolutely positioned
-    // relative to it
-    // -----------------------------------------------
-    const wrapper = document.createElement("div");
-    wrapper.style.position = "relative";
-    wrapper.appendChild(chart);
-
-    // The tooltip div itself — hidden until hover
-    const tooltip = document.createElement("div");
-    Object.assign(tooltip.style, {
-        position: "absolute",
-        display: "none",
-        pointerEvents: "none",
-        background: "white",
-        borderRadius: "10px",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
-        padding: "0",
-        zIndex: "20",
-        transition: "opacity 0.1s ease",
-        opacity: "0"
-    });
-    wrapper.appendChild(tooltip);
-
-    // -----------------------------------------------
-    // Build the tooltip's inner HTML for a given event
-    // -----------------------------------------------
-    function buildEventTooltipHTML(event) {
-        return `
-            <div style="border-left:4px solid #999; border-radius:10px; overflow:hidden; min-width:220px; max-width:280px;">
-                <div style="padding:14px 16px;">
-                    <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
-                        <span style="font-size:15px; font-weight:700; color:#045B4C;">${event.year}</span>
-                        <span style="font-size:12px; font-weight:600; color:#999; text-transform:uppercase; letter-spacing:0.4px;">${event.label || "Enhancement Action"}</span>
-                    </div>
-                    <p style="font-size:13px; line-height:1.6; color:#444; margin:0;">
-                        ${event.description || "No description recorded."}
-                    </p>
-                </div>
-            </div>
-        `;
-    }
-
-    // Build the tooltip's inner HTML for a given population point
-    function buildPopulationTooltipHTML(point) {
-        return `
-            <div style="border-left:4px solid #045B4C; border-radius:10px; overflow:hidden; min-width:180px;">
-                <div style="padding:14px 16px;">
-                    <div style="font-size:11px; font-weight:600; color:#045B4C; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">
-                        Estimated Population
-                    </div>
-                    <div style="display:flex; align-items:baseline; gap:8px;">
-                        <span style="font-size:15px; font-weight:700; color:#222;">${point.year}</span>
-                        <span style="font-size:15px; color:#444;">${point.population_estimate.toLocaleString()} oysters</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    // -----------------------------------------------
-    // Hover handling: find the nearest event marker or
-    // population point to the cursor, in screen-space
-    // pixel coordinates. Scales are computed ONCE (not
-    // on every mousemove) and we only touch the DOM
-    // when the nearest point actually changes.
-    // -----------------------------------------------
-    const svg = chart; // Plot.plot() returns the SVG (or figure) element directly
-
-    const xScale = svg.scale ? svg.scale("x") : null;
-    const yScale = svg.scale ? svg.scale("y") : null;
-
-    // Pre-compute each point's screen position ONCE, up front,
-    // instead of recalculating on every mouse move
-    const eventPoints = xScale && yScale
-        ? eventsWithY.map(ev => ({
-              type: "event",
-              key: `event-${ev.year}`,
-              ev,
-              px: xScale.apply(ev.year),
-              py: yScale.apply(yMax)
-          }))
-        : [];
-
-    const popPoints = xScale && yScale
-        ? cleanPop.map(p => ({
-              type: "pop",
-              key: `pop-${p.year}`,
-              p,
-              px: xScale.apply(p.year),
-              py: yScale.apply(p.population_estimate)
-          }))
-        : [];
-
-    const allPoints = [...eventPoints, ...popPoints];
-
-    const HOVER_RADIUS = 18; // pixels — how close the cursor must be to trigger
-    let lastKey = null; // tracks which point is currently shown, to skip redundant work
-
-    svg.addEventListener("pointermove", (e) => {
-        if (allPoints.length === 0) return;
-
-        const rect = svg.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        // Find nearest point by simple squared-distance comparison
-        // (no sqrt needed just to compare which is smallest)
-        let nearest = null;
-        let nearestDistSq = Infinity;
-        for (const pt of allPoints) {
-            const dx = pt.px - mouseX;
-            const dy = pt.py - mouseY;
-            const distSq = dx * dx + dy * dy;
-            if (distSq < nearestDistSq) {
-                nearestDistSq = distSq;
-                nearest = pt;
-            }
-        }
-
-        const withinRadius = nearest && nearestDistSq < HOVER_RADIUS * HOVER_RADIUS;
-
-        if (!withinRadius) {
-            if (lastKey !== null) {
-                lastKey = null;
-                tooltip.style.opacity = "0";
-                tooltip.style.display = "none";
-            }
-            return;
-        }
-
-        // Same point as last time — nothing to update, skip all DOM work
-        if (nearest.key === lastKey) return;
-        lastKey = nearest.key;
-
-        tooltip.innerHTML = nearest.type === "event"
-            ? buildEventTooltipHTML(nearest.ev)
-            : buildPopulationTooltipHTML(nearest.p);
-
-        tooltip.style.display = "block";
-
-        // One layout read per point-change (not per mousemove)
-        const tw = tooltip.offsetWidth;
-        const th = tooltip.offsetHeight;
-        let left = nearest.px - tw / 2;
-        let top = nearest.py - th - 12;
-
-        left = Math.max(4, Math.min(left, rect.width - tw - 4));
-        if (top < 0) top = nearest.py + 12;
-
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-        tooltip.style.opacity = "1";
-    });
-
-    svg.addEventListener("pointerleave", () => {
-        lastKey = null;
-        tooltip.style.opacity = "0";
-        tooltip.style.display = "none";
-    });
-
-    return wrapper;
-} // END POPULATION + TIMELINE COMBINED PLOT
 
 // ===================================================
 // ===================================================
@@ -1305,7 +1047,7 @@ function buildOysterBayPanel() {
         </p>
         </div>
  
-        <!-- Rest of early results, plain prose -->
+        <!-- Rest of early results + hydrology context, plain prose -->
         <div style="margin-bottom: 40px;">
         <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
             ${narrative.results}
@@ -1554,6 +1296,13 @@ function buildYearSlider(years, currentYear, onChange) {
 //   >=20: deep red
 // ===================================================
 // ===================================================
+// Circle radius scaled to index value using square-root scale
+function spatToRadius(value) {
+    if (value === null || isNaN(value)) return 5;
+    if (value === 0) return 5;
+    return 5 + Math.sqrt(value) * 1.8;
+}
+
 function spatToColor(value, maxValue) {
     // No data
     if (value === null || isNaN(value)) return "#c8c8c8";
@@ -1568,13 +1317,6 @@ function spatToColor(value, maxValue) {
     if (value <= 20)        return "#bd0026";  // 10–20
     return                         "#67000d";  // >=20
 } // END recruitment color scale
-
-// Circle radius scaled to index value
-function spatToRadius(value) {
-    if (value === null || isNaN(value)) return 5;
-    if (value === 0) return 5;
-    return 5 + Math.sqrt(value) * 1.8;
-}
 
 // ===================================================
 // ===================================================
@@ -1613,38 +1355,19 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     // -----------------------------------------------
     mainContainer.style.display = "flex";
     mainContainer.style.gap = "10px";
-    mainContainer.classList.add("detail-open");
     mapContainer.style.width = "30%";
     mapContainer.style.flexShrink = "0";
     detailContainer.style.display = "flex";
     setTimeout(() => detailContainer.style.opacity = "1", 10);
 
-    // Wait for the map container's width transition to actually finish
-    // before telling Leaflet to resize + recenter — same fix as showDetail()
-    const handleRecruitResize = (e) => {
-        // Only react to the width transition, not other properties
-        if (e.propertyName !== "width") return;
-        mapContainer.removeEventListener("transitionend", handleRecruitResize);
-        map.invalidateSize({ pan: false });
-        map.setView(
-            [station.latitude, parseFloat(station.longitude)],
-            13,
-            { animate: false }
-        );
-    };
-    mapContainer.addEventListener("transitionend", handleRecruitResize);
-
-    // Fallback in case transitionend doesn't fire (e.g. width was
-    // already 30% and no transition actually occurs)
     setTimeout(() => {
-        mapContainer.removeEventListener("transitionend", handleRecruitResize);
-        map.invalidateSize({ pan: false });
+        map.invalidateSize();
         map.setView(
-            [station.latitude, parseFloat(station.longitude)],
+            [station.latitude, parseFloat(station.longitude) + 0.02],
             13,
             { animate: false }
         );
-    }, 300); // slightly longer than the 0.25s CSS transition
+    }, 50);
 
     // Clear any previously shown content
     detailContainer.innerHTML = "";
@@ -1932,8 +1655,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                 x: {
                     label: null,
                     tickFormat: "d",
-                    interval: 1,
-                    insetLeft: 15
+                    tickSpacing: 60
                 },
                 y: {
                     label: "Avg live olys / shell",
@@ -2065,25 +1787,34 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
 // ===================================================
 // RECRUITMENT MAP LAYER MANAGER
 //
-// Two display modes for the recruitment tab:
+// Three display tiers, switched automatically by zoom:
 //
-//   GROUPED mode (zoom < 10):
-//     One circle per waterbody, colored by the
-//     average index of all its stations for that year.
-//     Clicking or zooming in expands to individual stations.
+//   BASIN mode      (zoom <  BASIN_ZOOM):
+//     One circle per basin, colored by the average
+//     index of all its stations for the selected year.
 //
-//   INDIVIDUAL mode (zoom >= 10 or after click):
-//     One circle per station, same color scale.
-//     Zooming back out returns to grouped mode.
+//   WATERBODY mode  (BASIN_ZOOM <= zoom < WATERBODY_ZOOM):
+//     One circle per waterbody within a basin.
 //
-// The year slider calls updateYear() in either mode.
+//   INDIVIDUAL mode (zoom >= WATERBODY_ZOOM):
+//     One circle per station.
+//
+// Clicking a basin/waterbody circle fits the map to its
+// children's bounds, which naturally triggers the zoom
+// threshold and drills down a level via the zoomend
+// listener below.
 // ===================================================
 // ===================================================
 function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStationClick) {
 
     // -----------------------------------------------
+    // ZOOM THRESHOLDS — tune these to taste
+    // -----------------------------------------------
+    const BASIN_ZOOM = 9;
+    const WATERBODY_ZOOM = 11;
+
+    // -----------------------------------------------
     // Group data by year
-    // byYear[2015] = [ ...all rows for 2015... ]
     // -----------------------------------------------
     const byYear = {};
     recruitData.forEach(row => {
@@ -2092,32 +1823,90 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
         byYear[row.year].push(row);
     });
 
-    // Sorted list of all unique years
     const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
 
-    // Build deduplicated station lookup: stationName -> { lat, lng }
-    const stationInfo = {};
+    // -----------------------------------------------
+    // GROUP STATIONS BY WATERBODY AND BASIN
+    // -----------------------------------------------
+    const waterbodyStations = {}; // waterbody -> array of station names
+    const waterbodyCenter = {};   // waterbody -> { lat, lng } centroid
+    const basinStations = {};     // basin -> array of station names
+    const basinCenter = {};       // basin -> { lat, lng } centroid
+    const stationInfo = {};       // station name -> { lat, lng, waterbody, basin }
+
     const seen = new Set();
     recruitData.forEach(row => {
         if (seen.has(row.standard_station)) return;
         if (!row.latitude || !row.longitude ||
             row.latitude === "NA" || row.longitude === "NA" ||
             isNaN(parseFloat(row.latitude))) return;
+
         seen.add(row.standard_station);
+
+        const wb = row.waterbody || "Unknown";
+        const basin = row.basin || "Unknown";
+
+        if (!waterbodyStations[wb]) waterbodyStations[wb] = [];
+        waterbodyStations[wb].push(row.standard_station);
+
+        if (!basinStations[basin]) basinStations[basin] = [];
+        basinStations[basin].push(row.standard_station);
+
         stationInfo[row.standard_station] = {
             lat: parseFloat(row.latitude),
-            lng: parseFloat(row.longitude)
+            lng: parseFloat(row.longitude),
+            waterbody: wb,
+            basin: basin
         };
     });
 
-    
+    // Centroid for each waterbody
+    Object.entries(waterbodyStations).forEach(([wb, stations]) => {
+        const lats = stations.map(s => stationInfo[s].lat);
+        const lngs = stations.map(s => stationInfo[s].lng);
+        waterbodyCenter[wb] = {
+            lat: lats.reduce((a, b) => a + b, 0) / lats.length,
+            lng: lngs.reduce((a, b) => a + b, 0) / lngs.length
+        };
+    });
+
+    // Centroid for each basin
+    Object.entries(basinStations).forEach(([basin, stations]) => {
+        const lats = stations.map(s => stationInfo[s].lat);
+        const lngs = stations.map(s => stationInfo[s].lng);
+        basinCenter[basin] = {
+            lat: lats.reduce((a, b) => a + b, 0) / lats.length,
+            lng: lngs.reduce((a, b) => a + b, 0) / lngs.length
+        };
+    });
+
     // -----------------------------------------------
     // Store the markers
     // -----------------------------------------------
-    const individualMarkers  = {};  // station name - L.circleMarker
+    const individualMarkers = {};  // station name -> L.circleMarker
+    const waterbodyMarkers  = {};  // waterbody name -> L.marker (badge)
+    const basinMarkers      = {};  // basin name -> L.marker (badge)
 
-    // Track which mode we're in
+    function modeForZoom(zoom) {
+        if (zoom < BASIN_ZOOM) return "basin";
+        if (zoom < WATERBODY_ZOOM) return "waterbody";
+        return "individual";
+    }
+
+    let currentMode = modeForZoom(map.getZoom());
     let currentYear = years[years.length - 1];  // start at latest year
+
+    // -----------------------------------------------
+    // HELPER: average index across a set of stations
+    // for a given year
+    // -----------------------------------------------
+    function groupAvg(stations, yearData) {
+        const values = (stations || [])
+            .map(s => yearData[s] ? yearData[s].index : null)
+            .filter(v => v !== null && !isNaN(v));
+        if (values.length === 0) return null;
+        return values.reduce((a, b) => a + b, 0) / values.length;
+    }
 
     // -----------------------------------------------
     // HELPER: build yearData lookup for a given year
@@ -2131,15 +1920,42 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
     }
 
     // -----------------------------------------------
+    // Shared badge icon builder (circle + count bubble)
+    // -----------------------------------------------
+    function makeBadgeIcon(color, count, size = 28) {
+        return L.divIcon({
+            className: "",
+            html: `
+                <div style="position:relative; width:${size}px; height:${size}px;">
+                    <div style="
+                        width:${size}px; height:${size}px;
+                        border-radius:50%;
+                        background:${color};
+                        border:2px solid white;
+                        box-shadow:0 1px 4px rgba(0,0,0,0.25);
+                        box-sizing:border-box;
+                    "></div>
+                    <div style="
+                        position:absolute; bottom:-3px; right:-3px;
+                        background:white; color:#045B4C;
+                        font-size:9px; font-weight:700;
+                        width:14px; height:14px; border-radius:50%;
+                        display:flex; align-items:center; justify-content:center;
+                        border:1.5px solid #045B4C; line-height:1;
+                    ">${count}</div>
+                </div>`,
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2]
+        });
+    }
+
+    // -----------------------------------------------
     // Build all markers once
-    // Individual markers start hidden, waterbody
-    // markers start visible (grouped is default).
     // -----------------------------------------------
     function init() {
 
-        // --- Build individual station markers ---
+        // --- Individual station markers ---
         Object.entries(stationInfo).forEach(([stationName, info]) => {
-            // Find a full row for this station to pass to onStationClick
             const stationRow = recruitData.find(d => d.standard_station === stationName);
 
             const marker = L.circleMarker([info.lat, info.lng], {
@@ -2162,80 +1978,268 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                         Recruitment Station
                     </p>
                 </div>
-            `, {
-                direction: "top",
-                permanent: false,
-                className: "custom-tooltip"
-            });
+            `, { direction: "top", permanent: false, className: "custom-tooltip" });
 
             marker.on("click", () => onStationClick(stationRow));
             marker.on("mouseover", () => {
                 if (marker.getElement()) marker.getElement().style.cursor = "pointer";
             });
 
-            // Start hidden (grouped mode is default)
-            // (don't add to recruitLayer yet)
-            marker.addTo(recruitLayer);
-            individualMarkers[stationName] = marker;        
+            individualMarkers[stationName] = marker;
         });
 
+        // --- Waterbody grouped markers ---
+        Object.entries(waterbodyCenter).forEach(([wb, center]) => {
+            const stationCount = waterbodyStations[wb].length;
 
-        // Apply the latest year's data immediately
+            const marker = L.marker([center.lat, center.lng], {
+                icon: makeBadgeIcon("#e0e0e0", stationCount)
+            });
+            marker._makeBadgeIcon = makeBadgeIcon;
+            marker._stationCount  = stationCount;
+
+            marker.bindTooltip(`
+                <div style="padding:10px 12px; min-width:160px;">
+                    <p style="font-size:13px; font-weight:600; color:#222;
+                        margin:0 0 4px 0; text-align:center;">
+                        ${wb}
+                    </p>
+                    <p style="font-size:11px; color:#888; text-align:center;
+                        margin:0; text-transform:uppercase; letter-spacing:0.4px;">
+                        Click or zoom in to see stations
+                    </p>
+                </div>
+            `, { direction: "top", permanent: false, className: "custom-tooltip" });
+
+            marker.on("click", () => {
+                const stations = waterbodyStations[wb];
+                const lats = stations.map(s => stationInfo[s].lat);
+                const lngs = stations.map(s => stationInfo[s].lng);
+                const bounds = L.latLngBounds(
+                    [Math.min(...lats) - 0.02, Math.min(...lngs) - 0.02],
+                    [Math.max(...lats) + 0.02, Math.max(...lngs) + 0.02]
+                );
+                map.fitBounds(bounds, { animate: true, padding: [20, 20] });
+            });
+
+            marker.on("mouseover", () => {
+                if (marker.getElement()) marker.getElement().style.cursor = "pointer";
+            });
+
+            waterbodyMarkers[wb] = marker;
+        });
+
+        // --- Basin grouped markers ---
+        Object.entries(basinCenter).forEach(([basin, center]) => {
+            const stationCount = basinStations[basin].length;
+
+            const marker = L.marker([center.lat, center.lng], {
+                icon: makeBadgeIcon("#e0e0e0", stationCount, 34)
+            });
+            marker._makeBadgeIcon = makeBadgeIcon;
+            marker._stationCount  = stationCount;
+
+            marker.bindTooltip(`
+                <div style="padding:10px 12px; min-width:160px;">
+                    <p style="font-size:13px; font-weight:600; color:#222;
+                        margin:0 0 4px 0; text-align:center;">
+                        ${basin}
+                    </p>
+                    <p style="font-size:11px; color:#888; text-align:center;
+                        margin:0; text-transform:uppercase; letter-spacing:0.4px;">
+                        Click or zoom in to see waterbodies
+                    </p>
+                </div>
+            `, { direction: "top", permanent: false, className: "custom-tooltip" });
+
+            marker.on("click", () => {
+                const stations = basinStations[basin];
+                const lats = stations.map(s => stationInfo[s].lat);
+                const lngs = stations.map(s => stationInfo[s].lng);
+                const bounds = L.latLngBounds(
+                    [Math.min(...lats) - 0.02, Math.min(...lngs) - 0.02],
+                    [Math.max(...lats) + 0.02, Math.max(...lngs) + 0.02]
+                );
+                map.fitBounds(bounds, { animate: true, padding: [20, 20] });
+            });
+
+            marker.on("mouseover", () => {
+                if (marker.getElement()) marker.getElement().style.cursor = "pointer";
+            });
+
+            basinMarkers[basin] = marker;
+        });
+
+        // Show whichever tier matches the map's starting zoom
+        if (currentMode === "basin") {
+            Object.values(basinMarkers).forEach(m => m.addTo(recruitLayer));
+        } else if (currentMode === "waterbody") {
+            Object.values(waterbodyMarkers).forEach(m => m.addTo(recruitLayer));
+        } else {
+            Object.values(individualMarkers).forEach(m => m.addTo(recruitLayer));
+        }
+
         updateYear(currentYear);
-            
+
+        // -----------------------------------------------
+        // ZOOM LISTENER — drills up/down between tiers
+        // -----------------------------------------------
+        map.on("zoomend", () => {
+            const desiredMode = modeForZoom(map.getZoom());
+            if (desiredMode === currentMode) return;
+
+            if (desiredMode === "basin") switchToBasin();
+            else if (desiredMode === "waterbody") switchToWaterbody();
+            else switchToIndividual();
+        });
     }
 
     // -----------------------------------------------
-    // UPDATE YEAR
-    // Re-styles whichever set of markers is currently
-    // visible for the newly selected year.
+    // Swap which marker set is visible on the layer
+    // -----------------------------------------------
+    function showOnly(markerSet) {
+        [basinMarkers, waterbodyMarkers, individualMarkers].forEach(set => {
+            Object.values(set).forEach(m => {
+                if (set === markerSet) {
+                    if (!recruitLayer.hasLayer(m)) m.addTo(recruitLayer);
+                } else {
+                    if (recruitLayer.hasLayer(m)) recruitLayer.removeLayer(m);
+                }
+            });
+        });
+    }
+
+    function switchToBasin() {
+        currentMode = "basin";
+        showOnly(basinMarkers);
+        updateYear(currentYear);
+    }
+
+    function switchToWaterbody() {
+        currentMode = "waterbody";
+        showOnly(waterbodyMarkers);
+        updateYear(currentYear);
+    }
+
+    function switchToIndividual() {
+        currentMode = "individual";
+        showOnly(individualMarkers);
+        updateYear(currentYear);
+    }
+
+    // -----------------------------------------------
+    // UPDATE YEAR — restyles whichever tier is visible
     // -----------------------------------------------
     function updateYear(year) {
         currentYear = year;
         const yearData = getYearData(year);
 
-        Object.entries(individualMarkers).forEach(([stationName, marker]) => {
-            const row = yearData[stationName];
-            const value = (row && row.index !== null && !isNaN(row.index)) ? row.index : null;
+        if (currentMode === "basin") {
+            Object.entries(basinMarkers).forEach(([basin, marker]) => {
+                const avg = groupAvg(basinStations[basin], yearData);
+                const color = spatToColor(avg);
+                const badgeSize = avg !== null ? Math.max(24, Math.min(50, 24 + Math.sqrt(avg) * 2.5)) : 24;
+                marker.setIcon(marker._makeBadgeIcon(color, marker._stationCount, badgeSize));
 
-            marker.setRadius(spatToRadius(value));
-            marker.setStyle({
-                fillColor: spatToColor(value),
-                color: value !== null ? "white" : "#999",
-                weight: 1.5,
-                opacity: 1,
-                fillOpacity: value !== null ? 0.9 : 0.5
+                marker.setTooltipContent(
+                    avg !== null ? `
+                        <div style="padding:10px 12px; min-width:180px;">
+                            <p style="font-size:13px; font-weight:600; color:#222;
+                                margin:0 0 6px 0; text-align:center;">${basin}</p>
+                            <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
+                            <div style="display:flex; justify-content:space-between;
+                                font-size:12px; color:#555;">
+                                <span style="color:#045B4C; font-weight:600;">${year}</span>
+                                <span>${avg.toFixed(1)} avg live olys/shell</span>
+                            </div>
+                        </div>
+                    ` : `
+                        <div style="padding:10px 12px; min-width:160px;">
+                            <p style="font-size:13px; font-weight:600; color:#222;
+                                margin:0 0 4px 0; text-align:center;">${basin}</p>
+                            <p style="font-size:12px; color:#aaa; text-align:center; margin:0;">
+                                No data for ${year}
+                            </p>
+                        </div>
+                    `
+                );
             });
 
-            marker.setTooltipContent(
-                value !== null ? `
-                    <div style="padding:10px 12px; min-width:180px;">
-                        <p style="font-size:13px; font-weight:600; color:#222;
-                            margin:0 0 6px 0; text-align:center;">
-                            ${stationName.replaceAll("_", " ")}
-                        </p>
-                        <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
-                        <div style="display:flex; justify-content:space-between;
-                            font-size:12px; color:#555;">
-                            <span style="color:#045B4C; font-weight:600;">${year}</span>
-                            <span>${value.toFixed(1)} avg live olys/shell</span>
+        } else if (currentMode === "waterbody") {
+            Object.entries(waterbodyMarkers).forEach(([wb, marker]) => {
+                const avg = groupAvg(waterbodyStations[wb], yearData);
+                const color = spatToColor(avg);
+                const badgeSize = avg !== null ? Math.max(20, Math.min(44, 20 + Math.sqrt(avg) * 2.5)) : 20;
+                marker.setIcon(marker._makeBadgeIcon(color, marker._stationCount, badgeSize));
+
+                marker.setTooltipContent(
+                    avg !== null ? `
+                        <div style="padding:10px 12px; min-width:180px;">
+                            <p style="font-size:13px; font-weight:600; color:#222;
+                                margin:0 0 6px 0; text-align:center;">${wb}</p>
+                            <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
+                            <div style="display:flex; justify-content:space-between;
+                                font-size:12px; color:#555;">
+                                <span style="color:#045B4C; font-weight:600;">${year}</span>
+                                <span>${avg.toFixed(1)} avg live olys/shell</span>
+                            </div>
                         </div>
-                    </div>
-                ` : `
-                    <div style="padding:10px 12px; min-width:160px;">
-                        <p style="font-size:13px; font-weight:600; color:#222;
-                            margin:0 0 4px 0; text-align:center;">
-                            ${stationName.replaceAll("_", " ")}
-                        </p>
-                        <p style="font-size:12px; color:#aaa; text-align:center; margin:0;">
-                            No data for ${year}
-                        </p>
-                    </div>
-                `
-            );
-        });
+                    ` : `
+                        <div style="padding:10px 12px; min-width:160px;">
+                            <p style="font-size:13px; font-weight:600; color:#222;
+                                margin:0 0 4px 0; text-align:center;">${wb}</p>
+                            <p style="font-size:12px; color:#aaa; text-align:center; margin:0;">
+                                No data for ${year}
+                            </p>
+                        </div>
+                    `
+                );
+            });
+
+        } else {
+            Object.entries(individualMarkers).forEach(([stationName, marker]) => {
+                const row = yearData[stationName];
+                const value = (row && row.index !== null && !isNaN(row.index)) ? row.index : null;
+
+                marker.setRadius(spatToRadius(value));
+                marker.setStyle({
+                    fillColor: spatToColor(value),
+                    color: value !== null ? "white" : "#999",
+                    weight: 1.5,
+                    opacity: 1,
+                    fillOpacity: value !== null ? 0.9 : 0.5
+                });
+
+                marker.setTooltipContent(
+                    value !== null ? `
+                        <div style="padding:10px 12px; min-width:180px;">
+                            <p style="font-size:13px; font-weight:600; color:#222;
+                                margin:0 0 6px 0; text-align:center;">
+                                ${stationName.replaceAll("_", " ")}
+                            </p>
+                            <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
+                            <div style="display:flex; justify-content:space-between;
+                                font-size:12px; color:#555;">
+                                <span style="color:#045B4C; font-weight:600;">${year}</span>
+                                <span>${value.toFixed(1)} avg live olys/shell</span>
+                            </div>
+                        </div>
+                    ` : `
+                        <div style="padding:10px 12px; min-width:160px;">
+                            <p style="font-size:13px; font-weight:600; color:#222;
+                                margin:0 0 4px 0; text-align:center;">
+                                ${stationName.replaceAll("_", " ")}
+                            </p>
+                            <p style="font-size:12px; color:#aaa; text-align:center; margin:0;">
+                                No data for ${year}
+                            </p>
+                        </div>
+                    `
+                );
+            });
+        }
     }
-    // Show
+
     return { years, updateYear, init };
 
 } // END Recruitment layer manager function
@@ -2332,7 +2336,6 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     const tabBar = document.createElement("div");
     Object.assign(tabBar.style, {
         display: "flex",
-        flexWrap: "wrap",
         gap: "8px",
         marginBottom: "12px",
         marginTop: "12px"
@@ -2386,11 +2389,13 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 
     // Write all static HTML for filter panel
     enhContent.innerHTML = `
+        <div style="padding: 0;">
+
             <!-- Decorative horizontal divider line -->
-            <div class="filter-divider" style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
+            <div style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
 
             <!-- Story Site Dropdown (static HTML here, dynamic content added below) -->
-            <div class="filter-section" style="margin-bottom: 24px;">
+            <div style="margin-bottom: 24px;">
                 <label style="display: block; font-size: 13px; font-weight: 600; color: #045B4C;
                     margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Read a Story</label>
                 <!-- Empty selector, options are added by the JavaScript below -->
@@ -2405,10 +2410,11 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
             </div>
 
             <!-- Decorative horizontal divider line -->
-            <div class="filter-divider" style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
+            <div style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
+
 
             <!-- Enhancement Type filter: oblong toggle buttons -->
-            <div class="filter-section" style="margin-bottom: 20px;">
+            <div style="margin-bottom: 20px;">
                 <label style="display: block; font-size: 13px; font-weight: 600; color: #045B4C;
                     margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
                     Filter by Enhancement Type</label>
@@ -2430,6 +2436,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
                 <div style="font-size: 11px; color: #666; margin-top: 6px; font-style: italic;">
                     Select which enhancement methods are displayed</div>
             </div>
+        </div>
     `; // END HTML for filter panel
 
     // -----------------------------------------------
@@ -2437,12 +2444,10 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     // Year slider + explanatory text. Hidden by default.
     // -----------------------------------------------
     const recruitContent = document.createElement("div");
-    recruitContent.className = "filter-tab-content hidden";
-    enhContent.className = "filter-tab-content";
+    recruitContent.style.display = "none";
 
     // Waterbody jump dropdown (only shows waterbodies that have coordinates)
     const wbDropdownWrapper = document.createElement("div");
-    wbDropdownWrapper.className = "filter-section";
     wbDropdownWrapper.innerHTML = `
         <label style="display:block; font-size:13px; font-weight:600; color:#045B4C;
             margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Jump to Waterbody</label>
@@ -2511,7 +2516,6 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 
     // Year slider
     const sliderContainer = document.createElement("div");
-    sliderContainer.className = "filter-section";
 
     if (recruitLayerManager && recruitLayerManager.years.length > 0) {
         const years = recruitLayerManager.years;
@@ -2537,7 +2541,6 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 
     // Note about clicking stations
     const clickHint = document.createElement("div");
-    clickHint.className = "filter-section";
     clickHint.innerHTML = `
         <div style="font-size:12px; color:#666; font-style:italic;
             padding:10px 12px; background:#f8f9fa; border-radius:6px;">
@@ -2550,21 +2553,18 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     // -----------------------------------------------
 
     const divider1 = document.createElement("div");
-    divider1.className = "filter-divider";
     divider1.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
     recruitContent.appendChild(divider1);
 
     recruitContent.appendChild(wbDropdownWrapper);
 
     const divider2 = document.createElement("div");
-    divider2.className = "filter-divider";
     divider2.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
     recruitContent.appendChild(divider2);
 
     recruitContent.appendChild(sliderContainer);
 
     const divider3 = document.createElement("div");
-    divider3.className = "filter-divider";
     divider3.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
     recruitContent.appendChild(divider3);
 
@@ -2597,8 +2597,8 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 
         if (tabId === "enhancement") {
             // Show enhancement content, hide recruitment content
-            enhContent.classList.remove("hidden");
-            recruitContent.classList.add("hidden");
+            enhContent.style.display = "block";
+            recruitContent.style.display = "none";
 
             // Show enhancement layer, hide recruitment layer
             enhancementLayer.addTo(map);
@@ -2613,8 +2613,8 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 
         } else {
             // Show recruitment content, hide enhancement content
-            enhContent.classList.add("hidden");
-            recruitContent.classList.remove("hidden");
+            enhContent.style.display = "none";
+            recruitContent.style.display = "block";
 
             // Show recruitment layer, hide enhancement layer
             recruitmentLayer.addTo(map);
@@ -2837,7 +2837,6 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     // Width comes from resize() which passes the current pade width
     // so the map will fill the available space
     const mainContainer = document.createElement("div");
-    mainContainer.className = "map-main-container";
     Object.assign(mainContainer.style, {
         width: `${width}px`,
         height: "90vh", // 90% of the browser window for height
@@ -2847,7 +2846,6 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     // The div for the Leaflet map
     // Starts at full width but shrinks to 40% when a story panel opens
     const mapContainer = document.createElement("div");
-    mapContainer.className = "map-pane";
     Object.assign(mapContainer.style, {
         width: "100%",
         height: "100%",
@@ -2859,7 +2857,6 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     // When a story site icon is clicked it displays ("flex")
     // There is a frozen button bar at the top and the rest scrolls vertically
     const detailContainer = document.createElement("div");
-    detailContainer.className = "detail-pane";
     Object.assign(detailContainer.style, {
         display: "none",   // invisible until showDetail() is called
         width: "80%",   // takes 60% of mainContainer when visible
@@ -2927,7 +2924,6 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         // to "flex" layout (two inner panels side by side)
         mainContainer.style.display = "flex";
         mainContainer.style.gap = "10px";   // small gap between map and story panel
-        mainContainer.classList.add("detail-open");
 
         // Shrink the map to 40% width
         mapContainer.style.width = "30%";
@@ -2940,32 +2936,15 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         // 10ms delay makes sure display:flex is initiated before we try and animate
         setTimeout(() => detailContainer.style.opacity = "1", 10);
 
-        // Wait for the map container's width transition to actually finish
-        // before telling Leaflet to resize + recenter. Trying to fix weird centering issue
-        const handleResize = (e) => {
-            // Only react to the width transition, not other properties
-            if (e.propertyName !== "width") return;
-            mapContainer.removeEventListener("transitionend", handleResize);
-            map.invalidateSize({ pan: false });
-            map.setView(
-                [site.latitude, site.longitude],
-                13,
-                { animate: false }
-            );
-        };
-        mapContainer.addEventListener("transitionend", handleResize);
-
-        // Fallback in case transitionend doesn't fire (e.g. width was
-        // already 30% and no transition actually occurs)
+        // Tell leaflet the map container changed size, then zoom to the site
         setTimeout(() => {
-            mapContainer.removeEventListener("transitionend", handleResize);
-            map.invalidateSize({ pan: false });
+            map.invalidateSize();  // recalc map dimensions after resize
             map.setView(
-                [site.latitude, site.longitude],
-                13,
-                { animate: false }
+                [site.latitude, site.longitude + 0.02],  // Recenter the map here
+                13,  // At this zoom level
+                { animate: false }  // Jump instantly without an animation
             );
-        }, 300); // slightly longer than the 0.25s CSS transition
+        }, 50);
 
         // Clear any previously shown site content before building the new one
         detailContainer.innerHTML = "";
@@ -3080,10 +3059,6 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
 
         // Wait a sec for the fade to finish before restructering layot
         setTimeout(() => {
-            // Remove narrow-screen override class now — detail panel is
-            // already invisible (opacity 0) so no visible jump occurs
-            mainContainer.classList.remove("detail-open");
-
             mainContainer.style.display = "block";  // reset to a single column so the map is full width
             Object.assign(mapContainer.style, {
                 width: "100%",
@@ -3402,15 +3377,6 @@ setTimeout(() => {
         pointer-events: none;
     }
 
-    /* -----------------------------------------------
-    Hide map legend whenever a story/station detail
-    panel is open, regardless of screen width
-    ----------------------------------------------- */
-    .map-main-container.detail-open .map-legend,
-    .map-main-container.detail-open .recruit-legend {
-    display: none !important;
-    }
-
   /* -----------------------------------------------
      CAROUSEL
   ----------------------------------------------- */
@@ -3501,13 +3467,6 @@ setTimeout(() => {
   /* -----------------------------------------------
    Intro cards
 ----------------------------------------------- */
-#intro-hero {
-    background-size: cover;
-    background-position: center;
-    color: white;
-    border: 2px solid #000;
-}
-
 .intro-cards {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -3519,31 +3478,24 @@ setTimeout(() => {
     .intro-cards { grid-template-columns: 1fr; }
 }
 
-.intro-panel {
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 10px;
-    padding: 24px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-}
-
 .intro-card {
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 8px;
+    background: var(--theme-background-alt);
     font-size: 13px;
     line-height: 1.7;
-    color: #333;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+    color: var(--theme-foreground-muted);
 }
 
 .intro-card p { margin: 0; }
 
 .intro-card--enhancement { 
-    border-left: 4px solid #045B4C;
-    background: rgba(255, 255, 255, 0.8);
+    border-left: 4px solid #4e79a7;
+    background: #e6effa;
 }
 .intro-card--recruitment { 
-    border-left: 4px solid #045B4C;
-    background: rgba(255, 255, 255, 0.8);
+    border-left: 4px solid #f03b20; 
+    background: #fbefed;
 }
 
 .intro-card-label {
@@ -3555,35 +3507,13 @@ setTimeout(() => {
 }
 
 .intro-tip {
-    margin-top: 1.5rem;
+    margin-top: 16px;
     padding: 14px 18px;
-    background: rgba(234, 243, 241, 0.92);
-    border-radius: 10px;
+    background: #fffce8;
+    border-radius: 8px;
     font-size: 13px;
     line-height: 1.7;
-    color: #333;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.intro-tip-icon {
-    font-size: 30px;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-.intro-tip-text {
-    flex: 1;
-}
-
-.intro-card-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    color: var(--theme-foreground-muted);
 }
 
 .leaflet-reset-btn:hover {
@@ -3596,117 +3526,6 @@ setTimeout(() => {
         border-color: rgba(255,255,255,0.3) !important;
     }
 }
-/* -----------------------------------------------
-   DASHBOARD GRID: filter panel + map
------------------------------------------------ */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(160px, 1fr) 3fr; /* filter : map roughly 1:3 */
-  gap: 1rem;
-  align-items: start;
-}
-
-.dashboard-grid > * {
-  min-width: 0;
-}
-
-/* Below this width, filter panel moves above the map
-   and reorients its contents horizontally */
-@media (max-width: 900px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr; /* stack: filter bar on top, map below */
-  }
-
-  /* Whichever tab content is active becomes a wrapping row */
-  .filter-tab-content:not(.hidden) {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: flex-start;
-  }
-
-  /* Each labeled "control" takes a flexible chunk of the row instead of full width */
-  .filter-section {
-    flex: 1 1 220px;
-    margin-bottom: 0 !important;
-  }
-
-  /* Hide vertical dividers in the horizontal layout */
-  .filter-divider {
-    display: none;
-  }
-}
-
-.filter-tab-content.hidden {
-  display: none;
-}
-
-/* -----------------------------------------------
-   STATS CARDS: 4-col grid, collapsing to 2-col
-   at narrow widths
------------------------------------------------ */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  text-align: center;
-}
-
-.stats-grid > * {
-  min-width: 0;
-}
-
-.stats-grid .card {
-  padding: 12px 8px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.stats-grid .big {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.stats-grid h1.muted {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0 0 4px 0;
-}
-
-@media (max-width: 800px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* -----------------------------------------------
-   NARROW SCREENS: detail panel fills the whole
-   map container instead of sharing space with map
------------------------------------------------ */
-@media (max-width: 1100px) {
-  .map-main-container.detail-open {
-    gap: 0 !important;
-  }
-
-  .map-main-container.detail-open .map-pane {
-    width: 0 !important;
-    flex-shrink: 0 !important;
-    overflow: hidden !important;
-  }
-
-  .map-main-container.detail-open .detail-pane {
-    width: 100% !important;
-  }
-}
 
 </style>
 
@@ -3715,7 +3534,7 @@ setTimeout(() => {
 <!-- Map card div lives here permanently, outside Observable's control to fix wonkyness with resizing -->
 <div id="persistent-map-card" style="grid-column: span 3;"></div>
 
-<div class="dashboard-grid">
+<div class="grid grid-cols-4">
   <div class="card">
     ${(function() {
       const div = document.createElement('div');
@@ -3723,5 +3542,5 @@ setTimeout(() => {
       return div;
     })()}
   </div>
-  <div class="card" id="map-card-placeholder"></div>
+  <div class="card grid-colspan-3" id="map-card-placeholder"></div>
 </div>
