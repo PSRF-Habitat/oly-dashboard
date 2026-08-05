@@ -7,42 +7,7 @@ pager: false
 ---
 
 <!-- =================================================== -->
-<!-- Header & footer syling -->
-<!-- =================================================== -->
-<style>
-  /* Header */
-  #observablehq-header {
-    position: absolute;
-    background-color: #045B4C;
-    height: 150px;
-    align-items: center;
-    padding: 0 30px;
-  }
-
-  /* Space below header so page content doesn't overlap */
-  body {
-    padding-top: 80px;
-    padding-left: 40px;
-    padding-right:40px;
-  }
-
-/* Footer */
-  #observablehq-footer {
-    position: absolute;
-    background-color: #5A5A5A;
-    align-items: center;
-    width: 100%;
-    left: 0;
-    padding: 0 30px;
-    box-sizing: border-box;
-  }
-</style>
-<!-- =================================================== -->
-<!-- END Header & footer syling -->
-<!-- =================================================== -->
-
-<!-- =================================================== -->
-<!-- Cards with flashy facts -->
+<!-- Flash cards -->
 <!-- =================================================== -->
 <div class="stats-grid">
   <div class="card">
@@ -63,27 +28,29 @@ pager: false
   </div>
 </div>
 <!-- =================================================== -->
-<!-- END Cards with flashy facts -->
+<!-- END Flash cards -->
 <!-- =================================================== -->
 
 ---
 
+<!-- =================================================== -->
+<!-- Intro text section -->
+<!-- =================================================== -->
 ```html
-
+<!-- Main container -->
 <div id="intro-hero" style="
   border-radius: 16px;
   padding: 2rem;
   margin: 1rem 0 2rem 0;
 ">
-
+  <!-- 3 card layout: 1 left, 2 right -->
   <div style="
     display: grid;
     grid-template-columns: 1.3fr 1fr;
     gap: 1.5rem;
     align-items: start;
   ">
-
-    <!-- LEFT: title + intro text, its own card -->
+    <!-- LEFT: title + intro text card -->
     <div class="intro-panel">
       <h1 style="margin-top:0; color:#045B4C;">
         Mapping Olympia Oyster Restoration Across Puget Sound
@@ -95,47 +62,45 @@ pager: false
 
     <!-- RIGHT: two stacked callout cards -->
     <div>
-
       <div class="intro-card intro-card--enhancement" style="margin-bottom:1.5rem;">
-        <div class="intro-card-label" style="color:#045B4C; font-size:1rem;">Enhancement Sites</div>
+        <div class="intro-card-label" style="color:#045B4C; font-size:1rem;">
+          Enhancement Sites
+        </div>
         <p>
           Places where we've added shell, juvenile, or adult oysters to build habitat and reestablish populations.
         </p>
       </div>
 
       <div class="intro-card intro-card--recruitment">
-        <div class="intro-card-label" style="color:#045B4C; font-size:1rem;">Recruitment Monitoring</div>
+        <div class="intro-card-label" style="color:#045B4C; font-size:1rem;">
+          Recruitment Monitoring
+        </div>
         <p>
           Annual tracking of where and how many juvenile oysters are settling across the Sound.
         </p>
       </div>
-
     </div>
-
   </div>
 
+  <!-- Tip container -->
   <div class="intro-tip">
-  <span class="intro-tip-icon">💡</span>
-  <span class="intro-tip-text">Use the <strong>tabs</strong> in the panel on the left of the map to switch between exploring <strong>enhancement projects</strong> and <strong>recruitment monitoring</strong>. In the Enhancement view, sites marked with an <span style="color:#EE934F; font-weight:600;">orange dot</span> have a story — select one from the dropdown or click it directly. In the Recruitment view, click any station to see its settlement history.</span>
-    </div>
+    <span class="intro-tip-icon">💡</span>
+    <span class="intro-tip-text">
+      Use the <strong>tabs</strong> in the panel on the left of the map to switch between exploring
+      <strong>enhancement projects</strong> and <strong>recruitment monitoring</strong>. In the
+      Enhancement view, sites marked with an
+      <span style="color:#EE934F; font-weight:600;">orange dot</span>
+      have a story — select one from the dropdown or click it directly. In the Recruitment view,
+      click any station to see its settlement history.
+    </span>
   </div>
-
 </div>
-
 ```
 
 ```js
 // ===================================================
 // LOAD DATA
 // ===================================================
-
-// Cover photo
-const coverPhoto = FileAttachment("data/images/cover.jpg").href;
-
-const introHero = document.querySelector("#intro-hero");
-if (introHero) {
-  introHero.style.backgroundImage = `url(${coverPhoto})`;
-}
 
 // Enhancement sites metadata for map points and tooltips
 const enh_sites_metadata = await FileAttachment("data/enhancement_sites_metadata.csv").csv({typed: true});
@@ -192,8 +157,10 @@ const story_sites = new Set([
 ]);
 
 // ===================================================
-// TOOLTIP PHOTOS
+// PHOTOS
 // ===================================================
+
+// Tooltip photos
 const tooltipPhotos = {
   "Port Gamble Bay":  FileAttachment("data/images/portgamble_tooltip.jpg").href,
   "Quilcene Bay":     FileAttachment("data/images/quilcene_tooltip.jpg").href,
@@ -213,12 +180,19 @@ const tooltipPhotos = {
   // Add more here
 };
 
+// Cover photo for hero
+const coverPhoto = FileAttachment("data/images/cover.jpg").href;
+
+const introHero = document.querySelector("#intro-hero");
+if (introHero) {
+  introHero.style.backgroundImage = `url(${coverPhoto})`;
+}
+
 // ===================================================
 // ===================================================
 // MAP ICONS
 // - Enhancement sites
 // - Enhancement sites with stories
-// - Recruitment stations
 // ===================================================
 // ===================================================
 
@@ -344,6 +318,280 @@ function buildCarousel(container, photos) {
 
 // ===================================================
 // ===================================================
+// SHARED FUNCTION: POPULATION + TIMELINE COMBINED PLOT
+// Overlays enhancement timeline onto a site's population chart
+// Uses custom built tooltip - might change later
+// ===================================================
+// ===================================================
+function createPopulationTimelinePlot(popData, timelineData, siteName) {
+    // Remove any rows with missing population values
+    const cleanPop = (popData || []).filter(
+        d => d.population_estimate != null && d.population_estimate !== "NA"
+    );
+    // If there is no population estimates, do not make a chart
+    if (cleanPop.length === 0) return null;
+
+    // Find all timeline events that belong to this site and sort chronologically
+    const events = (timelineData || [])
+        .filter(d => d.site === siteName && d.year)
+        .sort((a, b) => a.year - b.year);
+
+    // Use largest pop estimate to set y axis limit + 8% for a little buffer
+    const maxPop = Math.max(...cleanPop.map(d => d.population_estimate));
+    const yMax = maxPop * 1.08;
+
+
+    // ---------------------------------------------------
+    // Position Timeline Markers
+    // ---------------------------------------------------
+    // Each restoration action gets a vertical dashed line.
+    // This section calculates where the top of each line should end.
+    //
+    // The three numbers create staggered heights so that
+    // event markers do not overlap each other.
+    // Find each event's population value (or nearest year) so its
+    // dashed line can start right at the population trend line
+    const tierFractions = [0.3, 0.5, 0.7]; // cycles through 3 stagger heights
+    const eventsWithY = events.map((event, i) => {
+        // Try to find population data from the exact same year as the timeline action
+        let match = cleanPop.find(p => p.year === event.year);
+        // If there is no pop value that year, find closest available year instead
+        if (!match) {
+            match = cleanPop.reduce((closest, p) =>
+                Math.abs(p.year - event.year) < Math.abs(closest.year - event.year) ? p : closest
+            , cleanPop[0]);
+        }
+        // Store the population value closest to the event year
+        const popAtYear = match ? match.population_estimate : 0;
+        // Pick a staggered height for the event marker
+        const tierTop = yMax * tierFractions[i % tierFractions.length];
+        // Make sure the event marker does not go below population point
+        const y2 = Math.max(tierTop, popAtYear + yMax * 0.08);
+
+        // Return the original timeline information plus the calculated positions needed for plotting
+        return { ...event, popAtYear, y2 };
+    });
+
+    // -----------------------------------------------
+    // Build the main chart with Plot
+    // -----------------------------------------------
+    const chart = Plot.plot({
+        height: 380, // Overall chart size
+        marginLeft: 60,
+        marginRight: 30,
+        marginTop: 15,
+        marginBottom: 30,
+        insetBottom: 20, // chart padding
+        insetTop: 10,
+        // X-axis (years)
+        x: {
+            label: null,
+            tickFormat: "d",
+            tickSpacing: 60,
+            padding: 0.1
+        },
+        // Y-axis (population)
+        y: {
+            label: "Estimated Population",
+            grid: true,
+            // Set range from 0 to maximum population
+            domain: [0, yMax],
+            // Format large numbers:
+            // 1000 = 1K
+            // 1000000 = 1M
+            tickFormat: d => {
+                if (d >= 1_000_000) return (d / 1_000_000).toFixed(1) + "M";
+                if (d >= 1_000)     return (d / 1_000).toFixed(0) + "K";
+                return d;
+            }
+        },
+        marks: [
+            // Light green shaded area below population trend
+            Plot.areaY(cleanPop, {
+                x: "year",
+                y: "population_estimate",
+                fill: "#045B4C",
+                fillOpacity: 0.08
+            }),
+            // Dashed vertical lines showing enhancement actions
+            Plot.ruleX(eventsWithY, {
+                x: "year",
+                y1: "popAtYear",
+                y2: "y2",
+                stroke: "#999",
+                strokeWidth: 2,
+                strokeDasharray: "6,4",
+                strokeOpacity: 0.85
+            }),
+            // Main population trend line
+            Plot.line(cleanPop, {
+                x: "year",
+                y: "population_estimate",
+                stroke: "#045B4C",
+                strokeWidth: 2.5
+            }),
+            // Population estimate points
+            Plot.dot(cleanPop, {
+                x: "year",
+                y: "population_estimate",
+                fill: "#045B4C",
+                stroke: "white",
+                strokeWidth: 2,
+                r: 4
+            }),
+            // Dots at the top of enhancement action markers
+            Plot.dot(eventsWithY, {
+                x: "year",
+                y: "y2",
+                r: 6,
+                fill: "#999",
+                stroke: "white",
+                strokeWidth: 2
+            })
+        ],
+        // Chart font styling
+        style: { fontFamily: "inherit", fontSize: "14px", overflow: "visible" }
+    });
+
+    // ---------------------------------------------------
+    // CREATE TOOLTIP CONTAINER
+    // ---------------------------------------------------
+    // Create a wrapper around the chart
+    // (This lets us position tooltips relative to the chart)
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "relative";
+    wrapper.appendChild(chart);
+
+    // Create container for tooltip
+    const tooltip = document.createElement("div");
+    Object.assign(tooltip.style, {
+        position: "absolute", // Place tooltip above chart
+        display: "none", // Hidden until user hovers
+        pointerEvents: "none", // Tooltip should not block mouse interactions
+        background: "white",
+        borderRadius: "10px",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+        padding: "0",
+        zIndex: "20",
+        transition: "opacity 0.1s ease",
+        opacity: "0"
+    });
+    wrapper.appendChild(tooltip);
+
+    // ---------------------------------------------------
+    // TOOLTIP HTML BUILDERS
+    // ---------------------------------------------------
+    //
+    // These functions create the content shown when
+    // hovering over different types of points (pop estimates or enhancement actions)
+    function buildEventTooltipHTML(event) {
+        return `
+            <div style="border-left:4px solid #999; border-radius:10px; overflow:hidden; min-width:220px; max-width:280px;">
+                <div style="padding:14px 16px;">
+                    <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
+                        <span style="font-size:15px; font-weight:700; color:#045B4C;">${event.year}</span>
+                        <span style="font-size:12px; font-weight:600; color:#999; text-transform:uppercase; letter-spacing:0.4px;">${event.label || "Enhancement Action"}</span>
+                    </div>
+                    <p style="font-size:13px; line-height:1.6; color:#444; margin:0;">
+                        ${event.description || "No description recorded."}
+                    </p>
+                </div>
+            </div>
+        `;
+    }
+
+    function buildPopulationTooltipHTML(point) {
+        return `
+            <div style="border-left:4px solid #045B4C; border-radius:10px; overflow:hidden; min-width:180px;">
+                <div style="padding:14px 16px;">
+                    <div style="font-size:11px; font-weight:600; color:#045B4C; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">
+                        Estimated Population
+                    </div>
+                    <div style="display:flex; align-items:baseline; gap:8px;">
+                        <span style="font-size:15px; font-weight:700; color:#222;">${point.year}</span>
+                        <span style="font-size:15px; color:#444;">${point.population_estimate.toLocaleString()} oysters</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // ---------------------------------------------------
+    // ADD HOVER INTERACTION
+    // ---------------------------------------------------
+    // Find the SVG element created by Observable Plot
+    const svgEl = chart.tagName === "svg" ? chart : chart.querySelector("svg");
+
+    // Get the chart's x and y conversion tools...
+    // These convert data values (years/populations) into screen positions (pixels)
+    const xScale = svgEl.scale ? svgEl.scale("x") : chart.scale("x");
+    const yScale = svgEl.scale ? svgEl.scale("y") : chart.scale("y");
+    const svgNS = "http://www.w3.org/2000/svg"; // Required for creating SVG elements
+
+    // Function that creates an invisible clickable area over each point
+    function addHoverPoint(datum, cx, cy, buildHTML) {
+        // Create an invisible circle.
+        // The user can hover over this even though the actual chart point is small
+        const hitCircle = document.createElementNS(svgNS, "circle");
+        hitCircle.setAttribute("cx", cx);
+        hitCircle.setAttribute("cy", cy);
+        hitCircle.setAttribute("r", 12); // Larger radius makes hovering easier
+        hitCircle.setAttribute("fill", "transparent"); // Make invisible
+        hitCircle.style.cursor = "pointer";
+        svgEl.appendChild(hitCircle);
+
+        // When mouse enters point:
+        hitCircle.addEventListener("pointerenter", () => {
+            // Fill tooltip with correct information
+            tooltip.innerHTML = buildHTML(datum);
+            // Show tooltip
+            tooltip.style.display = "block";
+
+            // Find point position on screen
+            const pointRect = hitCircle.getBoundingClientRect();
+            const wrapperRect = wrapper.getBoundingClientRect();
+            // Convert position relative to chart container
+            const px = pointRect.left + pointRect.width / 2 - wrapperRect.left;
+            const py = pointRect.top + pointRect.height / 2 - wrapperRect.top;
+
+            // Decide whether tooltip fits to the right or left
+            const tw = tooltip.offsetWidth;
+            const th = tooltip.offsetHeight;
+            const OFFSET = 3; // How far away from point to start tooltip
+
+            const spaceRight = wrapperRect.width - px;
+            const spaceAbove = py;
+
+            const left = spaceRight - OFFSET >= tw ? px + OFFSET : px - tw - OFFSET;
+            const top = spaceAbove - OFFSET >= th ? py - th - OFFSET : py + OFFSET;
+
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+            tooltip.style.opacity = "0.88";
+        });
+
+        // Hide tooltip when user leaves point
+        hitCircle.addEventListener("pointerleave", () => {
+            tooltip.style.opacity = "0";
+            tooltip.style.display = "none";
+        });
+    }
+    // Add hover areas for population points
+    cleanPop.forEach(p => {
+        addHoverPoint(p, xScale.apply(p.year), yScale.apply(p.population_estimate), buildPopulationTooltipHTML);
+    });
+
+    // Add hover areas for enhancement actions
+    eventsWithY.forEach(ev => {
+        addHoverPoint(ev, xScale.apply(ev.year), yScale.apply(ev.y2), buildEventTooltipHTML);
+    });
+
+    return wrapper;
+} // END POPULATION + TIMELINE COMBINED PLOT
+
+
+// ===================================================
+// ===================================================
 // SHARED FUNCTION: SHELL HEIGHT HISTOGRAM
 // Same chart for all sites that have size data
 // Pass in an array of shell height measurments 
@@ -404,121 +652,7 @@ function createShellHeightHistogram(sizeData) {
 
 // ===================================================
 // ===================================================
-// SHARED FUNCTION: ENHANCEMENT TIMELINE
-// TBD if this will be used - needs to be workshopped
-// ===================================================
-// ===================================================
-function createEnhancementTimeline(data, selectedSite) {
-
-    // Filter data to the selected site
-    const siteData = data.filter(d => d.site === selectedSite && d.year);
-
-    // Return an empty div if there is no data
-    if (siteData.length === 0) {
-        return document.createElement('div');
-    }
-
-    // Calculate number of lines and assign variable tick heights
-    const preparedData = siteData.map((d, i) => {
-        const text = d.timeline_text || '';
-        const numberOfLines = Math.ceil(text.length / 30);
-        // Variable tick heights to create vertical separation
-        const tickPattern = [50, 80, 110];
-        const tickHeight = tickPattern[i % 3];
-        
-        return {
-        ...d,
-        numberOfLines: Math.max(numberOfLines, 1),
-        tickHeight: tickHeight
-        };
-    });
-
-    // Calculate height dynamically
-    const maxLines = Math.max(...preparedData.map(d => d.numberOfLines));
-    const maxTick = Math.max(...preparedData.map(d => d.tickHeight));
-    const height = Math.max(300, maxLines * 16 + maxTick * 2 + 20);
-
-    return Plot.plot({
-        style: {
-            fontSize: "16px",
-            fontFamily: "inherit"
-        },
-        height,
-        marginLeft: 50,
-        marginRight: 50,
-        marginTop: 10,
-        marginBottom: 10,
-        x: {axis: null},
-        y: { axis: null, domain: [-height / 2, height / 2] },
-        marks: [
-            // Horizontal timeline line
-            Plot.ruleY([0], { stroke: "#045B4C", strokeWidth: 2 }),
-            
-            // Vertical tick marks with variable lengths
-            Plot.ruleX(preparedData, {
-                x: "year",
-                y1: 0,
-                y2: (d, i) => (i % 2 === 0 ? d.tickHeight : -d.tickHeight),
-                stroke: "#045B4C",
-                strokeWidth: 2.5
-            }),
-            // Dots at each year
-            Plot.dot(preparedData, { 
-                x: "year", 
-                fill: "#fff", 
-                stroke: "#045B4C",
-                strokeWidth: 2,
-                r: 5
-            }),
-            
-            // Year labels (alternate above/below opposite to text)
-            Plot.text(preparedData, {
-                x: "year",
-                y: (d, i) => (i % 2 === 0 ? -18 : 18),
-                text: (d) => d.year.toString(),
-                fill: "#045B4C",
-                fontWeight: "bold",
-                fontSize: 14
-            }),
-            
-            // Timeline text descriptions
-            Plot.text(preparedData, {
-                x: "year",
-                y: (d, i) =>
-                i % 2 === 0
-                    ? d.tickHeight + d.numberOfLines * 13 + 5
-                    : -d.tickHeight - d.numberOfLines * 13 - 5,
-                text: "label",
-                fill: "#333",
-                lineWidth: 12,
-                fontSize: 14,
-                textAnchor: "middle"
-            }),
-
-            // Tooltip on the dots showing the full description
-            Plot.tip(preparedData, Plot.pointer({
-                x: "year",
-                y: (d, i) => i % 2 === 0
-                    ? (d.tickHeight + d.numberOfLines * 13 + 5) / 2   // midpoint of above-line events
-                    : -(d.tickHeight + d.numberOfLines * 13 + 5) / 2, // midpoint of below-line events
-                title: d => `${d.year}: ${d.label}\n${'─'.repeat(20)}\n${d.description}`,
-              //  fill: "white",
-                stroke: "#e0e0e0",
-                strokeWidth: 1,
-                padding: 12,
-                textPadding: 8,
-                lineHeight: 1.2,
-                fontSize: 14, 
-                fontFamily: "inherit",
-                maxWidth: 140,        // wraps text at 240px — key for readability
-            }))
-        ]
-    });
-} // END TIMELINE BUILDER FUNCTION
-
-// ===================================================
-// ===================================================
-// SHARED FUNCTION: TOOLTIP CONTENT BUILDER
+// SHARED FUNCTION: MAP TOOLTIP CONTENT BUILDER
 // Builds HTML string for enhancement marker tooltip.
 // 3 cases:
 //      1. Story site: includes 'click to explore' banner
@@ -626,9 +760,9 @@ function buildTooltipHTML(site, timelineData, isStorySite, photoUrl) {
     // Only for story sites, telling user they can click
     const exploreBanner = isStorySite ? `
         <div style="margin-top:10px; padding:7px 10px;
-            background:#f0f7f5; border-radius:6px;
-            font-size:12px; font-weight:600; color:#045B4C; text-align:center;">
-            &#x25B6; Click to explore this site
+            background:#FCE8D6; border-radius:6px;
+            font-size:10px; font-weight:700; color:#8A4B1F; text-align:center;">
+             - Click icon to explore restoration story - 
         </div>
     ` : "";
 
@@ -640,11 +774,11 @@ function buildTooltipHTML(site, timelineData, isStorySite, photoUrl) {
                 <p style="font-size:15px; font-weight:600; color:#222;
                     text-align:center; margin:0 0 10px 0;">
                     ${site.site_name}
+                     ${exploreBanner}
                 </p>
                 ${metaHTML}
                 <div style="height:1px; background:#e8e8e8; margin:8px 0;"></div>
                 ${timelineHTML}
-                ${exploreBanner}
             </div>
         </div>
     `;
@@ -666,7 +800,6 @@ function buildSitePanel(siteName) {
     case "Oyster Bay":  return buildOysterBayPanel();
     // case "Silverdale":   return buildSilverdalePanel();
     // case "Chico Bay":    return buildChicoBayPanel();
-    // case "Oyster Bay":   return buildOysterBayPanel();
   }
 } // END BUILD SITE PANEL FUNCTION
 
@@ -694,9 +827,9 @@ function buildFidalgoBayPanel() {
 
         ourWork: `What followed was a years-long conversation with the bay. Additional seeded cultch were added in subsequent years. Non-seed bearing Pacific oyster shell was introduced in 2006, 2008, and 2013 to enhance the substrate and expand the area available for larval settlement. When monitoring revealed that nearly all natural recruitment was concentrated on the eastern side, likely shaped by summer current patterns, we responded by seeding the west side of the bay in 2016. In 2018, two new half-acre plots of bulk Pacific shell were added, one on each side of the bay, and the west side was seeded once more months later to give larval abundance a fresh boost.`,
 
-        dataCallout: `Since 2002, the estimated Olympia oyster population in Fidalgo Bay has grown from roughly 50,000 to over 5.5 million - a more than hundredfold increase over two decades.`,
+        dataCallout: `Since 2002, the estimated Olympia oyster population in Fidalgo Bay has grown from roughly 25,000 to over 5.5 million - a more than hundredfold increase over two decades.`,
 
-        impact: `Growth through the 2000s and early 2010s was steady, from the initial 50,000 seeded individuals to 240,000 by 2013. Then, something shifted. The population began to accelerate, explosive growth driven no longer by our additions, but by the Olys themselves! The last 5 years alone saw numbers nearly double, from 2.9 million in 2018 to 5.5 million in 2023.`,
+        impact: `Growth through the 2000s and early 2010s was steady, from the initial 25,000 seeded individuals to 240,000 by 2013. Then, something shifted. The population began to accelerate, explosive growth driven no longer by our additions, but by the Olys themselves! The last 5 years alone saw numbers nearly double, from 2.9 million in 2018 to 5.5 million in 2023.`,
 
         sizeContext: `While most of these individuals remain within the enhanced shell plots, the Olys are expanding into areas where we wouldn’t have expected them. In 2023, we counted over 1.2 million oysters in the marsh channels at the far southern end of the bay, well beyond the reach of any direct seeding effort. This was not only the densest aggregation observed that year, but also home to some of the largest individual Olympia oysters recorded anywhere in Puget Sound, with some measuring over 70mm.`,
 
@@ -874,344 +1007,6 @@ function buildFidalgoBayPanel() {
     return panel;
 } // END BUILD FIDALGO BAY PANEL
 
-// --- Fidlago Bay Population line chart ---
-function createFidalgoBayPopulationPlot(data) {
-    if (data.length === 0) {
-        return null; 
-    }
-
-    const cleanData = data.filter(d => d.population_estimate != null && d.population_estimate !== "NA");
-
-    if (cleanData.length === 0) {
-        return null;
-    }
-
-    return Plot.plot({
-        height: 350,
-        marginLeft: 60,
-        marginRight: 30,
-        marginTop: 15,
-        marginBottom: 30,
-        insetBottom: 20,
-        insetTop: 10, 
-        x: {
-            label: null,
-            tickFormat: "d",
-            tickSpacing: 60,
-            padding: 0.1
-        },
-        y: {
-            label: "Estimated Population",
-            grid: true,
-            padding: 0.2,
-            tickFormat: d => {    // "5.5M" instead of "5,500,000-"
-                if (d >= 1_000_000) return (d / 1_000_000).toFixed(1) + "M";
-                if (d >= 1_000)     return (d / 1_000).toFixed(0) + "K";
-                return d;
-            }
-        },
-        marks: [
-            // Soft filled area under the line
-            Plot.areaY(cleanData, {
-                x: "year",
-                y: "population_estimate",
-                fill: "#045B4C",
-                fillOpacity: 0.08
-            }),
-            Plot.line(cleanData, {
-                x: "year",
-                y: "population_estimate",
-                stroke: "#045B4C",
-                strokeWidth: 2.5
-            }),
-            Plot.dot(cleanData, {
-                x: "year",
-                y: "population_estimate",
-                fill: "#045B4C",
-                stroke: "white",
-                strokeWidth: 2,
-                r: 4
-            }),
-            Plot.tip(cleanData, Plot.pointer({
-                x: "year",
-                y: "population_estimate",
-                title: d => `${d.year}: ${d.population_estimate.toLocaleString()}`
-            }))
-        ],
-        style: { fontFamily: "inherit", fontSize: "14px" }
-    });
-} // END Fidlago Bay pop line plot
-
-// ===================================================
-// ===================================================
-// SHARED FUNCTION: POPULATION + TIMELINE COMBINED PLOT
-// Overlays enhancement action markers (dashed vertical
-// lines) onto a site's population-over-time chart.
-// Uses a custom floating HTML tooltip (not Plot's built-in
-// SVG tip) so we get full styling control — bold text,
-// color accents, wrapped paragraphs — matching the look
-// of the Leaflet marker tooltips elsewhere in this file.
-// ===================================================
-// ===================================================
-function createPopulationTimelinePlot(popData, timelineData, siteName) {
-    const cleanPop = (popData || []).filter(
-        d => d.population_estimate != null && d.population_estimate !== "NA"
-    );
-    if (cleanPop.length === 0) return null;
-
-    const events = (timelineData || [])
-        .filter(d => d.site === siteName && d.year)
-        .sort((a, b) => a.year - b.year);
-
-    const maxPop = Math.max(...cleanPop.map(d => d.population_estimate));
-    const yMax = maxPop * 1.08;
-
-    // Find each event's population value (or nearest year) so its
-    // dashed line can start right at the population trend
-    const eventsWithY = events.map(event => {
-        let match = cleanPop.find(p => p.year === event.year);
-        if (!match) {
-            match = cleanPop.reduce((closest, p) =>
-                Math.abs(p.year - event.year) < Math.abs(closest.year - event.year) ? p : closest
-            , cleanPop[0]);
-        }
-        return { ...event, popAtYear: match ? match.population_estimate : 0 };
-    });
-
-    // -----------------------------------------------
-    // Build the Plot chart (no Plot.tip marks — hover
-    // is handled entirely by our custom tooltip below)
-    // -----------------------------------------------
-    const chart = Plot.plot({
-        height: 380,
-        marginLeft: 60,
-        marginRight: 30,
-        marginTop: 15,
-        marginBottom: 30,
-        insetBottom: 20,
-        insetTop: 10,
-        x: {
-            label: null,
-            tickFormat: "d",
-            tickSpacing: 60,
-            padding: 0.1
-        },
-        y: {
-            label: "Estimated Population",
-            grid: true,
-            domain: [0, yMax],
-            tickFormat: d => {
-                if (d >= 1_000_000) return (d / 1_000_000).toFixed(1) + "M";
-                if (d >= 1_000)     return (d / 1_000).toFixed(0) + "K";
-                return d;
-            }
-        },
-        marks: [
-            Plot.areaY(cleanPop, {
-                x: "year",
-                y: "population_estimate",
-                fill: "#045B4C",
-                fillOpacity: 0.08
-            }),
-            Plot.ruleX(eventsWithY, {
-                x: "year",
-                y1: "popAtYear",
-                y2: yMax,
-                stroke: "#999",
-                strokeWidth: 2,
-                strokeDasharray: "6,4",
-                strokeOpacity: 0.85
-            }),
-            Plot.line(cleanPop, {
-                x: "year",
-                y: "population_estimate",
-                stroke: "#045B4C",
-                strokeWidth: 2.5
-            }),
-            Plot.dot(cleanPop, {
-                x: "year",
-                y: "population_estimate",
-                fill: "#045B4C",
-                stroke: "white",
-                strokeWidth: 2,
-                r: 4
-            }),
-            Plot.dot(eventsWithY, {
-                x: "year",
-                y: yMax,
-                r: 6,
-                fill: "#999",
-                stroke: "white",
-                strokeWidth: 2
-            })
-        ],
-        style: { fontFamily: "inherit", fontSize: "14px", overflow: "visible" }
-    });
-
-    // -----------------------------------------------
-    // Wrap the chart in a positioned container so our
-    // floating tooltip div can be absolutely positioned
-    // relative to it
-    // -----------------------------------------------
-    const wrapper = document.createElement("div");
-    wrapper.style.position = "relative";
-    wrapper.appendChild(chart);
-
-    // The tooltip div itself — hidden until hover
-    const tooltip = document.createElement("div");
-    Object.assign(tooltip.style, {
-        position: "absolute",
-        display: "none",
-        pointerEvents: "none",
-        background: "white",
-        borderRadius: "10px",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
-        padding: "0",
-        zIndex: "20",
-        transition: "opacity 0.1s ease",
-        opacity: "0"
-    });
-    wrapper.appendChild(tooltip);
-
-    // -----------------------------------------------
-    // Build the tooltip's inner HTML for a given event
-    // -----------------------------------------------
-    function buildEventTooltipHTML(event) {
-        return `
-            <div style="border-left:4px solid #999; border-radius:10px; overflow:hidden; min-width:220px; max-width:280px;">
-                <div style="padding:14px 16px;">
-                    <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
-                        <span style="font-size:15px; font-weight:700; color:#045B4C;">${event.year}</span>
-                        <span style="font-size:12px; font-weight:600; color:#999; text-transform:uppercase; letter-spacing:0.4px;">${event.label || "Enhancement Action"}</span>
-                    </div>
-                    <p style="font-size:13px; line-height:1.6; color:#444; margin:0;">
-                        ${event.description || "No description recorded."}
-                    </p>
-                </div>
-            </div>
-        `;
-    }
-
-    // Build the tooltip's inner HTML for a given population point
-    function buildPopulationTooltipHTML(point) {
-        return `
-            <div style="border-left:4px solid #045B4C; border-radius:10px; overflow:hidden; min-width:180px;">
-                <div style="padding:14px 16px;">
-                    <div style="font-size:11px; font-weight:600; color:#045B4C; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">
-                        Estimated Population
-                    </div>
-                    <div style="display:flex; align-items:baseline; gap:8px;">
-                        <span style="font-size:15px; font-weight:700; color:#222;">${point.year}</span>
-                        <span style="font-size:15px; color:#444;">${point.population_estimate.toLocaleString()} oysters</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    // -----------------------------------------------
-    // Hover handling: find the nearest event marker or
-    // population point to the cursor, in screen-space
-    // pixel coordinates. Scales are computed ONCE (not
-    // on every mousemove) and we only touch the DOM
-    // when the nearest point actually changes.
-    // -----------------------------------------------
-    const svg = chart; // Plot.plot() returns the SVG (or figure) element directly
-
-    const xScale = svg.scale ? svg.scale("x") : null;
-    const yScale = svg.scale ? svg.scale("y") : null;
-
-    // Pre-compute each point's screen position ONCE, up front,
-    // instead of recalculating on every mouse move
-    const eventPoints = xScale && yScale
-        ? eventsWithY.map(ev => ({
-              type: "event",
-              key: `event-${ev.year}`,
-              ev,
-              px: xScale.apply(ev.year),
-              py: yScale.apply(yMax)
-          }))
-        : [];
-
-    const popPoints = xScale && yScale
-        ? cleanPop.map(p => ({
-              type: "pop",
-              key: `pop-${p.year}`,
-              p,
-              px: xScale.apply(p.year),
-              py: yScale.apply(p.population_estimate)
-          }))
-        : [];
-
-    const allPoints = [...eventPoints, ...popPoints];
-
-    const HOVER_RADIUS = 18; // pixels — how close the cursor must be to trigger
-    let lastKey = null; // tracks which point is currently shown, to skip redundant work
-
-    svg.addEventListener("pointermove", (e) => {
-        if (allPoints.length === 0) return;
-
-        const rect = svg.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        // Find nearest point by simple squared-distance comparison
-        // (no sqrt needed just to compare which is smallest)
-        let nearest = null;
-        let nearestDistSq = Infinity;
-        for (const pt of allPoints) {
-            const dx = pt.px - mouseX;
-            const dy = pt.py - mouseY;
-            const distSq = dx * dx + dy * dy;
-            if (distSq < nearestDistSq) {
-                nearestDistSq = distSq;
-                nearest = pt;
-            }
-        }
-
-        const withinRadius = nearest && nearestDistSq < HOVER_RADIUS * HOVER_RADIUS;
-
-        if (!withinRadius) {
-            if (lastKey !== null) {
-                lastKey = null;
-                tooltip.style.opacity = "0";
-                tooltip.style.display = "none";
-            }
-            return;
-        }
-
-        // Same point as last time — nothing to update, skip all DOM work
-        if (nearest.key === lastKey) return;
-        lastKey = nearest.key;
-
-        tooltip.innerHTML = nearest.type === "event"
-            ? buildEventTooltipHTML(nearest.ev)
-            : buildPopulationTooltipHTML(nearest.p);
-
-        tooltip.style.display = "block";
-
-        // One layout read per point-change (not per mousemove)
-        const tw = tooltip.offsetWidth;
-        const th = tooltip.offsetHeight;
-        let left = nearest.px - tw / 2;
-        let top = nearest.py - th - 12;
-
-        left = Math.max(4, Math.min(left, rect.width - tw - 4));
-        if (top < 0) top = nearest.py + 12;
-
-        tooltip.style.left = `${left}px`;
-        tooltip.style.top = `${top}px`;
-        tooltip.style.opacity = "1";
-    });
-
-    svg.addEventListener("pointerleave", () => {
-        lastKey = null;
-        tooltip.style.opacity = "0";
-        tooltip.style.display = "none";
-    });
-
-    return wrapper;
-} // END POPULATION + TIMELINE COMBINED PLOT
 
 // ===================================================
 // ===================================================
@@ -1423,8 +1218,7 @@ function buildOysterBayPanel() {
         
     // Population plot
    panel.querySelector("#oysterbay-population-plot")
-       .appendChild(createFidalgoBayPopulationPlot(oysterbay_pop_est)); // (defined above, reusing code from Fidalgo)
-
+       .appendChild(createPopulationTimelinePlot(oysterbay_pop_est, timeline_data, "Oyster Bay"));
     // Shell height histogram
     // Not yet 100% sure what this will look like, but this is one idea
     // const fidalgoSizeData = fidalgo_heights; // Data will go in here when we have it!! 
@@ -2065,18 +1859,8 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
 // ===================================================
 // RECRUITMENT MAP LAYER MANAGER
 //
-// Two display modes for the recruitment tab:
-//
-//   GROUPED mode (zoom < 10):
-//     One circle per waterbody, colored by the
-//     average index of all its stations for that year.
-//     Clicking or zooming in expands to individual stations.
-//
-//   INDIVIDUAL mode (zoom >= 10 or after click):
-//     One circle per station, same color scale.
-//     Zooming back out returns to grouped mode.
-//
-// The year slider calls updateYear() in either mode.
+// Places recruitment icons on map
+// Updates size and color when year selector changes
 // ===================================================
 // ===================================================
 function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStationClick) {
@@ -2131,9 +1915,7 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
     }
 
     // -----------------------------------------------
-    // Build all markers once
-    // Individual markers start hidden, waterbody
-    // markers start visible (grouped is default).
+    // Build markers
     // -----------------------------------------------
     function init() {
 
@@ -2173,22 +1955,19 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                 if (marker.getElement()) marker.getElement().style.cursor = "pointer";
             });
 
-            // Start hidden (grouped mode is default)
-            // (don't add to recruitLayer yet)
             marker.addTo(recruitLayer);
             individualMarkers[stationName] = marker;        
         });
 
 
-        // Apply the latest year's data immediately
+        // Start with most recent year of data shown
         updateYear(currentYear);
             
     }
 
     // -----------------------------------------------
     // UPDATE YEAR
-    // Re-styles whichever set of markers is currently
-    // visible for the newly selected year.
+    // Re-styles markers for the newly selected year
     // -----------------------------------------------
     function updateYear(year) {
         currentYear = year;
@@ -2244,8 +2023,6 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
 // ===================================================
 // MAP LEGEND BUILDER: RECRUITMENT
 //
-// Shows a color ramp
-//
 // Arguments:
 //   map: Leaflet map instance
 //   maxValue: global max spat value (for scale labels)
@@ -2297,161 +2074,182 @@ function addRecruitmentLegend(map, maxValue) {
 
 // ===================================================
 // ===================================================
-// FILTER PANEL
-// Tab switcher at top for enhancement or recruitment
-// 
-// In enhancement tab:
-//      Filter by restoration action
-//      Drop down menu to jump to sites with written stories
-// In recruitment tab:
-//      Year slider
+// ENHANCEMENT TAB CONTENT BUILDER
+// Builds the "Read a Story" dropdown and the
+// enhancement-type toggle buttons, and wires up all
+// their interactivity.
 // ===================================================
 // ===================================================
-function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, recruitData, recruitLayerManager, enhancementLegend, onTabSwitch) {
-    // Track currently open enhancement tooltip 
-    // so we can close it before opening a new one
-    let currentOpenMarker = null;
+function buildEnhancementTabContent(enhData, map, story_sites) {
+    const content = document.createElement("div");
+    content.className = "filter-tab-content";
 
-    // Track the active recruitment legend so we can remove it on tab switch
-    let activeRecruitLegend = null;
-
-    // Which tab is currently shown: "enhancement" or "recruitment"
-    let currentTab = "enhancement";
-
-    // -----------------------------------------------
-    // Outer panel div
-    // -----------------------------------------------
-    const panel = document.createElement("div");
-    panel.style.padding = "0";
-
-    // -----------------------------------------------
-    // TAB SWITCHER
-    // Two pill buttons at the top of the filter panel.
-    // The active tab has a filled green style.
-    // -----------------------------------------------
-    const tabBar = document.createElement("div");
-    Object.assign(tabBar.style, {
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "8px",
-        marginBottom: "12px",
-        marginTop: "12px"
-    });
-
-    // Helper: creates one tab button
-    function makeTabBtn(label, tabId) {
-        const btn = document.createElement("button");
-        btn.textContent = label;
-        btn.dataset.tab = tabId;
-        Object.assign(btn.style, {
-            flex: "1",
-            padding: "9px 10px",
-            border: "2px solid #045B4C",
-            borderRadius: "6px",
-            fontSize: "12px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-            textTransform: "uppercase",
-            letterSpacing: "0.4px",
-            // Enhancement starts active
-            backgroundColor: tabId === "enhancement" ? "#045B4C" : "white",
-            color: tabId === "enhancement" ? "white" : "#045B4C"
-        });
-        return btn;
-    }
-
-    const enhTab   = makeTabBtn("Enhancement", "enhancement");
-    const recruitTab = makeTabBtn("Recruitment", "recruitment");
-    tabBar.appendChild(enhTab);
-    tabBar.appendChild(recruitTab);
-    const tabHeader = document.createElement("div");
-    tabHeader.style.cssText = "font-size:12px; font-weight:600; color:#045B4C; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;";
-    tabHeader.textContent = "Choose Map View";
-    panel.appendChild(tabHeader);
-
-    panel.appendChild(tabBar);
-
-    const tabSubtext = document.createElement("div");
-    tabSubtext.style.cssText = "font-size:11px; color:#666; font-style:italic; line-height:1.6; margin-bottom:24px;";
-    tabSubtext.textContent = "Enhancement shows restoration sites. Recruitment shows long-term monitoring stations tracking annual oyster settlement.";
-    panel.appendChild(tabSubtext);
-
-
-    // -----------------------------------------------
-    // ENHANCEMENT TAB CONTENT
-    // Wrapped in a div so we can show/hide with display
-    // -----------------------------------------------
-    const enhContent = document.createElement("div");
-
-    // Write all static HTML for filter panel
-    enhContent.innerHTML = `
-            <!-- Decorative horizontal divider line -->
-            <div class="filter-divider" style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
+    // Write all static HTML for this tab
+    content.innerHTML = `
+            <div class="filter-divider"></div>
 
             <!-- Story Site Dropdown (static HTML here, dynamic content added below) -->
-            <div class="filter-section" style="margin-bottom: 24px;">
-                <label style="display: block; font-size: 13px; font-weight: 600; color: #045B4C;
-                    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Read a Story</label>
-                <!-- Empty selector, options are added by the JavaScript below -->
-                <select id="site-selector" style="
-                    width: 100%; padding: 10px 12px; border: 2px solid #e0e0e0; border-radius: 6px;
-                    font-size: 14px; background: white; cursor: pointer;
-                    transition: all 0.2s ease; color: #333;">
+            <div class="filter-section">
+                <label class="filter-section-label">Read a Story</label>
+                <select id="site-selector" class="filter-select">
                     <option value="">Select a site...</option>
                 </select>
-                <div style="font-size: 11px; color: #666; margin-top: 6px; font-style: italic;">
-                    Zoom to a site and view its story</div>
+                <div class="filter-hint">Zoom to a site and view its story</div>
             </div>
 
-            <!-- Decorative horizontal divider line -->
-            <div class="filter-divider" style="height: 1px; background: linear-gradient(to right, transparent, #ddd, transparent); margin: 24px 0;"></div>
+            <div class="filter-divider"></div>
 
             <!-- Enhancement Type filter: oblong toggle buttons -->
-            <div class="filter-section" style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 13px; font-weight: 600; color: #045B4C;
-                    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
-                    Filter by Enhancement Type</label>
+            <div class="filter-section">
+                <label class="filter-section-label">Filter by Enhancement Type</label>
                 <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
                     <!-- Each button has a "data-type" attribute -->
-                    <button class="type-toggle-btn" data-type="bulk shell" style="
-                        padding: 8px 16px; border: 2px solid #045B4C; border-radius: 20px;
-                        background: #045B4C; color: white; font-size: 13px; font-weight: 500;
-                        cursor: pointer; transition: all 0.2s ease; white-space: nowrap;">Bulk Shell</button>
-                    <button class="type-toggle-btn" data-type="seeded cultch" style="
-                        padding: 8px 16px; border: 2px solid #045B4C; border-radius: 20px;
-                        background: #045B4C; color: white; font-size: 13px; font-weight: 500;
-                        cursor: pointer; transition: all 0.2s ease; white-space: nowrap;">Seeded Cultch</button>
-                    <button class="type-toggle-btn" data-type="singles" style="
-                        padding: 8px 16px; border: 2px solid #045B4C; border-radius: 20px;
-                        background: #045B4C; color: white; font-size: 13px; font-weight: 500;
-                        cursor: pointer; transition: all 0.2s ease; white-space: nowrap;">Singles</button>
+                    <button class="type-toggle-btn" data-type="bulk shell">Bulk Shell</button>
+                    <button class="type-toggle-btn" data-type="seeded cultch">Seeded Cultch</button>
+                    <button class="type-toggle-btn" data-type="singles">Singles</button>
                 </div>
-                <div style="font-size: 11px; color: #666; margin-top: 6px; font-style: italic;">
-                    Select which enhancement methods are displayed</div>
+                <div class="filter-hint">Select which enhancement methods are displayed</div>
             </div>
-    `; // END HTML for filter panel
+    `;
 
     // -----------------------------------------------
-    // RECRUITMENT TAB CONTENT
-    // Year slider + explanatory text. Hidden by default.
+    // Site selector: populate dropdown, wire up navigation
     // -----------------------------------------------
-    const recruitContent = document.createElement("div");
-    recruitContent.className = "filter-tab-content hidden";
-    enhContent.className = "filter-tab-content";
+    const siteSelector = content.querySelector('#site-selector');
 
+    // Track currently open enhancement tooltip so we can
+    // close it before opening a new one
+    let currentOpenMarker = null;
+
+    // Build the list of sites to show in the dropdown
+    // Only include sites that have valid coordinates and are in story_sites
+    const uniqueSites = [...new Set(
+        enhData
+            .filter(site =>
+                site.latitude && site.longitude &&
+                site.latitude !== 'NA' && site.longitude !== 'NA' &&
+                !isNaN(parseFloat(site.latitude)) && !isNaN(parseFloat(site.longitude)) &&
+                story_sites.has(site.site_name)
+            )
+            .map(site => site.site_name)
+    )].sort(); // Alphabetize
+
+    // For each site name, create an option element
+    uniqueSites.forEach(siteName => {
+        const option = document.createElement('option');
+        option.value = siteName;
+        option.textContent = siteName;
+        siteSelector.appendChild(option);
+    });
+
+    // Listen for when the user selects a site from the dropdown
+    siteSelector.addEventListener('change', (e) => {
+        const selectedSite = e.target.value;
+
+        // Only proceed if something was selected AND that site has a marker on the map
+        if (selectedSite && window.markersBySite[selectedSite]) {
+            const marker = window.markersBySite[selectedSite];
+            const latLng = marker.getLatLng();
+
+            // If a tooltip is already open, close it before opening a new one!!!
+            if (currentOpenMarker) currentOpenMarker.closeTooltip();
+
+            // Recenter the map on this site. animate:true makes it look nice!
+            map.setView(latLng, 12, { animate: true, duration: 0.5 });
+
+            // Wait 600ms for the zoom animation to finish, then open the tooltip
+            setTimeout(() => {
+                marker.openTooltip();
+                currentOpenMarker = marker;
+            }, 600);
+        }
+    });
+
+    // When the user zooms out past zoom level 11,
+    // reset the dropdown back to the placeholder "Select a site..." option
+    map.on('zoomend', () => {
+        if (map.getZoom() < 11) siteSelector.value = '';
+    });
+
+    // -----------------------------------------------
+    // Enhancement type toggle buttons
+    // -----------------------------------------------
+
+    // Start with all 3 enhancement buttons as active
+    const activeTypes = new Set(['bulk shell', 'seeded cultch', 'singles']);
+
+    // Take the enhancement_actions column from the CSV and split into an array of strings
+    // eg. "bulk shell, seeded cultch" to ["bulk shell", "seeded cultch"]
+    function normalizeType(typeString) {
+        if (!typeString) return [];
+        return typeString.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
+    }
+
+    // Loop through all enhancement sites and show/hide markers
+    // based on if it is selected or not
+    function filterEnhancementMarkers(enhancementLayer) {
+        enhData.forEach(site => {
+            const marker = window.markersBySite[site.site_name];
+            if (marker) {
+                const siteTypes = normalizeType(site.enhancement_actions);
+                const shouldShow = siteTypes.some(type => activeTypes.has(type));
+
+                if (shouldShow) {
+                    if (!enhancementLayer.hasLayer(marker)) enhancementLayer.addLayer(marker);
+                } else {
+                    if (enhancementLayer.hasLayer(marker)) enhancementLayer.removeLayer(marker);
+                }
+            }
+        });
+    }
+
+    const typeToggleBtns = content.querySelectorAll('.type-toggle-btn');
+
+    typeToggleBtns.forEach(btn => {
+        // When a button is clicked toggle it in and out of the activeTypes
+        btn.addEventListener('click', () => {
+            const type = btn.getAttribute('data-type');
+
+            if (activeTypes.has(type)) {
+                activeTypes.delete(type);
+                btn.classList.add('inactive');
+            } else {
+                activeTypes.add(type);
+                btn.classList.remove('inactive');
+            }
+
+            // Re-run the marker filter with the updated activeTypes set —
+            // enhancementLayer is attached here on first use, set by createFilterPanel
+            filterEnhancementMarkers(content._enhancementLayer);
+        });
+    });
+
+    return { element: content, siteSelector };
+} // END buildEnhancementTabContent
+
+// ===================================================
+// ===================================================
+// RECRUITMENT TAB CONTENT BUILDER
+// Builds the waterbody jump dropdown, year slider,
+// and click hint, and wires up all their interactivity.
+// ===================================================
+// ===================================================
+function buildRecruitmentTabContent(recruitData, recruitLayerManager, map) {
+    const content = document.createElement("div");
+    content.className = "filter-tab-content hidden"; // hidden by default — enhancement starts active
+
+    // -----------------------------------------------
     // Waterbody jump dropdown (only shows waterbodies that have coordinates)
+    // -----------------------------------------------
     const wbDropdownWrapper = document.createElement("div");
     wbDropdownWrapper.className = "filter-section";
     wbDropdownWrapper.innerHTML = `
         <label style="display:block; font-size:13px; font-weight:600; color:#045B4C;
             margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Jump to Waterbody</label>
-        <select id="waterbody-selector" style="width:100%; padding:10px 12px; border:2px solid #e0e0e0;
-            border-radius:6px; font-size:14px; background:white; cursor:pointer; color:#333;">
+        <select id="waterbody-selector" class="filter-select">
             <option value="">Select a waterbody...</option>
         </select>
-        <div style="font-size:11px; color:#666; margin-top:6px; font-style:italic;">
-            Zoom to a waterbody and view its stations</div>
+        <div class="filter-hint">Zoom to a waterbody and view its stations</div>
     `;
 
     // Populate the dropdown from the recruitment data
@@ -2499,17 +2297,9 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
         if (map.getZoom() < 10) wbSelector.value = "";
     });
 
-    // Focus/blur styling to match the enhancement dropdown
-    wbSelector.addEventListener("focus", () => {
-        wbSelector.style.borderColor = "#045B4C";
-        wbSelector.style.boxShadow = "0 0 0 3px rgba(4,91,76,0.1)";
-    });
-    wbSelector.addEventListener("blur", () => {
-        wbSelector.style.borderColor = "#e0e0e0";
-        wbSelector.style.boxShadow = "none";
-    });
-
+    // -----------------------------------------------
     // Year slider
+    // -----------------------------------------------
     const sliderContainer = document.createElement("div");
     sliderContainer.className = "filter-section";
 
@@ -2525,81 +2315,108 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     }
 
     const sliderNote = document.createElement("p");
+    sliderNote.className = "filter-hint";
+    sliderNote.style.margin = "4px 0 0 0";
     sliderNote.textContent = "Drag the slider to explore recruitment across different years. Circle size and color reflect the average number of spat settled per shell at each station.";
-    Object.assign(sliderNote.style, {
-        fontSize: "11px",
-        color: "#666",
-        lineHeight: "1.5",
-        margin: "4px 0 0 0",
-        fontStyle: "italic"
-    });
     sliderContainer.appendChild(sliderNote);
 
+    // -----------------------------------------------
     // Note about clicking stations
+    // -----------------------------------------------
     const clickHint = document.createElement("div");
     clickHint.className = "filter-section";
     clickHint.innerHTML = `
-        <div style="font-size:12px; color:#666; font-style:italic;
-            padding:10px 12px; background:#f8f9fa; border-radius:6px;">
-            ▶ Click any station to view its recruitment history
-        </div>
+        <div class="filter-click-hint">▶ Click any station to view its recruitment history</div>
     `;
 
     // -----------------------------------------------
-    // Append all recruitment sections with dividers
+    // Assemble all sections with dividers
     // -----------------------------------------------
-
     const divider1 = document.createElement("div");
     divider1.className = "filter-divider";
-    divider1.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
-    recruitContent.appendChild(divider1);
+    content.appendChild(divider1);
 
-    recruitContent.appendChild(wbDropdownWrapper);
+    content.appendChild(wbDropdownWrapper);
 
     const divider2 = document.createElement("div");
     divider2.className = "filter-divider";
-    divider2.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
-    recruitContent.appendChild(divider2);
+    content.appendChild(divider2);
 
-    recruitContent.appendChild(sliderContainer);
+    content.appendChild(sliderContainer);
 
     const divider3 = document.createElement("div");
     divider3.className = "filter-divider";
-    divider3.style.cssText = "height:1px; background:linear-gradient(to right, transparent, #ddd, transparent); margin:24px 0;";
-    recruitContent.appendChild(divider3);
+    content.appendChild(divider3);
 
-    recruitContent.appendChild(clickHint);
+    content.appendChild(clickHint);
 
-    // -----------------------------------------------
-    // Add both content sections to the panel
-    // -----------------------------------------------
-    panel.appendChild(enhContent);
-    panel.appendChild(recruitContent);
+    return { element: content };
+} // END buildRecruitmentTabContent
 
-    // -----------------------------------------------
-    // TAB SWITCHING LOGIC
-    // When a tab button is clicked:
-    //   - Update button styles (active vs inactive)
-    //   - Show/hide the right content section
-    //   - Add/remove the appropriate map layers
-    //   - Swap the legend
-    //   - Call onTabSwitch() so oysterMap() can respond
-    // -----------------------------------------------
+// ===================================================
+// ===================================================
+// TAB BAR BUILDER
+// The two pill buttons at the top: "Enhancement" and
+// "Recruitment". Enhancement starts active.
+// ===================================================
+// ===================================================
+function buildTabBar() {
+    const tabBar = document.createElement("div");
+    Object.assign(tabBar.style, {
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
+        marginBottom: "12px",
+        marginTop: "12px"
+    });
+
+    // Helper: creates one tab button
+    function makeTabBtn(label, tabId) {
+        const btn = document.createElement("button");
+        btn.textContent = label;
+        btn.dataset.tab = tabId;
+        btn.className = "filter-tab-btn";
+        return btn;
+    }
+
+    const enhTab = makeTabBtn("Enhancement", "enhancement");
+    const recruitTab = makeTabBtn("Recruitment", "recruitment");
+    enhTab.classList.add("active"); // enhancement starts active
+
+    tabBar.appendChild(enhTab);
+    tabBar.appendChild(recruitTab);
+
+    return { element: tabBar, enhTab, recruitTab };
+} // END buildTabBar
+
+// ===================================================
+// ===================================================
+// TAB SWITCHING LOGIC
+// When a tab button is clicked:
+//   - Update button styles (active vs inactive)
+//   - Show/hide the right content section
+//   - Add/remove the appropriate map layers
+//   - Swap the legend
+//   - Call onTabSwitch() so oysterMap() can respond
+// ===================================================
+// ===================================================
+function wireTabSwitching({ enhTab, recruitTab, enh, recruit, enhancementLayer, recruitmentLayer, map, enhancementLegend, recruitLayerManager, onTabSwitch }) {
+    // Track the active recruitment legend so we can remove it on tab switch
+    let activeRecruitLegend = null;
+
     function switchTab(tabId) {
-        currentTab = tabId;
-
         // Update tab button styles
         [enhTab, recruitTab].forEach(btn => {
-            const isActive = btn.dataset.tab === tabId;
-            btn.style.backgroundColor = isActive ? "#045B4C" : "white";
-            btn.style.color = isActive ? "white" : "#045B4C";
+            btn.classList.toggle("active", btn.dataset.tab === tabId);
         });
 
-        if (tabId === "enhancement") {
-            // Show enhancement content, hide recruitment content
-            enhContent.classList.remove("hidden");
-            recruitContent.classList.add("hidden");
+        const showingEnhancement = tabId === "enhancement";
 
+        // Show/hide the right content section
+        enh.element.classList.toggle("hidden", !showingEnhancement);
+        recruit.element.classList.toggle("hidden", showingEnhancement);
+
+        if (showingEnhancement) {
             // Show enhancement layer, hide recruitment layer
             enhancementLayer.addTo(map);
             recruitmentLayer.remove();
@@ -2612,10 +2429,6 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
             if (enhancementLegend) enhancementLegend.addTo(map);
 
         } else {
-            // Show recruitment content, hide enhancement content
-            enhContent.classList.add("hidden");
-            recruitContent.classList.remove("hidden");
-
             // Show recruitment layer, hide enhancement layer
             recruitmentLayer.addTo(map);
             enhancementLayer.remove();
@@ -2632,179 +2445,54 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     }
 
     // Wire up click events on both tab buttons
-    enhTab.addEventListener("click",    () => switchTab("enhancement"));
+    enhTab.addEventListener("click", () => switchTab("enhancement"));
     recruitTab.addEventListener("click", () => switchTab("recruitment"));
+} // END wireTabSwitching
 
-    // -----------------------------------------------
-    // ENHANCEMENT TAB: wire up existing interactivity
-    // (site selector, layer toggles, type filter buttons)
-    // -----------------------------------------------
+// ===================================================
+// ===================================================
+// FILTER PANEL
+// Builds filter panel content all together
+// 
+// ===================================================
+// ===================================================
+function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, recruitData, recruitLayerManager, enhancementLegend, onTabSwitch) {
+    const panel = document.createElement("div");
+    panel.style.padding = "0";
 
-    // Add options to the site selector dropdown dynamically 
-    // (so as we add sites, they will add here too!)
-    // Find the select element from memory
-    const siteSelector = panel.querySelector('#site-selector');
+    // Header text above the tab buttons
+    const tabHeader = document.createElement("div");
+    tabHeader.style.cssText = "font-size:12px; font-weight:600; color:#045B4C; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;";
+    tabHeader.textContent = "Choose Map View";
+    panel.appendChild(tabHeader);
 
-    // Build the list of sites to show in the dropdown
-    // Only include sites tha thave valid coordinates and are in story_sites
-    const uniqueSites = [...new Set( // Wrapping in Set will remove duplicates, [... ] spreads it to an array
-        enhData
-            .filter(site =>
-                // Keep only rows where ALL of these are trure
-                site.latitude && site.longitude &&   // latitude and longitude exist
-                site.latitude !== 'NA' && site.longitude !== 'NA' &&   // and aren't the string "NA"
-                !isNaN(parseFloat(site.latitude)) && !isNaN(parseFloat(site.longitude)) &&   // and are actual numbers
-                story_sites.has(site.site_name)   // and the site has a story panel
-            )
-            .map(site => site.site_name) // Only keep the site name
+    // Tab bar (Enhancement / Recruitment pill buttons)
+    const { element: tabBar, enhTab, recruitTab } = buildTabBar();
+    panel.appendChild(tabBar);
 
-    )].sort(); // Alphabetize 
+    // Subtext explaining what each tab shows
+    const tabSubtext = document.createElement("div");
+    tabSubtext.style.cssText = "font-size:11px; color:#666; font-style:italic; line-height:1.6; margin-bottom:24px;";
+    tabSubtext.textContent = "Enhancement shows restoration sites. Recruitment shows long-term monitoring stations tracking annual oyster settlement.";
+    panel.appendChild(tabSubtext);
 
-    // For each site name, create an option element
-    uniqueSites.forEach(siteName => {
-        const option = document.createElement('option');
-        option.value = siteName;
-        option.textContent = siteName;
-        siteSelector.appendChild(option);
+    // Build both tabs' content
+    const enh = buildEnhancementTabContent(enhData, map, story_sites);
+    const recruit = buildRecruitmentTabContent(recruitData, recruitLayerManager, map);
+
+    // The enhancement tab's type-toggle filter needs a live reference to enhancementLayer
+    enh.element._enhancementLayer = enhancementLayer;
+
+    panel.appendChild(enh.element);
+    panel.appendChild(recruit.element);
+
+    // Wire up tab-switching behavior (layer swap, legend swap, styles)
+    wireTabSwitching({
+        enhTab, recruitTab, enh, recruit,
+        enhancementLayer, recruitmentLayer, map,
+        enhancementLegend, recruitLayerManager, onTabSwitch
     });
 
-    // Listen for when the user selects a site from the dropdown
-    siteSelector.addEventListener('change', (e) => {
-        const selectedSite = e.target.value;  // the value of the chosen option
-
-        // Only proceed if something was selected AND that site has a marker on the map
-        // window.markersBySite is the global object storing all markers by site name
-        if (selectedSite && window.markersBySite[selectedSite]) {
-            const marker = window.markersBySite[selectedSite];
-            const latLng = marker.getLatLng();  // get the marker's coords
-
-            // If a tooltip is already open, close it before opening a new one!!!
-            if (currentOpenMarker) currentOpenMarker.closeTooltip();
-
-            // Recenter the map on this site. animate:true makes it look nice!
-            map.setView(latLng, 12, { animate: true, duration: 0.5 });
-
-            // Wait 600ms for the zoom animation to finish, then open the tooltip
-            // Otherwise things were getting wonky
-            setTimeout(() => {
-                marker.openTooltip();
-                currentOpenMarker = marker;  // remember this as the now-open marker
-            }, 600);
-        }
-    });
-
-    // When the user zooms out past zoom level 11,
-    // reset the dropdown back to the placeholder "Select a site..." option
-    // Keeps the dropdown in sync with what the map is showing!
-    map.on('zoomend', () => {
-        if (map.getZoom() < 11) siteSelector.value = '';
-    });
-
-    // -----------------------------------------------
-    // Enhancement type toggle buttons
-    // -----------------------------------------------
-
-    // Start with all 3 enhancement buttons as active
-    const activeTypes = new Set(['bulk shell', 'seeded cultch', 'singles']);
-
-    // Take the enhancement_actions column from the CSV and split into an array of strings
-    // eg. "bulk shell, seeded cultch" to ["bulk shell", "seeded cultch"]
-    // .map(t => t.length >0) removes whitespace
-    // .filter(t => t.length > 0) removes any empty strings
-    function normalizeType(typeString) {
-        if (!typeString) return [];  // if the value is empty, return empty array
-        return typeString.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
-    }
-
-    // Loop through all enhancement sites and show/hide markers
-    // based on if it is selected or not
-    function filterEnhancementMarkers() {
-        enhData.forEach(site => {
-            const marker = window.markersBySite[site.site_name];
-            if (marker) {
-                // Get this sites enhancement types
-                const siteTypes = normalizeType(site.enhancement_actions);
-
-                // .some() returns true if at least one item in an array passes test
-                const shouldShow = siteTypes.some(type => activeTypes.has(type));
-
-                if (shouldShow) {
-                    // hasLayer() checks if the marker is already on the layer —
-                    // we only add it if it's not already there, to avoid duplicates
-                    if (!enhancementLayer.hasLayer(marker)) enhancementLayer.addLayer(marker);
-                } else {
-                    if (enhancementLayer.hasLayer(marker)) enhancementLayer.removeLayer(marker);
-                }
-            }
-        });
-    }
-
-    // Find all three toggle buttons
-    const typeToggleBtns = panel.querySelectorAll('.type-toggle-btn');
-
-    typeToggleBtns.forEach(btn => {
-        
-        // When a button is clicked toggle it in and out of the activeTypes
-        btn.addEventListener('click', () => {
-            const type = btn.getAttribute('data-type');
-
-            if (activeTypes.has(type)) {
-                // Type was active: deactivate it
-                activeTypes.delete(type);
-                // Style button as "off": white background, green text
-                btn.style.background = 'white';
-                btn.style.color = '#045B4C';
-            } else {
-                // Type was inactive: activate it
-                activeTypes.add(type);
-                // Style button as "on": green background, white text
-                btn.style.background = '#045B4C';
-                btn.style.color = 'white';
-            }
-
-            // Re-run the marker filter with the updated activeTypes set
-            filterEnhancementMarkers();
-        });
-
-        // Hover effect: slightly different shade depending on the active state
-        btn.addEventListener('mouseenter', () => {
-        if (!activeTypes.has(btn.getAttribute('data-type'))) {
-            // Inactive button hover: light green tint
-            btn.style.background = '#e8f4f2';
-            btn.style.color = '#045B4C';
-        } else {
-            // Active button hover: slightly darker green
-            btn.style.background = '#034a3e';
-        }
-        });
-
-        // When mouse leaves, restore the correct active/inactive style
-        btn.addEventListener('mouseleave', () => {
-            if (!activeTypes.has(btn.getAttribute('data-type'))) {
-                btn.style.background = 'white';
-                btn.style.color = '#045B4C';
-            } else {
-                btn.style.background = '#045B4C';
-                btn.style.color = 'white';
-            }
-        });
-    });
-
-    // -----------------------------------------------
-    // Dropdown focus/blur styling
-    // Adds a green border glow when the dropdown is clicked on,
-    // restores the default border when click leaves
-    // -----------------------------------------------
-    siteSelector.addEventListener('focus', () => {
-        siteSelector.style.borderColor = '#045B4C';
-        siteSelector.style.boxShadow = '0 0 0 3px rgba(4, 91, 76, 0.1)';
-    });
-    siteSelector.addEventListener('blur', () => {
-        siteSelector.style.borderColor = '#e0e0e0';
-        siteSelector.style.boxShadow = 'none';
-    });
-
-    // Return the fully built panel element
     return panel;
 } // END FILTER PANEL FUNCTION
 
@@ -3183,7 +2871,7 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
 
 
     // ===================================================
-    // LEGEND
+    // ENHANCEMENT LEGEND
     // L.control() creates a Leaflet control
     // onAdd() is called by Leaflet when it's ready to place
     // the control; it must return a DOM element
@@ -3352,361 +3040,656 @@ setTimeout(() => {
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
 
 <!-- =================================================== -->
-<!-- STYLES -->
+<!-- CSS STYLES -->
 <!-- =================================================== -->
 <style>
-  .leaflet-container { font-family: inherit; }
 
-  .leaflet-control-attribution {
-    background-color: rgba(255,255,255,0.7);
-    font-size: 10px;
-    opacity: 0.6;
-    padding: 2px 5px;
-  }
-  .leaflet-control-attribution:hover { opacity: 1; }
+    /* ==================================================
+        GLOBAL LAYOUT
+        Overall page structure and spacing
+        ================================================== */
 
-    /* ----------------------------------------------- 
-        Year slider styling 
-    ----------------------------------------------- */
-    input[type="range"] {
-        -webkit-appearance: none;
-        height: 4px;
-        border-radius: 2px;
-        background: #d0e8e4;
-        outline: none;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: #045B4C;
-        cursor: pointer;
-        border: 2px solid white;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    }
-    input[type="range"]::-moz-range-thumb {
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        background: #045B4C;
-        cursor: pointer;
-        border: 2px solid white;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    }
+        /* ---------- Header ---------- */
 
-    /* -----------------------------------------------
-        Recruitment legend
-    ----------------------------------------------- */
-    .recruit-legend {
-        pointer-events: none;
-    }
+        #observablehq-header {
+            position: absolute;
+            background-color: #045B4C;
+            height: 150px;
+            align-items: center;
+            padding: 0 30px;
+        }
 
-    /* -----------------------------------------------
-    Hide map legend whenever a story/station detail
-    panel is open, regardless of screen width
-    ----------------------------------------------- */
-    .map-main-container.detail-open .map-legend,
-    .map-main-container.detail-open .recruit-legend {
-    display: none !important;
-    }
+        /* ---------- Body ---------- */
+        /* Adds spacing so page content sits below the fixed header
+        and doesn't touch the browser edges. */
 
-  /* -----------------------------------------------
-     CAROUSEL
-  ----------------------------------------------- */
-  .carousel {
-    position: relative;
-    width: 92%;
-    margin: 0 auto 32px auto;  /* centered with breathing room each side */
-    background: transparent;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-.carousel-images {
-    position: relative;
-    width: 100%;
-    padding-bottom: 45%;
-}
-.carousel-image {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;   /* contain or cover? not sure which i like better yet! */
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    background: transparent;
-    border-radius: 12px;
-}
-.carousel-image.active { opacity: 1; pointer-events: auto; }
-.carousel-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.35);  /* dark semi-transparent */
-    color: white;
-    border: none;
-    font-size: 28px;
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10;
-    border-radius: 50%;
-    transition: background 0.2s ease;
-}
-.carousel-btn:hover { background: rgba(0,0,0,0.6); }
-.carousel-btn.prev { left: 12px; }
-.carousel-btn.next { right: 12px; }
-.carousel-dots {
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-}
-.carousel-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.5);
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-.carousel-dot.active { background: rgba(255,255,255,1); }
-.carousel-dot:hover  { background: rgba(255,255,255,0.8); }
+        body {
+            padding-top: 80px;
+            padding-left: 40px;
+            padding-right: 40px;
+        }
 
-  /* -----------------------------------------------
-     TOOLTIP
-  ----------------------------------------------- */
-  .custom-tooltip { padding: 0 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.15); overflow: hidden; border-radius: 8px;}
-  .custom-tooltip .leaflet-tooltip-content { padding: 0 !important; margin: 0; }
-  .custom-tooltip img { display: block; background: #f0f0f0; }
+        /* ---------- Footer ---------- */
 
-  .leaflet-reset-btn:hover {
-    background: #f4f4f4 !important;
-}
-@media (prefers-color-scheme: dark) {
-    .leaflet-reset-btn {
-        background: #222 !important;
-        color: #e0e0e0 !important;
-        border-color: rgba(255,255,255,0.3) !important;
-    }
-}
+        #observablehq-footer {
+            position: absolute;
+            background-color: #5A5A5A;
+            align-items: center;
+            width: 100%;
+            left: 0;
+            padding: 0 30px;
+            box-sizing: border-box;
+        }
 
-  /* -----------------------------------------------
-   Intro cards
------------------------------------------------ */
-#intro-hero {
-    background-size: cover;
-    background-position: center;
-    color: white;
-    border: 2px solid #000;
-}
+    /* ==================================================
+        STATISTICS CARDS
+        Summary metrics displayed above the dashboard.
+        ================================================== */
 
-.intro-cards {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin: 16px 0;
-}
+        /* ---------- Grid Layout ---------- */
 
-@media (max-width: 700px) {
-    .intro-cards { grid-template-columns: 1fr; }
-}
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
 
-.intro-panel {
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 10px;
-    padding: 24px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-}
+        .stats-grid > * {
+            min-width: 0;
+        }
 
-.intro-card {
-    padding: 20px;
-    border-radius: 10px;
-    font-size: 13px;
-    line-height: 1.7;
-    color: #333;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-}
+        /* ---------- Individual Cards ---------- */
 
-.intro-card p { margin: 0; }
+        .stats-grid .card {
+            padding: 12px 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
 
-.intro-card--enhancement { 
-    border-left: 4px solid #045B4C;
-    background: rgba(255, 255, 255, 0.8);
-}
-.intro-card--recruitment { 
-    border-left: 4px solid #045B4C;
-    background: rgba(255, 255, 255, 0.8);
-}
+        /* ---------- Large Text ---------- */
 
-.intro-card-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-}
+        .stats-grid .big {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
 
-.intro-tip {
-    margin-top: 1.5rem;
-    padding: 14px 18px;
-    background: rgba(234, 243, 241, 0.92);
-    border-radius: 10px;
-    font-size: 13px;
-    line-height: 1.7;
-    color: #333;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-.intro-tip-icon {
-    font-size: 30px;
-    line-height: 1;
-    flex-shrink: 0;
-}
 
-.intro-tip-text {
-    flex: 1;
-}
+        .stats-grid h1.muted {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
 
-.intro-card-label {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-}
+            overflow: hidden;
+            text-overflow: ellipsis;
 
-.leaflet-reset-btn:hover {
-    background: #f4f4f4 !important;
-}
-@media (prefers-color-scheme: dark) {
-    .leaflet-reset-btn {
-        background: #222 !important;
-        color: #e0e0e0 !important;
-        border-color: rgba(255,255,255,0.3) !important;
-    }
-}
-/* -----------------------------------------------
-   DASHBOARD GRID: filter panel + map
------------------------------------------------ */
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: minmax(160px, 1fr) 3fr; /* filter : map roughly 1:3 */
-  gap: 1rem;
-  align-items: start;
-}
+            margin: 0 0 4px 0;
+        }
 
-.dashboard-grid > * {
-  min-width: 0;
-}
+     /* ==================================================
+        INTRO HERO
+        Landing section introducing the dashboard and
+        explaining the two map modes.
+        ================================================== */
 
-/* Below this width, filter panel moves above the map
-   and reorients its contents horizontally */
-@media (max-width: 900px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr; /* stack: filter bar on top, map below */
-  }
+        /* ---------- Hero Container ---------- */
 
-  /* Whichever tab content is active becomes a wrapping row */
-  .filter-tab-content:not(.hidden) {
-    display: flex !important;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: flex-start;
-  }
+        #intro-hero {
+            background-size: cover;
+            background-position: center;
+            color: white;
+            border: 2px solid #000;
+        }
 
-  /* Each labeled "control" takes a flexible chunk of the row instead of full width */
-  .filter-section {
-    flex: 1 1 220px;
-    margin-bottom: 0 !important;
-  }
+        /* ---------- Intro Layout ---------- */
 
-  /* Hide vertical dividers in the horizontal layout */
-  .filter-divider {
-    display: none;
-  }
-}
+        .intro-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 16px 0;
+        }
 
-.filter-tab-content.hidden {
-  display: none;
-}
+        /* ---------- Intro Text Panel ---------- */
 
-/* -----------------------------------------------
-   STATS CARDS: 4-col grid, collapsing to 2-col
-   at narrow widths
------------------------------------------------ */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-  text-align: center;
-}
+        .intro-panel {
+            background: rgba(255,255,255,0.8);
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+        }
 
-.stats-grid > * {
-  min-width: 0;
-}
+        /* ---------- Callout Cards ---------- */
 
-.stats-grid .card {
-  padding: 12px 8px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
+        .intro-card {
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #333;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+        }
 
-.stats-grid .big {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+        .intro-card p {
+            margin: 0;
+        }
 
-.stats-grid h1.muted {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0 0 4px 0;
-}
+        .intro-card--enhancement {
+            border-left: 4px solid #045B4C;
+            background: rgba(255,255,255,0.8);
+        }
 
-@media (max-width: 800px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+        .intro-card--recruitment {
+            border-left: 4px solid #045B4C;
+            background: rgba(255,255,255,0.8);
+        }
 
-/* -----------------------------------------------
-   NARROW SCREENS: detail panel fills the whole
-   map container instead of sharing space with map
------------------------------------------------ */
-@media (max-width: 1100px) {
-  .map-main-container.detail-open {
-    gap: 0 !important;
-  }
+        /* ---------- Card Labels ---------- */
 
-  .map-main-container.detail-open .map-pane {
-    width: 0 !important;
-    flex-shrink: 0 !important;
-    overflow: hidden !important;
-  }
+        .intro-card-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
 
-  .map-main-container.detail-open .detail-pane {
-    width: 100% !important;
-  }
-}
+        /* ---------- Tip Banner ---------- */
+
+        .intro-tip {
+            margin-top: 1.5rem;
+            padding: 14px 18px;
+            background: rgba(234,243,241,0.92);
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #333;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .intro-tip-icon {
+            font-size: 30px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .intro-tip-text {
+            flex: 1;
+        }
+
+    /* ==================================================
+        DASHBOARD LAYOUT
+        Primary page content containing the filter panel,
+        map, and detail panel.
+        ================================================== */
+
+        /* ---------- Dashboard Grid ---------- */
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: minmax(160px,1fr) 3fr; /* filter : map roughly 1:3 */
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .dashboard-grid > * {
+            min-width: 0;
+        }
+
+        /* ---------- Active Tab Visibility ---------- */
+
+        .filter-tab-content.hidden {
+            display: none;
+        }
+
+    /* ==================================================
+        LEAFLET MAP
+        Shared styling for the interactive map, controls,
+        legends, and tooltips.
+        ================================================== */
+
+        /* Use the page font inside Leaflet controls */
+        .leaflet-container {
+            font-family: inherit;
+        }
+
+        /* ---------- Attribution ---------- */
+
+        .leaflet-control-attribution {
+            background-color: rgba(255,255,255,0.7);
+            font-size: 10px;
+            opacity: 0.6;
+            padding: 2px 5px;
+        }
+
+        .leaflet-control-attribution:hover {
+            opacity: 1;
+        }
+
+        /* ---------- Reset View Button ---------- */
+
+        .leaflet-reset-btn:hover {
+            background: #f4f4f4 !important;
+        }
+
+        /* Dark mode styling */
+        @media (prefers-color-scheme: dark) {
+
+            .leaflet-reset-btn {
+                background: #222 !important;
+                color: #e0e0e0 !important;
+                border-color: rgba(255,255,255,0.3) !important;
+            }
+
+        }
+
+        /* ---------- Recruitment Legend ---------- */
+        /* Prevent legend from blocking map interaction. */
+
+        .recruit-legend {
+            pointer-events: none;
+        }
+
+        /* Hide legends whenever a detail panel is open. */
+
+        .map-main-container.detail-open .map-legend,
+        .map-main-container.detail-open .recruit-legend {
+            display: none !important;
+        }
+
+        /* ---------- Custom Tooltips ---------- */
+
+        .custom-tooltip {
+            padding: 0 !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .custom-tooltip .leaflet-tooltip-content {
+            padding: 0 !important;
+            margin: 0;
+        }
+
+        .custom-tooltip img {
+            display: block;
+            background: #f0f0f0;
+        }
+
+    /* ==================================================
+        FILTER PANEL
+        Controls used to navigate enhancement sites
+        and recruitment monitoring stations.
+        ================================================== */
+
+        /* ---------- Tab Buttons ---------- */
+
+        .filter-tab-btn {
+            flex: 1;
+            padding: 9px 10px;
+            border: 2px solid #045B4C;
+            border-radius: 6px;
+            background: white;
+            color: #045B4C;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .filter-tab-btn.active {
+            background: #045B4C;
+            color: white;
+        }
+
+        /* ---------- Dropdowns ---------- */
+
+        .filter-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            background: white;
+            color: #333;
+            font-size: 14px;
+            cursor: pointer;
+            transition: border-color 0.2s ease,
+                        box-shadow 0.2s ease;
+        }
+
+        .filter-select:focus {
+            border-color: #045B4C;
+            box-shadow: 0 0 0 3px rgba(4,91,76,0.1);
+            outline: none;
+        }
+
+        /* ---------- Toggle Buttons ---------- */
+
+        .type-toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #045B4C;
+            border-radius: 20px;
+            background: #045B4C;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .type-toggle-btn.inactive {
+            background: white;
+            color: #045B4C;
+        }
+
+        .type-toggle-btn.inactive:hover {
+            background: #e8f4f2;
+        }
+
+        .type-toggle-btn:not(.inactive):hover {
+            background: #034a3e;
+        }
+
+        /* ---------- Year Slider ---------- */
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: #d0e8e4;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #045B4C;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #045B4C;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+
+        /* ---------- Labels ---------- */
+
+        .filter-section-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #045B4C;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ---------- Layout ---------- */
+
+        .filter-section {
+            margin-bottom: 24px;
+        }
+
+        .filter-divider {
+            height: 1px;
+            margin: 24px 0;
+            background: linear-gradient(
+                to right,
+                transparent,
+                #ddd,
+                transparent
+            );
+        }
+
+        /* ---------- Helper Text ---------- */
+
+        .filter-hint {
+            margin-top: 6px;
+            color: #666;
+            font-size: 11px;
+            font-style: italic;
+        }
+
+        .filter-click-hint {
+            padding: 10px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            color: #666;
+            font-size: 12px;
+            font-style: italic;
+        }
+
+        
+    /* ==================================================
+        PHOTO CAROUSEL
+        Image carousel used throughout restoration
+        story panels.
+        ================================================== */
+
+        .carousel {
+            position: relative;
+            width: 92%;
+            margin: 0 auto 32px auto;
+            background: transparent;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        /* ---------- Image Container ---------- */
+
+        .carousel-images {
+            position: relative;
+            width: 100%;
+            padding-bottom: 45%;
+        }
+
+        .carousel-image {
+            position: absolute;
+            top: 0; 
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* contain or cover? not sure which i like better yet! */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            background: transparent;
+            border-radius: 12px;
+        }
+
+        .carousel-image.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ---------- Navigation Buttons ---------- */
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.35);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 10;
+            transition: background 0.2s ease;
+        }
+
+        .carousel-btn:hover {
+            background: rgba(0,0,0,0.6);
+        }
+
+        .carousel-btn.prev {
+            left: 12px;
+        }
+
+        .carousel-btn.next {
+            right: 12px;
+        }
+
+        /* ---------- Page Dots ---------- */
+
+        .carousel-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+
+            display: flex;
+            gap: 8px;
+
+            z-index: 10;
+        }
+
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .carousel-dot.active {
+            background: rgba(255,255,255,1);
+        }
+
+        .carousel-dot:hover {
+            background: rgba(255,255,255,0.8);
+        }
+
+    /* ==================================================
+        RESPONSIVE LAYOUT
+        Screen-size adjustments for tablets and phones.
+        ================================================== */
+
+        /* -----------------------------------------------
+            Dark mode adjustments
+            Leaflet reset button styling
+        ----------------------------------------------- */
+
+        /* @media (prefers-color-scheme: dark) {
+            .leaflet-reset-btn {
+                background: #222 !important;
+                color: #e0e0e0 !important;
+                border-color: rgba(255,255,255,0.3) !important;
+            }
+        } */
+
+
+        /* -----------------------------------------------
+            Smaller desktop
+            Detail panel expands when open
+        ----------------------------------------------- */
+
+        @media (max-width: 1100px) {
+
+            .map-main-container.detail-open {
+                gap: 0 !important;
+            }
+
+            .map-main-container.detail-open .map-pane {
+                width: 0 !important;
+                flex-shrink: 0 !important;
+                overflow: hidden !important;
+            }
+
+            .map-main-container.detail-open .detail-pane {
+                width: 100% !important;
+            }
+        }
+
+
+        /* -----------------------------------------------
+            Tablet layout
+            Stack filter panel above map
+            Convert filter controls to wrapping row
+        ----------------------------------------------- */
+
+        @media (max-width: 900px) {
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+
+            .filter-tab-content:not(.hidden) {
+                display: flex !important;
+                flex-wrap: wrap;
+                gap: 20px;
+                align-items: flex-start;
+            }
+
+
+            .filter-section {
+                flex: 1 1 220px;
+                margin-bottom: 0 !important;
+            }
+
+
+            .filter-divider {
+                display: none;
+            }
+        }
+
+
+        /* -----------------------------------------------
+            Small tablet
+            Collapse statistics cards
+        ----------------------------------------------- */
+
+        @media (max-width: 800px) {
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+
+        /* -----------------------------------------------
+            Mobile layout MORE WORK HERE NEEDED
+            Stack intro cards vertically
+        ----------------------------------------------- */
+
+        @media (max-width: 700px) {
+
+            .intro-cards { 
+                grid-template-columns: 1fr; 
+            }
+        }
 
 </style>
 
