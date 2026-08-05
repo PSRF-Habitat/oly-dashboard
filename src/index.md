@@ -187,6 +187,14 @@ if (introHero) {
   introHero.style.backgroundImage = `url(${coverPhoto})`;
 }
 
+// // Header photo
+// const headerPhoto = FileAttachment("data/images/samish_tooltip.jpg").href;
+// const header = document.querySelector("#observablehq-header");
+// if (header) {
+//   header.style.backgroundImage = `url(${headerPhoto})`;
+// }
+
+
 // ===================================================
 // ===================================================
 // MAP ICONS
@@ -1207,7 +1215,7 @@ function buildOysterBayPanel() {
         FileAttachment("data/images/oysterbay_enhancement.jpg").href,
         FileAttachment("data/images/oysterbay_2012.JPG").href,
         FileAttachment("data/images/oysterbay_survey_2026.jpg").href,
-        FileAttachment("data/images/oysterbay_loads_of_olys_2026.HEIC").href
+        FileAttachment("data/images/oysterbay_loads_of_olys_2026.png").href
     ].filter(Boolean);
     buildCarousel(panel.querySelector("#oysterbay-carousel"), photos);
 
@@ -3058,6 +3066,16 @@ setTimeout(() => {
             align-items: center;
             padding: 0 30px;
         }
+
+        /* For using photo as header background */
+         /* #observablehq-header {
+            position: absolute;
+            background-size: cover;
+            background-position: center;
+            height: 150px;
+            align-items: center;
+            padding: 0 30px;
+        } */
 
         /* ---------- Body ---------- */
         /* Adds spacing so page content sits below the fixed header
