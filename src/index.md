@@ -2020,7 +2020,49 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                 `
             );
         });
-    }
+
+        // ===============================================
+        // NEW: LAYERING PASS
+        // Reorders markers on the SVG pane so that:
+        //   1. "No data" stations always sit at the very back
+        //   2. Among stations with data, LARGER index values
+        //      are drawn first (bottom) and SMALLER values are
+        //      drawn last (top) — so a big circle never fully
+        //      swallows a smaller one sitting near it
+        // Must run every time updateYear() runs, since which
+        // stations have data (and their relative values) changes
+        // from year to year.
+        // ===============================================
+
+        const noDataMarkers = [];
+        const dataMarkers = []; // { marker, value }
+
+        Object.entries(individualMarkers).forEach(([stationName, marker]) => {
+            const row = yearData[stationName];
+            const value = (row && row.index !== null && !isNaN(row.index)) ? row.index : null;
+
+            if (value === null) {
+                noDataMarkers.push(marker);
+            } else {
+                dataMarkers.push({ marker, value });
+            }
+        });
+
+        // Step 1: push every "no data" marker to the very back.
+        // Order among themselves doesn't matter — they're all
+        // the same flat grey circle.
+        noDataMarkers.forEach(marker => marker.bringToBack());
+
+        // Step 2: sort data markers largest -> smallest, then call
+        // bringToFront() in that order. Each bringToFront() call
+        // stacks the marker above everything currently in front of
+        // it, so the LAST one called (the smallest value) ends up
+        // on top of the pile — exactly what we want, since a small
+        // circle would otherwise get hidden under a big neighbor.
+        dataMarkers
+            .sort((a, b) => b.value - a.value) // descending: biggest first
+            .forEach(({ marker }) => marker.bringToFront());
+    } // END updateYear
     // Show
     return { years, updateYear, init };
 
