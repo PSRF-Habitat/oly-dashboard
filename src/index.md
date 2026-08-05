@@ -8,7 +8,7 @@ pager: false
 <!-- =================================================== -->
 <!-- Flash cards -->
 <!-- =================================================== -->
-<div class="stats-grid">
+<!-- <div class="stats-grid">
   <div class="card">
     <h1 class="muted">Acres Restored</h1>
     <span class="big" style="color: #045B4C">141.3</span>
@@ -25,12 +25,12 @@ pager: false
     <h1 class="muted">Catchy Facts</h1>
     <span class="big" style="color: #045B4C">999</span>
   </div>
-</div>
+</div> -->
 <!-- =================================================== -->
 <!-- END Flash cards -->
 <!-- =================================================== -->
 
----
+<!-- --- -->
 
 <!-- =================================================== -->
 <!-- Intro text section -->
@@ -1726,7 +1726,8 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     label: null,
                     tickFormat: "d",
                     interval: 1,
-                    insetLeft: 15
+                    insetLeft: 15,
+                    domain: [2014, 2024]
                 },
                 y: {
                     label: "Avg live olys / shell",
@@ -3081,8 +3082,8 @@ setTimeout(() => {
         }
 
     /* ==================================================
-        STATISTICS CARDS
-        Summary metrics displayed above the dashboard.
+        FLASH CARDS
+        Displayed above the dashboard
         ================================================== */
 
         /* ---------- Grid Layout ---------- */
@@ -3400,6 +3401,16 @@ setTimeout(() => {
 
         .type-toggle-btn:not(.inactive):hover {
             background: #034a3e;
+        }
+
+        .type-toggle-btn:not(.inactive)::before {
+            content: "✓";
+            margin-right: 6px;
+            font-weight: bold;
+        }
+
+        .type-toggle-btn.inactive::before {
+            content: "";
         }
 
         /* ---------- Year Slider ---------- */
