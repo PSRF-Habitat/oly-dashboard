@@ -88,7 +88,7 @@ pager: false
       Use the <strong>tabs</strong> in the panel on the left of the map to switch between exploring
       <strong>enhancement projects</strong> and <strong>recruitment monitoring</strong>. In the
       Enhancement view, sites marked with an
-      <span style="color:#EE934F; font-weight:600;">orange dot</span>
+      <span style="color:var(--marker-story); font-weight:600;">green dot</span>
       have a story — select one from the dropdown or click it directly. In the Recruitment view,
       click any station to see its settlement history.
     </span>
@@ -203,31 +203,30 @@ if (introHero) {
 // ===================================================
 // ===================================================
 
-// --- Enhancement: standard (blue circle) ---
+// --- Enhancement: standard ---
 const enhancementIcon = L.divIcon({
-  className: '',  // empty so Leaflet doesn't add default styles
+  className: '',
   html: `<div style="
-    background-color: #4e79a7;
+    background-color: var(--marker-standard);
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    border: 2px solid white;
+    border: 2px solid var(--marker-stroke);
     box-shadow: 0 0 4px #939393;
   "></div>`,
   iconSize: [18, 18],
   iconAnchor: [9, 9]
 });
 
-// --- Enhancement: story site (purple circle) ---
-// Distinguishing visually sites with stories
+// --- Enhancement: story site ---
 const enhancementStoryIcon = L.divIcon({
   className: '',
   html: `<div style="
-    background-color: #EE934F;
+    background-color: var(--marker-story);
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    border: 2px solid white;
+    border: 2px solid var(--marker-stroke);
     box-shadow: 0 0 4px #939393;
   "></div>`,
   iconSize: [18, 18],
@@ -2900,16 +2899,16 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
                 <!-- No story site row: plain blue circle -->
                 <div style="display: flex; align-items: center; margin: 5px 0;">
                     <div style="
-                        background-color: #4e79a7; width: 14px; height: 14px; border-radius: 50%;
-                        border: 2px solid white; margin-right: 8px; flex-shrink: 0;"></div>
+                        background-color: var(--marker-standard); width: 14px; height: 14px; border-radius: 50%;
+                        border: 2px solid var(--marker-stroke); margin-right: 8px; flex-shrink: 0;"></div>
                     Enhancement Site
                 </div>
 
                 <!-- Enhancement Site with story -->
                 <div style="display: flex; align-items: center; margin: 5px 0;">
                     <div style="
-                        background-color: #EE934F; width: 14px; height: 14px; border-radius: 50%;
-                        border: 2px solid white; margin-right: 8px; flex-shrink: 0;"></div>
+                        background-color: var(--marker-story); width: 14px; height: 14px; border-radius: 50%;
+                        border: 2px solid var(--marker-stroke); margin-right: 8px; flex-shrink: 0;"></div>
                     Enhancement Story - Click to learn more
                 </div>
         `;
@@ -3057,6 +3056,16 @@ setTimeout(() => {
         Overall page structure and spacing
         ================================================== */
 
+        /* ---------- Branding ---------- */
+        :root {
+            --brand-teal: #045B4C;
+            --brand-teal-light: #5B9E91;
+            --marker-standard: #8B635C;
+            --marker-story: #3d9e06; 
+            --marker-stroke: #FFFFFF;
+            --recruit-no-data: #c8c8c8;
+}
+
         /* ---------- Header ---------- */
 
         #observablehq-header {
@@ -3091,6 +3100,8 @@ setTimeout(() => {
 
         #observablehq-footer {
             position: absolute;
+            margin-top: 0 !important;
+            padding-top: 30px;
             background-color: #5A5A5A;
             align-items: center;
             width: 100%;
