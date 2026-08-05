@@ -105,7 +105,7 @@ pager: false
 const enh_sites_metadata = await FileAttachment("data/enhancement_sites_metadata.csv").csv({typed: true});
 
 // Recruitment data
-const recruitment_data = (await FileAttachment("data/recruitment.csv").csv({typed: true}))
+const recruitment_data = (await FileAttachment("data/recruitment_unfiltered.csv").csv({typed: true}))
     .map(d => ({...d, index: (d.index === "NA" || d.index === null || d.index === "") ? null : +d.index}));
 
 // Data for timeline
@@ -1536,9 +1536,9 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
         });
 
         const stats = [
-            { label: "All-time avg",  value: avgAll.toFixed(1),          unit: "live olys / shell" },
-            { label: "Best year",     value: maxYear ? maxYear.year : "—", unit: maxYear ? `${parseFloat(maxYear.index).toFixed(1)} live olys` : "" },
-            { label: "Lowest year",   value: minYear ? minYear.year : "—", unit: minYear ? `${parseFloat(minYear.index).toFixed(1)} live olys` : "" }
+            { label: "All-time avg",  value: avgAll.toFixed(2),          unit: "live olys / shell" },
+            { label: "Best year",     value: maxYear ? maxYear.year : "—", unit: maxYear ? `${parseFloat(maxYear.index).toFixed(2)} live olys` : "" },
+            { label: "Lowest year",   value: minYear ? minYear.year : "—", unit: minYear ? `${parseFloat(minYear.index).toFixed(2)} live olys` : "" }
         ];
 
         stats.forEach(stat => {
@@ -1765,7 +1765,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     allArrowPoints.length > 0 ? Plot.tip(allArrowPoints, Plot.pointer({
                         x: "year",
                         y: () => yMax,
-                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index.toFixed(1)} avg live olys/shell`
+                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index} avg live olys/shell`
                     })) : null,
 
                     // Comparison dots — clamped, but skip points that have an arrow
@@ -1814,8 +1814,8 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                                 x: "year",
                                 y: "index",
                                 title: d => d.standard_station === station.standard_station
-                                    ? `★ ${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index.toFixed(1)} avg live olys/shell`
-                                    : `${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index.toFixed(1)} avg live olys/shell`
+                                    ? `★ ${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index} avg live olys/shell`
+                                    : `${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index} avg live olys/shell`
                             })
                         )
                     ],
@@ -1997,7 +1997,7 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                         <div style="display:flex; justify-content:space-between;
                             font-size:12px; color:#555;">
                             <span style="color:#045B4C; font-weight:600;">${year}</span>
-                            <span>${value.toFixed(1)} avg live olys/shell</span>
+                            <span>${value} avg live olys/shell</span>
                         </div>
                     </div>
                 ` : `
