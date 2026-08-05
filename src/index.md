@@ -351,14 +351,17 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
     // Position Timeline Markers
     // ---------------------------------------------------
     // Each restoration action gets a vertical dashed line.
-    // This section calculates where the top of each line should end.
-    //
-    // The three numbers create staggered heights so that
-    // event markers do not overlap each other.
-    // Find each event's population value (or nearest year) so its
-    // dashed line can start right at the population trend line
-    const tierFractions = [0.3, 0.5, 0.7]; // cycles through 3 stagger heights
-    const eventsWithY = events.map((event, i) => {
+
+    // How far above the data point every line extends,
+    // as a fraction of the y-axis max
+    const LINE_LENGTH_FRACTION = 0.5;
+
+    // No line may cross this fraction of yMax, 
+    // so a line starting near the top of the population
+    // curve doesn't cross chart edge
+    const MAX_TOP_FRACTION = 0.94;
+
+    const eventsWithY = events.map((event) => {
         // Try to find population data from the exact same year as the timeline action
         let match = cleanPop.find(p => p.year === event.year);
         // If there is no pop value that year, find closest available year instead
@@ -369,10 +372,12 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
         }
         // Store the population value closest to the event year
         const popAtYear = match ? match.population_estimate : 0;
-        // Pick a staggered height for the event marker
-        const tierTop = yMax * tierFractions[i % tierFractions.length];
-        // Make sure the event marker does not go below population point
-        const y2 = Math.max(tierTop, popAtYear + yMax * 0.08);
+
+        // Line height
+        const desiredY2 = popAtYear + (yMax * LINE_LENGTH_FRACTION);
+
+        // Clamp line height so it doesn't exceed top of chart
+        const y2 = Math.min(desiredY2, yMax * MAX_TOP_FRACTION);
 
         // Return the original timeline information plus the calculated positions needed for plotting
         return { ...event, popAtYear, y2 };
@@ -394,7 +399,9 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
             label: null,
             tickFormat: "d",
             tickSpacing: 60,
-            padding: 0.1
+            padding: 0.1,
+            insetLeft: 10,
+            insetRight: 10
         },
         // Y-axis (population)
         y: {
@@ -1734,7 +1741,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     tickFormat: "d",
                     interval: 1,
                     insetLeft: 15,
-                    domain: [2014, 2024]
+                    domain: [2014, Math.max(...allData.map(d => d.year))]
                 },
                 y: {
                     label: "Avg live olys / shell",
@@ -2022,20 +2029,18 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
         });
 
         // ===============================================
-        // NEW: LAYERING PASS
-        // Reorders markers on the SVG pane so that:
+        // Layering Recruitment Markers
+        // Reorders markers so that:
         //   1. "No data" stations always sit at the very back
-        //   2. Among stations with data, LARGER index values
-        //      are drawn first (bottom) and SMALLER values are
-        //      drawn last (top) — so a big circle never fully
-        //      swallows a smaller one sitting near it
-        // Must run every time updateYear() runs, since which
-        // stations have data (and their relative values) changes
-        // from year to year.
+        //   2. Among stations with data, larger index values
+        //      are drawn first (bottom) and smaller values are
+        //      drawn last (top), so a big circle shouldn't fully
+        //      swallow a smaller one sitting near it
+        // Must run every time updateYear() runs
         // ===============================================
 
         const noDataMarkers = [];
-        const dataMarkers = []; // { marker, value }
+        const dataMarkers = [];
 
         Object.entries(individualMarkers).forEach(([stationName, marker]) => {
             const row = yearData[stationName];
@@ -2048,21 +2053,18 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
             }
         });
 
-        // Step 1: push every "no data" marker to the very back.
-        // Order among themselves doesn't matter — they're all
-        // the same flat grey circle.
+        // Push every "no data" marker to the very back
         noDataMarkers.forEach(marker => marker.bringToBack());
 
-        // Step 2: sort data markers largest -> smallest, then call
-        // bringToFront() in that order. Each bringToFront() call
-        // stacks the marker above everything currently in front of
-        // it, so the LAST one called (the smallest value) ends up
-        // on top of the pile — exactly what we want, since a small
-        // circle would otherwise get hidden under a big neighbor.
+        // Sort data markers largest to smallest, then call bringToFront()
+        // Each bringToFront() call stacks the marker above everything 
+        // currently in front of it, so the last one called (the smallest 
+        // value) ends up on top of the pile
         dataMarkers
             .sort((a, b) => b.value - a.value) // descending: biggest first
             .forEach(({ marker }) => marker.bringToFront());
     } // END updateYear
+
     // Show
     return { years, updateYear, init };
 
