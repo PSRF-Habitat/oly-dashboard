@@ -43,12 +43,7 @@ pager: false
   margin: 1rem 0 2rem 0;
 ">
   <!-- 3 card layout: 1 left, 2 right -->
-  <div style="
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 1.5rem;
-    align-items: start;
-  ">
+  <div class="intro-hero-grid">
     <!-- LEFT: title + intro text card -->
     <div class="intro-panel">
       <h1 style="margin-top:0; color:#045B4C;">
@@ -3744,12 +3739,22 @@ setTimeout(() => {
 
         /* ---------- Intro Layout ---------- */
 
-        .intro-cards {
+        .intro-hero-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin: 16px 0;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 1.5rem;
+            align-items: start;
         }
+
+        .intro-hero-grid > * {
+            min-width: 0;
+        }
+
+        @media (max-width: 700px) {
+            .intro-hero-grid {
+                grid-template-columns: 1fr;
+            }
+         }
 
         /* ---------- Intro Text Panel ---------- */
 
@@ -4302,13 +4307,51 @@ setTimeout(() => {
 
         /* -----------------------------------------------
             Mobile layout MORE WORK HERE NEEDED
-            Stack intro cards vertically
         ----------------------------------------------- */
 
+        /* Stack intro cards vertically */
         @media (max-width: 700px) {
 
             .intro-cards { 
                 grid-template-columns: 1fr; 
+            }
+        }
+
+        /* Shrink built-in Observable card padding */
+
+        @media (max-width: 600px) {
+
+            #observablehq-center {
+                margin: 6px;
+            }
+
+            /* Reduce body padding on the sides */
+            body {
+                padding-left: 4px;
+                padding-right: 4px;
+            }
+
+            /* Reduce Observable's built-in card padding */
+            .card {
+                padding: 12px !important;
+            }
+
+            /* Tighten the gap between filter panel and map */
+            .dashboard-grid {
+                gap: 4px;
+            }
+
+            /* Tighten the intro hero panel padding too, if it's also cramped */
+            #intro-hero {
+                padding: 0.5rem;
+            }
+
+            .intro-panel {
+                padding: 10px;
+            }
+
+            .intro-card {
+                padding: 12px;
             }
         }
 
