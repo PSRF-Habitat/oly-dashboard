@@ -2172,6 +2172,18 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     scrollBody.appendChild(scopeWrapper);
 
     // -----------------------------------------------
+    // Clip y axis max
+    // Computed once from ALL stations 
+    // keeps the "All Stations" comparison as the hard upper bound
+    // -----------------------------------------------
+    const allStationsIndexValues = allData
+        .map(d => d.index)
+        .filter(v => v !== null && !isNaN(v))
+        .sort((a, b) => a - b);
+
+    const fixedClipCeiling = (allStationsIndexValues[Math.floor(allStationsIndexValues.length * 0.99)] || 10) * 1.08;
+
+    // -----------------------------------------------
     // renderChart: builds the Plot chart for the
     // current scope. Called on load and on scope change.
     // -----------------------------------------------
@@ -2218,7 +2230,9 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
             ...compLines.flat().map(d => d.index)
         ].filter(v => v !== null && !isNaN(v)).sort((a, b) => a - b);
 
-        const yMax = allIndexValues[Math.floor(allIndexValues.length * 0.99)] || 10;
+        const scopedYMax = (allIndexValues[Math.floor(allIndexValues.length * 0.99)] || 10);
+
+        const yMax = Math.min(scopedYMax, fixedClipCeiling);
 
         // Clamp comparison line data to yMax so lines end at the plot boundary
         // rather than escaping above it. We clamp each point individually.
@@ -2242,6 +2256,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                 marginRight: 20,
                 marginTop: 25,
                 marginBottom: 40,
+                insetTop: 15,
                 x: {
                     label: null,
                     tickFormat: "d",
@@ -2280,13 +2295,6 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                         strokeWidth: 3,
                         dy: -2
                     }) : null,
-
-                    // Tooltip on arrow points showing the true clipped value
-                    allArrowPoints.length > 0 ? Plot.tip(allArrowPoints, Plot.pointer({
-                        x: "year",
-                        y: () => yMax,
-                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index} avg live olys/shell`
-                    })) : null,
 
                     // Comparison dots — clamped, but skip points that have an arrow
                     ...compLinesClamped.map(lineData =>
@@ -2329,7 +2337,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                         // Unified tooltip — highlighted station rows are duplicated first
                         // so Plot.pointer() snaps to them preferentially when close
                         Plot.tip(
-                            [...stationData, ...compLines.flat()],
+                            [...stationData, ...compLines.flat()].filter(d => d.index <= yMax),
                             Plot.pointer({
                                 x: "year",
                                 y: "index",
@@ -2337,7 +2345,14 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                                     ? `★ ${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index} avg live olys/shell`
                                     : `${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index} avg live olys/shell`
                             })
-                        )
+                        ),
+
+                        // Tooltip on arrow points showing the true clipped value
+                    allArrowPoints.length > 0 ? Plot.tip(allArrowPoints, Plot.pointer({
+                        x: "year",
+                        y: () => yMax,
+                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index} avg live olys/shell`
+                    })) : null
                     ],
                     style: { fontFamily: "inherit", fontSize: "13px" }
                 });
