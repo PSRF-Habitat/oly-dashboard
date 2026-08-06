@@ -88,7 +88,7 @@ pager: false
       Use the <strong>tabs</strong> in the panel on the left of the map to switch between exploring
       <strong>enhancement projects</strong> and <strong>recruitment monitoring</strong>. In the
       Enhancement view, sites marked with an
-      <span style="color:#EE934F; font-weight:600;">orange dot</span>
+      <span style="color:var(--marker-story); font-weight:600;">green dot</span>
       have a story — select one from the dropdown or click it directly. In the Recruitment view,
       click any station to see its settlement history.
     </span>
@@ -203,31 +203,30 @@ if (introHero) {
 // ===================================================
 // ===================================================
 
-// --- Enhancement: standard (blue circle) ---
+// --- Enhancement: standard ---
 const enhancementIcon = L.divIcon({
-  className: '',  // empty so Leaflet doesn't add default styles
+  className: '',
   html: `<div style="
-    background-color: #4e79a7;
+    background-color: var(--marker-standard);
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    border: 2px solid white;
+    border: 2px solid var(--marker-stroke);
     box-shadow: 0 0 4px #939393;
   "></div>`,
   iconSize: [18, 18],
   iconAnchor: [9, 9]
 });
 
-// --- Enhancement: story site (purple circle) ---
-// Distinguishing visually sites with stories
+// --- Enhancement: story site ---
 const enhancementStoryIcon = L.divIcon({
   className: '',
   html: `<div style="
-    background-color: #EE934F;
+    background-color: var(--marker-story);
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    border: 2px solid white;
+    border: 2px solid var(--marker-stroke);
     box-shadow: 0 0 4px #939393;
   "></div>`,
   iconSize: [18, 18],
@@ -352,14 +351,17 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
     // Position Timeline Markers
     // ---------------------------------------------------
     // Each restoration action gets a vertical dashed line.
-    // This section calculates where the top of each line should end.
-    //
-    // The three numbers create staggered heights so that
-    // event markers do not overlap each other.
-    // Find each event's population value (or nearest year) so its
-    // dashed line can start right at the population trend line
-    const tierFractions = [0.3, 0.5, 0.7]; // cycles through 3 stagger heights
-    const eventsWithY = events.map((event, i) => {
+
+    // How far above the data point every line extends,
+    // as a fraction of the y-axis max
+    const LINE_LENGTH_FRACTION = 0.5;
+
+    // No line may cross this fraction of yMax, 
+    // so a line starting near the top of the population
+    // curve doesn't cross chart edge
+    const MAX_TOP_FRACTION = 0.94;
+
+    const eventsWithY = events.map((event) => {
         // Try to find population data from the exact same year as the timeline action
         let match = cleanPop.find(p => p.year === event.year);
         // If there is no pop value that year, find closest available year instead
@@ -370,10 +372,12 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
         }
         // Store the population value closest to the event year
         const popAtYear = match ? match.population_estimate : 0;
-        // Pick a staggered height for the event marker
-        const tierTop = yMax * tierFractions[i % tierFractions.length];
-        // Make sure the event marker does not go below population point
-        const y2 = Math.max(tierTop, popAtYear + yMax * 0.08);
+
+        // Line height
+        const desiredY2 = popAtYear + (yMax * LINE_LENGTH_FRACTION);
+
+        // Clamp line height so it doesn't exceed top of chart
+        const y2 = Math.min(desiredY2, yMax * MAX_TOP_FRACTION);
 
         // Return the original timeline information plus the calculated positions needed for plotting
         return { ...event, popAtYear, y2 };
@@ -395,7 +399,9 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
             label: null,
             tickFormat: "d",
             tickSpacing: 60,
-            padding: 0.1
+            padding: 0.1,
+            insetLeft: 10,
+            insetRight: 10
         },
         // Y-axis (population)
         y: {
@@ -467,6 +473,7 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
     // (This lets us position tooltips relative to the chart)
     const wrapper = document.createElement("div");
     wrapper.style.position = "relative";
+    wrapper.style.containerType = "inline-size";
     wrapper.appendChild(chart);
 
     // Create container for tooltip
@@ -493,13 +500,13 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
     // hovering over different types of points (pop estimates or enhancement actions)
     function buildEventTooltipHTML(event) {
         return `
-            <div style="border-left:4px solid #999; border-radius:10px; overflow:hidden; min-width:220px; max-width:280px;">
-                <div style="padding:14px 16px;">
-                    <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
-                        <span style="font-size:15px; font-weight:700; color:#045B4C;">${event.year}</span>
-                        <span style="font-size:12px; font-weight:600; color:#999; text-transform:uppercase; letter-spacing:0.4px;">${event.label || "Enhancement Action"}</span>
+            <div style="border-left:4px solid #999; border-radius:10px; overflow:hidden; width:clamp(260px, 46cqw, 380px);">
+                <div style="padding:clamp(8px, 2cqw, 10px) clamp(14px, 4cqw, 18px);">
+                    <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:5px;">
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); font-weight:700; color:#045B4C;">${event.year}</span>
+                        <span style="font-size:clamp(10px, 2.4cqw, 12px); font-weight:600; color:#999; text-transform:uppercase; letter-spacing:0.4px;">${event.label || "Enhancement Action"}</span>
                     </div>
-                    <p style="font-size:13px; line-height:1.6; color:#444; margin:0;">
+                    <p style="font-size:clamp(11px, 2.8cqw, 13px); line-height:1.4; color:#444; margin:0;">
                         ${event.description || "No description recorded."}
                     </p>
                 </div>
@@ -509,14 +516,14 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
 
     function buildPopulationTooltipHTML(point) {
         return `
-            <div style="border-left:4px solid #045B4C; border-radius:10px; overflow:hidden; min-width:180px;">
-                <div style="padding:14px 16px;">
-                    <div style="font-size:11px; font-weight:600; color:#045B4C; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">
+            <div style="border-left:4px solid #045B4C; border-radius:10px; overflow:hidden; width:max-content; min-width:clamp(160px, 26cqw, 190px); max-width:clamp(210px, 34cqw, 260px);">
+                <div style="padding:clamp(10px, 3cqw, 14px) clamp(11px, 3.3cqw, 16px);">
+                    <div style="font-size:clamp(9px, 2.2cqw, 11px); font-weight:600; color:#045B4C; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px; white-space:nowrap;">
                         Estimated Population
                     </div>
-                    <div style="display:flex; align-items:baseline; gap:8px;">
-                        <span style="font-size:15px; font-weight:700; color:#222;">${point.year}</span>
-                        <span style="font-size:15px; color:#444;">${point.population_estimate.toLocaleString()} oysters</span>
+                    <div style="display:flex; align-items:baseline; gap:8px; white-space:nowrap;">
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); font-weight:700; color:#222;">${point.year}</span>
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); color:#444;">${point.population_estimate.toLocaleString()} oysters</span>
                     </div>
                 </div>
             </div>
@@ -569,8 +576,12 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
             const spaceRight = wrapperRect.width - px;
             const spaceAbove = py;
 
-            const left = spaceRight - OFFSET >= tw ? px + OFFSET : px - tw - OFFSET;
-            const top = spaceAbove - OFFSET >= th ? py - th - OFFSET : py + OFFSET;
+            let left = spaceRight - OFFSET >= tw ? px + OFFSET : px - tw - OFFSET;
+            let top = spaceAbove - OFFSET >= th ? py - th - OFFSET : py + OFFSET;
+
+            // Clamp so the tooltip never spills outside the wrapper's bounds
+            left = Math.max(4, Math.min(left, wrapperRect.width - tw - 4));
+            top = Math.max(4, Math.min(top, wrapperRect.height - th - 4));
 
             tooltip.style.left = `${left}px`;
             tooltip.style.top = `${top}px`;
@@ -1735,7 +1746,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     tickFormat: "d",
                     interval: 1,
                     insetLeft: 15,
-                    domain: [2014, 2024]
+                    domain: [2014, Math.max(...allData.map(d => d.year))]
                 },
                 y: {
                     label: "Avg live olys / shell",
@@ -2021,7 +2032,44 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                 `
             );
         });
-    }
+
+        // ===============================================
+        // Layering Recruitment Markers
+        // Reorders markers so that:
+        //   1. "No data" stations always sit at the very back
+        //   2. Among stations with data, larger index values
+        //      are drawn first (bottom) and smaller values are
+        //      drawn last (top), so a big circle shouldn't fully
+        //      swallow a smaller one sitting near it
+        // Must run every time updateYear() runs
+        // ===============================================
+
+        const noDataMarkers = [];
+        const dataMarkers = [];
+
+        Object.entries(individualMarkers).forEach(([stationName, marker]) => {
+            const row = yearData[stationName];
+            const value = (row && row.index !== null && !isNaN(row.index)) ? row.index : null;
+
+            if (value === null) {
+                noDataMarkers.push(marker);
+            } else {
+                dataMarkers.push({ marker, value });
+            }
+        });
+
+        // Push every "no data" marker to the very back
+        noDataMarkers.forEach(marker => marker.bringToBack());
+
+        // Sort data markers largest to smallest, then call bringToFront()
+        // Each bringToFront() call stacks the marker above everything 
+        // currently in front of it, so the last one called (the smallest 
+        // value) ends up on top of the pile
+        dataMarkers
+            .sort((a, b) => b.value - a.value) // descending: biggest first
+            .forEach(({ marker }) => marker.bringToFront());
+    } // END updateYear
+
     // Show
     return { years, updateYear, init };
 
@@ -2900,16 +2948,16 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
                 <!-- No story site row: plain blue circle -->
                 <div style="display: flex; align-items: center; margin: 5px 0;">
                     <div style="
-                        background-color: #4e79a7; width: 14px; height: 14px; border-radius: 50%;
-                        border: 2px solid white; margin-right: 8px; flex-shrink: 0;"></div>
+                        background-color: var(--marker-standard); width: 14px; height: 14px; border-radius: 50%;
+                        border: 2px solid var(--marker-stroke); margin-right: 8px; flex-shrink: 0;"></div>
                     Enhancement Site
                 </div>
 
                 <!-- Enhancement Site with story -->
                 <div style="display: flex; align-items: center; margin: 5px 0;">
                     <div style="
-                        background-color: #EE934F; width: 14px; height: 14px; border-radius: 50%;
-                        border: 2px solid white; margin-right: 8px; flex-shrink: 0;"></div>
+                        background-color: var(--marker-story); width: 14px; height: 14px; border-radius: 50%;
+                        border: 2px solid var(--marker-stroke); margin-right: 8px; flex-shrink: 0;"></div>
                     Enhancement Story - Click to learn more
                 </div>
         `;
@@ -3057,6 +3105,16 @@ setTimeout(() => {
         Overall page structure and spacing
         ================================================== */
 
+        /* ---------- Branding ---------- */
+        :root {
+            --brand-teal: #045B4C;
+            --brand-teal-light: #5B9E91;
+            --marker-standard: #8B635C;
+            --marker-story: #3d9e06; 
+            --marker-stroke: #FFFFFF;
+            --recruit-no-data: #c8c8c8;
+}
+
         /* ---------- Header ---------- */
 
         #observablehq-header {
@@ -3091,6 +3149,8 @@ setTimeout(() => {
 
         #observablehq-footer {
             position: absolute;
+            margin-top: 0 !important;
+            padding-top: 30px;
             background-color: #5A5A5A;
             align-items: center;
             width: 100%;
