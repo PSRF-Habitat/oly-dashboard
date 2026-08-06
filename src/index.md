@@ -123,6 +123,12 @@ const oysterbay_pop_est = await FileAttachment("data/oysterbay_population_estima
 // Oyster Bay shell height
 const oysterbay_heights = await FileAttachment("data/oysterbay_2026_heights.csv").csv({typed: true});
 
+// Chico Bay density estimates
+const chicobay_dens_est = await FileAttachment("data/chicobay_density_estimates.csv").csv({typed: true});
+
+// Chico Bay shell height
+const chicobay_heights = await FileAttachment("data/chicobay_2021_heights.csv").csv({typed: true});
+
 // ===================================================
 // IMPORT LIBRARIES
 // ===================================================
@@ -150,8 +156,8 @@ const zoom = 8;
 const story_sites = new Set([
   "Fidalgo Bay",
   "Oyster Bay",
+  "Chico Bay",
   //   "Silverdale",
-  //   "Chico Bay",
   // Add more here as stories are written
 ]);
 
@@ -241,7 +247,7 @@ const enhancementStoryIcon = L.divIcon({
 // Creates scroll buttons and dots for photo count
 // ===================================================
 // ===================================================
-function buildCarousel(container, photos) {
+function buildCarousel(container, photos, captions = []) {
     // If no photos, leave the container empty
     if(!photos || photos.length === 0) return;
 
@@ -254,7 +260,10 @@ function buildCarousel(container, photos) {
                 ${photos.map((url, i) =>
                   // For each photo URL, it creates an <img> tag.
                   // The first image gets the class "active" (i === 0 means index is 0)
-                  `<img src="${url}" class="carousel-image ${i === 0 ? 'active' : ''}">`
+                  `<div class="carousel-slide ${i === 0 ? 'active' : ''}">
+                        <img src="${url}" class="carousel-image">
+                        ${captions[i] ? `<div class="carousel-caption">${captions[i]}</div>` : ''}
+                    </div>`
                 // Stitch all the generated <img> strings together
                 ).join('')}
             </div>
@@ -266,7 +275,7 @@ function buildCarousel(container, photos) {
          </div>
     `;
     // Find all <img> elements inside this container that have the class "carousel-image"
-    const images = container.querySelectorAll('.carousel-image');
+    const slides = container.querySelectorAll('.carousel-slide');
 
     const dotsContainer = container.querySelector('.carousel-dots');
 
@@ -274,7 +283,7 @@ function buildCarousel(container, photos) {
     let currentIndex = 0;
 
     // Loop over each image by its index to create one dot per photo
-    images.forEach((_, i) => {
+    slides.forEach((_, i) => {
         const dot = document.createElement('span');
         // This is a shorthand for if/else: condition ? value_if_true : value_if_false
         // Same as: if i == 0: 'carousel-dot active' else: 'carousel-dot'
@@ -294,7 +303,7 @@ function buildCarousel(container, photos) {
     // ----------------------------------------------   
     function showImage(index) {
         // Remove active class from whicever image is currently showing
-        images[currentIndex].classList.remove('active');
+        slides[currentIndex].classList.remove('active');
 
         // Also remove active from currently lit up dot
         dots[currentIndex].classList.remove('active');
@@ -303,7 +312,7 @@ function buildCarousel(container, photos) {
         currentIndex = index;
 
         // Add active class to the new image
-        images[currentIndex].classList.add('active');
+        slides[currentIndex].classList.add('active');
 
         // Also add active class to the new dot
         dots[currentIndex].classList.add('active');
@@ -312,12 +321,12 @@ function buildCarousel(container, photos) {
     // Wire up the prev button (.onclick sets what happens when it's clicked)
     container.querySelector('.prev').onclick = () => {
         // Wraps around, so if we are on 0 and go back it will go to the last image
-        showImage((currentIndex - 1 + images.length) % images.length);
+        showImage((currentIndex - 1 + slides.length) % slides.length);
     };
 
     // Wire up the next button
     container.querySelector('.next').onclick = () => {
-        showImage((currentIndex + 1) % images.length);
+        showImage((currentIndex + 1) % slides.length);
     };
 } // END CAROUSEL BUILDER FUNCTION
 
@@ -607,6 +616,302 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
     return wrapper;
 } // END POPULATION + TIMELINE COMBINED PLOT
 
+// ===================================================
+// ===================================================
+// SHARED FUNCTION: DENSITY + TIMELINE COMBINED PLOT
+// Overlays enhancement timeline onto a site's density chart
+// Same as population, but with density estimates instead
+// ===================================================
+// ===================================================
+function createDensityTimelinePlot(densData, timelineData, siteName) {
+    // Remove any rows with missing density values
+    const cleanDens = (densData || []).filter(
+        d => d.density_estimate != null && d.density_estimate !== "NA"
+    );
+    // If there is no density estimates, do not make a chart
+    if (cleanDens.length === 0) return null;
+
+    // Find all timeline events that belong to this site and sort chronologically
+    const events = (timelineData || [])
+        .filter(d => d.site === siteName && d.year)
+        .sort((a, b) => a.year - b.year);
+
+    // Use largest dens estimate to set y axis limit + 8% for a little buffer
+    const maxDens = Math.max(...cleanDens.map(d => d.density_estimate));
+    const yMax = maxDens * 1.08;
+
+
+    // ---------------------------------------------------
+    // Position Timeline Markers
+    // ---------------------------------------------------
+    // Each restoration action gets a vertical dashed line.
+
+    // How far above the data point every line extends,
+    // as a fraction of the y-axis max
+    const LINE_LENGTH_FRACTION = 0.5;
+
+    // No line may cross this fraction of yMax, 
+    // so a line starting near the top of the population
+    // curve doesn't cross chart edge
+    const MAX_TOP_FRACTION = 0.94;
+
+    const eventsWithY = events.map((event) => {
+        // Try to find density data from the exact same year as the timeline action
+        let match = cleanDens.find(p => p.year === event.year);
+        // If there is no dens value that year, find closest available year instead
+        if (!match) {
+            match = cleanDens.reduce((closest, p) =>
+                Math.abs(p.year - event.year) < Math.abs(closest.year - event.year) ? p : closest
+            , cleanDens[0]);
+        }
+        // Store the density value closest to the event year
+        const densAtYear = match ? match.density_estimate : 0;
+
+        // Line height
+        const desiredY2 = densAtYear + (yMax * LINE_LENGTH_FRACTION);
+
+        // Clamp line height so it doesn't exceed top of chart
+        const y2 = Math.min(desiredY2, yMax * MAX_TOP_FRACTION);
+
+        // Return the original timeline information plus the calculated positions needed for plotting
+        return { ...event, densAtYear, y2 };
+    });
+
+    // -----------------------------------------------
+    // Build the main chart with Plot
+    // -----------------------------------------------
+    const chart = Plot.plot({
+        height: 380, // Overall chart size
+        marginLeft: 60,
+        marginRight: 30,
+        marginTop: 15,
+        marginBottom: 30,
+        insetBottom: 20, // chart padding
+        insetTop: 15,
+        // X-axis (years)
+        x: {
+            label: null,
+            tickFormat: "d",
+            interval: 1,
+            tickSpacing: 60,
+            padding: 0.1,
+            insetLeft: 10,
+            insetRight: 10
+        },
+        // Y-axis (density)
+        y: {
+            label: "Estimated Density",
+            grid: true,
+            // Set range from 0 to maximum density
+            domain: [0, yMax],
+            // Format large numbers:
+            // 1000 = 1K
+            // 1000000 = 1M
+            tickFormat: d => {
+                if (d >= 1_000_000) return (d / 1_000_000).toFixed(1) + "M";
+                if (d >= 1_000)     return (d / 1_000).toFixed(0) + "K";
+                return d;
+            }
+        },
+        marks: [
+            // Light green shaded area below density trend
+            Plot.areaY(cleanDens, {
+                x: "year",
+                y: "density_estimate",
+                fill: "#045B4C",
+                fillOpacity: 0.08
+            }),
+            // Dashed vertical lines showing enhancement actions
+            Plot.ruleX(eventsWithY, {
+                x: "year",
+                y1: "densAtYear",
+                y2: "y2",
+                stroke: "#999",
+                strokeWidth: 2,
+                strokeDasharray: "6,4",
+                strokeOpacity: 0.85
+            }),
+            // Main density trend line
+            Plot.line(cleanDens, {
+                x: "year",
+                y: "density_estimate",
+                stroke: "#045B4C",
+                strokeWidth: 2.5
+            }),
+            Plot.ruleX(cleanDens, { // Error bars
+                x: "year",
+                y1: d => Math.max(0, d.density_estimate - d.std_err),
+                y2: d => d.density_estimate + d.std_err,
+                stroke: "#045B4C",
+                strokeWidth: 1.5
+                }),
+            // Density estimate points
+            Plot.dot(cleanDens, {
+                x: "year",
+                y: "density_estimate",
+                fill: "#045B4C",
+                stroke: "white",
+                strokeWidth: 2,
+                r: 4
+            }),
+            // Dots at the top of enhancement action markers
+            Plot.dot(eventsWithY, {
+                x: "year",
+                y: "y2",
+                r: 6,
+                fill: "#999",
+                stroke: "white",
+                strokeWidth: 2
+            })
+        ],
+        // Chart font styling
+        style: { fontFamily: "inherit", fontSize: "14px", overflow: "visible" }
+    });
+
+    // ---------------------------------------------------
+    // CREATE TOOLTIP CONTAINER
+    // ---------------------------------------------------
+    // Create a wrapper around the chart
+    // (This lets us position tooltips relative to the chart)
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "relative";
+    wrapper.style.containerType = "inline-size";
+    wrapper.appendChild(chart);
+
+    // Create container for tooltip
+    const tooltip = document.createElement("div");
+    Object.assign(tooltip.style, {
+        position: "absolute", // Place tooltip above chart
+        display: "none", // Hidden until user hovers
+        pointerEvents: "none", // Tooltip should not block mouse interactions
+        background: "white",
+        borderRadius: "10px",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
+        padding: "0",
+        zIndex: "20",
+        transition: "opacity 0.1s ease",
+        opacity: "0"
+    });
+    wrapper.appendChild(tooltip);
+
+    // ---------------------------------------------------
+    // TOOLTIP HTML BUILDERS
+    // ---------------------------------------------------
+    //
+    // These functions create the content shown when
+    // hovering over different types of points (pop estimates or enhancement actions)
+    function buildEventTooltipHTML(event) {
+        return `
+            <div style="border-left:4px solid #999; border-radius:10px; overflow:hidden; width:clamp(260px, 46cqw, 380px);">
+                <div style="padding:clamp(8px, 2cqw, 10px) clamp(14px, 4cqw, 18px);">
+                    <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:5px;">
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); font-weight:700; color:#045B4C;">${event.year}</span>
+                        <span style="font-size:clamp(10px, 2.4cqw, 12px); font-weight:600; color:#999; text-transform:uppercase; letter-spacing:0.4px;">${event.label || "Enhancement Action"}</span>
+                    </div>
+                    <p style="font-size:clamp(11px, 2.8cqw, 13px); line-height:1.4; color:#444; margin:0;">
+                        ${event.description || "No description recorded."}
+                    </p>
+                </div>
+            </div>
+        `;
+    }
+
+    function buildDensityTooltipHTML(point) {
+        return `
+            <div style="border-left:4px solid #045B4C; border-radius:10px; overflow:hidden; width:max-content; min-width:clamp(160px, 26cqw, 190px); max-width:clamp(210px, 34cqw, 260px);">
+                <div style="padding:clamp(10px, 3cqw, 14px) clamp(11px, 3.3cqw, 16px);">
+                    <div style="font-size:clamp(9px, 2.2cqw, 11px); font-weight:600; color:#045B4C; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px; white-space:nowrap;">
+                        Estimated Density
+                    </div>
+                    <div style="display:flex; align-items:baseline; gap:8px; white-space:nowrap;">
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); font-weight:700; color:#222;">${point.year}</span>
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); color:#444;">${point.density_estimate.toLocaleString()} oysters per m<sup>2</sup></span>
+                    </div>
+                    <div style="font-size:clamp(10px, 2.6cqw, 12px); color:#888; margin-top:3px; white-space:nowrap;">
+                        ± ${point.std_err.toLocaleString(undefined, { maximumFractionDigits: 1 })} SE
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // ---------------------------------------------------
+    // ADD HOVER INTERACTION
+    // ---------------------------------------------------
+    // Find the SVG element created by Observable Plot
+    const svgEl = chart.tagName === "svg" ? chart : chart.querySelector("svg");
+
+    // Get the chart's x and y conversion tools...
+    // These convert data values (years/populations) into screen positions (pixels)
+    const xScale = svgEl.scale ? svgEl.scale("x") : chart.scale("x");
+    const yScale = svgEl.scale ? svgEl.scale("y") : chart.scale("y");
+    const svgNS = "http://www.w3.org/2000/svg"; // Required for creating SVG elements
+
+    // Function that creates an invisible clickable area over each point
+    function addHoverPoint(datum, cx, cy, buildHTML) {
+        // Create an invisible circle.
+        // The user can hover over this even though the actual chart point is small
+        const hitCircle = document.createElementNS(svgNS, "circle");
+        hitCircle.setAttribute("cx", cx);
+        hitCircle.setAttribute("cy", cy);
+        hitCircle.setAttribute("r", 12); // Larger radius makes hovering easier
+        hitCircle.setAttribute("fill", "transparent"); // Make invisible
+        hitCircle.style.cursor = "pointer";
+        svgEl.appendChild(hitCircle);
+
+        // When mouse enters point:
+        hitCircle.addEventListener("pointerenter", () => {
+            // Fill tooltip with correct information
+            tooltip.innerHTML = buildHTML(datum);
+            // Show tooltip
+            tooltip.style.display = "block";
+
+            // Find point position on screen
+            const pointRect = hitCircle.getBoundingClientRect();
+            const wrapperRect = wrapper.getBoundingClientRect();
+            // Convert position relative to chart container
+            const px = pointRect.left + pointRect.width / 2 - wrapperRect.left;
+            const py = pointRect.top + pointRect.height / 2 - wrapperRect.top;
+
+            // Decide whether tooltip fits to the right or left
+            const tw = tooltip.offsetWidth;
+            const th = tooltip.offsetHeight;
+            const OFFSET = 3; // How far away from point to start tooltip
+
+            const spaceRight = wrapperRect.width - px;
+            const spaceAbove = py;
+
+            let left = spaceRight - OFFSET >= tw ? px + OFFSET : px - tw - OFFSET;
+            let top = spaceAbove - OFFSET >= th ? py - th - OFFSET : py + OFFSET;
+
+            // Clamp so the tooltip never spills outside the wrapper's bounds
+            left = Math.max(4, Math.min(left, wrapperRect.width - tw - 4));
+            top = Math.max(4, Math.min(top, wrapperRect.height - th - 4));
+
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+            tooltip.style.opacity = "0.88";
+        });
+
+        // Hide tooltip when user leaves point
+        hitCircle.addEventListener("pointerleave", () => {
+            tooltip.style.opacity = "0";
+            tooltip.style.display = "none";
+        });
+    }
+    // Add hover areas for density points
+    cleanDens.forEach(p => {
+        addHoverPoint(p, xScale.apply(p.year), yScale.apply(p.density_estimate), buildDensityTooltipHTML);
+    });
+
+    // Add hover areas for enhancement actions
+    eventsWithY.forEach(ev => {
+        addHoverPoint(ev, xScale.apply(ev.year), yScale.apply(ev.y2), buildEventTooltipHTML);
+    });
+
+    return wrapper;
+} // END DENSITY + TIMELINE COMBINED PLOT
+
 
 // ===================================================
 // ===================================================
@@ -627,6 +932,7 @@ function createShellHeightHistogram(sizeData) {
         marginRight: 20,
         marginTop: 20,
         marginBottom: 50,
+        insetTop: 15,
 
         x: {
           label: "Shell height (mm)",
@@ -816,8 +1122,8 @@ function buildSitePanel(siteName) {
   switch (siteName) {
     case "Fidalgo Bay":  return buildFidalgoBayPanel();
     case "Oyster Bay":  return buildOysterBayPanel();
+    case "Chico Bay":    return buildChicoBayPanel();
     // case "Silverdale":   return buildSilverdalePanel();
-    // case "Chico Bay":    return buildChicoBayPanel();
   }
 } // END BUILD SITE PANEL FUNCTION
 
@@ -1001,13 +1307,25 @@ function buildFidalgoBayPanel() {
     // Photos for the carousel
     const photos = [
         tooltipPhotos["Fidalgo Bay"], // First photo is the tooltip photos
-        // Add more photos in like this once we have them:
-        // FileAttachment("data/images/fidalgo_2.jpg").href, 
-        // etc,
-        // etc
-        FileAttachment("data/images/fidalgo2.jpeg").href
+        FileAttachment("data/images/happy_elsa.jpg").href,
+        FileAttachment("data/images/fidalgo_2002_betsy_billtaylor.JPG").href,
+        FileAttachment("data/images/fidalgo_2003_trestle_bags.jpg").href,
+        FileAttachment("data/images/fidalgo_2006_paulbetsy.jpg").href,
+        FileAttachment("data/images/fidalgo_2013_shell_barge.JPG").href,
+        FileAttachment("data/images/fidalgo_pretty_olys_closeup.JPG").href,
     ].filter(Boolean);
-    buildCarousel(panel.querySelector("#fidalgo-carousel"), photos);
+
+    const captions = [
+        "View of Mount Baker from Fidalgo Bay",
+        "A happy Elsa with a shell bag",
+        "PSRF founder Besty and Bill Taylor prepping to place shell, 2002",
+        "Placing shell bags near the trestle, 2003",
+        "Betsy and Paul placing shell, 2006",
+        "Loads of shell for the 2013 bulk shell enhancement",
+        "Beautiful Olys!",
+    ];
+
+    buildCarousel(panel.querySelector("#fidalgo-carousel"), photos, captions);
 
     // Timeline
     // Combined population growth + enhancement timeline plot
@@ -1228,25 +1546,208 @@ function buildOysterBayPanel() {
         FileAttachment("data/images/oysterbay_survey_2026.jpg").href,
         FileAttachment("data/images/oysterbay_loads_of_olys_2026.png").href
     ].filter(Boolean);
-    buildCarousel(panel.querySelector("#oysterbay-carousel"), photos);
 
-    // Timeline
-   // panel.querySelector("#fidalgo-timeline")
-   //     .appendChild(createEnhancementTimeline(timeline_data, "Fidalgo Bay"));
+    const captions = [
+        "Close up of a diverse Oly habitat",
+        "Spraying bulk shell into the water at high tide",
+        "View of the enhancement plot creating structured substrate at low tide",
+        "Sofia counting Olys",
+        "Piles of oysters!"
+    ];
+
+    buildCarousel(panel.querySelector("#oysterbay-carousel"), photos, captions);
+
         
     // Population plot
-   panel.querySelector("#oysterbay-population-plot")
+    panel.querySelector("#oysterbay-population-plot")
        .appendChild(createPopulationTimelinePlot(oysterbay_pop_est, timeline_data, "Oyster Bay"));
-    // Shell height histogram
-    // Not yet 100% sure what this will look like, but this is one idea
-    // const fidalgoSizeData = fidalgo_heights; // Data will go in here when we have it!! 
-    // example for above: 
-    // [ann_densities.filter(d => d.location === "Fidalgo Bay" && d.shell_height_mm)]
+    
+    // Shell heights plot
     panel.querySelector("#oysterbay-size-plot")
        .appendChild(createShellHeightHistogram(oysterbay_heights));
 
     return panel;
 } // END BUILD OYSTER BAY PANEL
+
+// ===================================================
+// ===================================================
+//
+// SITE PANEL: CHICO BAY
+// Layout:
+//   Title --> Carousel --> Intro quote block -->
+//   About This Site --> Our Work --> 2018 By The Numbers callout -->
+//   Debate text --> Density plot placeholder --> Early results stat grid -->
+//   Density-by-zone stat grid --> Size class callout -->
+//   Looking Ahead --> Shell height plot placeholder --> Credits, Partners
+//
+// ===================================================
+// ===================================================
+function buildChicoBayPanel() {
+    const panel = document.createElement("div");
+
+    // --- Narrative ---
+    const narrative = {
+        intro: `A traditional shellfish harvesting area with historic importance, Chico Bay sits at the mouth of Chico Creek, one of the most productive chum streams in the Sound. Since purchase in the late 2000s, the Suquamish Tribe has been seeding the tidelands with clams and oysters, alongside harvesting a booming wild manila clam population around the corner near Erlands Point. Also at Erlands Point, a small, wild aggregation of Olympia oysters sparked inspiration for what Chico Bay could be.`,
+
+        context: `With USDA conservation funding in hand and permission to work on a stretch of Tribally owned tideland, the team moved cautiously, staking out a series of 10-by-10 foot shell plots across the tideland to first test whether that inspiration could take hold on a larger scale. Before committing to a project design, we let those plots simmer for nearly a year, and results upon our return pointed us clearly downhill. High in the intertidal the shell plots sat mostly empty, but lower, near -1.5 feet MLLW, recruitment showed promise. Then, a closer look at the deepest reaches of the flat, around -3 feet, turned up something else: a scatter of old, solitary Olys, likely survivors of rare and irregular recruitment events rather than a self-sustaining population. Guided by these findings, the project footprint shifted down the beach from the initially anticipated plot, toward elevations where the bay was calling us to work.`,
+
+        ourWork: `In 2018, we put that plan into action. We spread 5 acres of Pacific oyster shell to provide settlement substrate for recruiting juveniles, paired with more that 1.15 million hatchery-reared baby Olys set on 450 bags of Pacific shell placed directly into the enhancement area. The stock enhancement piece was not without internal debate. With a wild population already present nearby, was a hatchery-grown boost really necessary, or should the shell alone have been enough to do the job? The project moved forward with both tools in hand, a bet on giving the bay every possible advantage.`,
+
+        earlyResultsIntro: `We checked back that following year, and by August 2019, the enhancement area was averaging 130 Olys per square meter across 40 samples, an encouraging early sign that the project was off to a good start. By April 2021, that average had settled to 80.8 Olys per square meter across 19 samples, though the variability between samples in both years was wide. That same 2021 survey mapped 3.7 acres of shell still visibility available for settlement, and oyster density near the seeded cultch specifically reached 367.7 Olys per square meter, compared to just 4.3 oysters per square meter in the outer enhancement area.`,
+
+        sizeClasses: `Also in 2021, Olys of multiple size classes were present, ranging from 35mm-55mm individuals (likely tracing back to the original 2018 cohort or 2019 natural set), down to 15mm oysters representing a newer wave of settlement from 2020, a sign that the population was not just surviving, but reproducing on its own.`,
+
+        future: `Chico Bay’s smoldering Oly population is still early in its story. The 2021 numbers capture a single snapshot of a population that’s only three years past planting, on tideland with a much longer memory than that. What comes next is still being written, and it’s worth going back to read.`,
+
+        partnersList: `This project was made possible through generous support from USDA, the National Fish & Wildlife Foundation, the Burning Foundation, and the Washington Women’s Foundation, in partnership with the Suquamish Tribe.`
+    };
+
+    // --- Layout HTML ---
+    panel.innerHTML =  `
+        <!-- Carousel -->
+        <div id="chico-carousel"></div>
+
+        <!-- Intro quote -->
+        <div style="
+        font-size: 16px; line-height: 1.8; color: #333;
+        margin-bottom: 32px; padding: 24px;
+        background: linear-gradient(to right, #f0f7f6, transparent);
+        border-left: 4px solid #045B4C; font-style: italic;
+        ">${narrative.intro}</div>
+
+        <!-- About This Site -->
+        <div style="margin-bottom: 40px;">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">About</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.context}
+        </p>
+        </div>
+
+        <!-- Our Work -->
+        <div style="
+        background: #f8f9fa; padding: 24px; border-radius: 8px; margin-bottom: 24px;
+        ">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Our Work</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.ourWork}
+        </p>
+        </div>
+
+        <!-- Density plot placeholder -->
+        <div style="
+        background: white; padding: 24px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 40px;
+        ">
+        <h3 style="
+            font-size: 16px; font-weight: 700; color: #045B4C;
+            margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Oyster Density Over Time</h3>
+        <p style="font-size: 14px; color: #666; margin: 0 0 12px 0; font-style: italic;">
+            Average Olympia oysters per square meter, Chico Bay enhancement area
+        </p>
+        <div id="chico-density-plot"></div>
+        </div>
+
+        <!-- Results -->
+        <div style="margin-bottom: 24px;">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Early Progress</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0 0 16px 0;">
+            ${narrative.earlyResultsIntro}
+        </p>
+        </div>
+
+
+        <!-- Size class callout -->
+        <div style="
+        padding: 20px;
+        background: linear-gradient(135deg, #f0f7f6 0%, #e8f4f2 100%);
+        border-radius: 8px; border-left: 4px solid #045B4C; margin-bottom: 40px;
+        ">
+        <p style="font-size: 15px; line-height: 1.7; color: #333; margin: 0;">
+            ${narrative.sizeClasses}
+        </p>
+        </div>
+
+        <!-- Shell height plot -->
+        <div style="
+        background: white; padding: 24px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 40px;
+        ">
+        <h3 style="
+            font-size: 16px; font-weight: 700; color: #045B4C;
+            margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Oyster Size Class Distribution</h3>
+        <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
+            Distribution of individual oyster shell heights, measured 2021
+        </p>
+        <div id="chico-size-plot"></div>
+        </div>
+
+        <!-- Looking Ahead -->
+        <div style="margin-bottom: 40px;">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Looking Ahead</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.future}
+        </p>
+        </div>
+
+        <!-- Partners -->
+        <div style="
+            border-top: 1px solid #e0e0e0;
+            padding-top: 32px;
+            margin-bottom: 40px;
+        ">
+            <h3 style="
+                font-size: 14px; font-weight: 700; color: #045B4C;
+                margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px;
+            ">A Huge Thank You</h3>
+            <p style="font-size: 14px; line-height: 1.8; color: #666; margin: 0;">
+                ${narrative.partnersList}
+            </p>
+        </div>
+    `;
+
+    // Insert dynamic content into placeholder divs built above
+
+    // Photos for the carousel
+    const photos = [
+        tooltipPhotos["Chico Bay"], // First photo is the tooltip photo
+        // Add more photos in like this once we have them:
+        // FileAttachment("data/images/chicobay_2.jpg").href,
+        FileAttachment("data/images/chico_survey.jpg").href,
+        FileAttachment("data/images/chico_oly_closeup.jpg").href,
+        FileAttachment("data/images/chico_landscape.jpg").href,
+    ].filter(Boolean);
+
+    const captions = [
+            "Heading out to survey the enhancement",
+            "Counting Olys",
+            "Close up of an Oly cluster",
+            "Bulk shell creating firm, structured substrate",
+        ];
+
+    buildCarousel(panel.querySelector("#chico-carousel"), photos, captions);
+
+    // Plots
+      panel.querySelector("#chico-density-plot")
+          .appendChild(createDensityTimelinePlot(chicobay_dens_est, timeline_data, "Chico Bay"));
+      panel.querySelector("#chico-size-plot")
+          .appendChild(createShellHeightHistogram(chicobay_heights));
+
+    return panel;
+} // END BUILD CHICO BAY PANEL
 
 
 // ===================================================
@@ -3591,26 +4092,57 @@ setTimeout(() => {
         .carousel-images {
             position: relative;
             width: 100%;
-            padding-bottom: 45%;
+            padding-bottom: 65%;
         }
 
-        .carousel-image {
+        /* ---------- Slide Wrapper (image + caption) ---------- */
+
+        .carousel-slide {
             position: absolute;
-            top: 0; 
+            top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* contain or cover? not sure which i like better yet! */
             opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .carousel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
             background: transparent;
             border-radius: 12px;
         }
 
-        .carousel-image.active {
+        /* ---------- Caption ---------- */
+
+        .carousel-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 28px 16px 34px 16px; /* extra bottom padding clears the dots */
+            background: linear-gradient(to top, rgba(0,0,0,0.65), transparent);
+            color: white;
+            font-size: 13px;
+            line-height: 1.5;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+
+            /* Hover-to-reveal */
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .carousel-slide:hover .carousel-caption {
             opacity: 1;
-            pointer-events: auto;
         }
 
         /* ---------- Navigation Buttons ---------- */
@@ -3683,20 +4215,6 @@ setTimeout(() => {
         RESPONSIVE LAYOUT
         Screen-size adjustments for tablets and phones.
         ================================================== */
-
-        /* -----------------------------------------------
-            Dark mode adjustments
-            Leaflet reset button styling
-        ----------------------------------------------- */
-
-        /* @media (prefers-color-scheme: dark) {
-            .leaflet-reset-btn {
-                background: #222 !important;
-                color: #e0e0e0 !important;
-                border-color: rgba(255,255,255,0.3) !important;
-            }
-        } */
-
 
         /* -----------------------------------------------
             Smaller desktop
