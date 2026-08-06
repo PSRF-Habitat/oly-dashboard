@@ -43,12 +43,7 @@ pager: false
   margin: 1rem 0 2rem 0;
 ">
   <!-- 3 card layout: 1 left, 2 right -->
-  <div style="
-    display: grid;
-    grid-template-columns: 1.3fr 1fr;
-    gap: 1.5rem;
-    align-items: start;
-  ">
+  <div class="intro-hero-grid">
     <!-- LEFT: title + intro text card -->
     <div class="intro-panel">
       <h1 style="margin-top:0; color:#045B4C;">
@@ -2607,39 +2602,46 @@ function addRecruitmentLegend(map, maxValue) {
         const div = L.DomUtil.create("div", "recruit-legend");
 
         div.innerHTML = `
-    <div style="background:white; padding:14px; border-radius:8px;
-        box-shadow:0 2px 8px rgba(0,0,0,0.15); font-size:12px; min-width:170px;">
-
-        <div style="font-weight:700; color:#045B4C; font-size:11px;
-            text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;">
-            Avg Live Olys / Shell
-        </div>
-
-        ${[
-            { color: "#c8c8c8", label: "No data" },
-            { color: "#ffffcc", label: "0" },
-            { color: "#ffeda0", label: "0 – 1" },
-            { color: "#fed976", label: "1 – 2" },
-            { color: "#feb24c", label: "2 – 3" },
-            { color: "#fd8d3c", label: "3 – 5" },
-            { color: "#f03b20", label: "5 – 10" },
-            { color: "#bd0026", label: "10 – 20" },
-            { color: "#67000d", label: "≥ 20" },
-        ].map(bin => `
-            <div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;">
-                <div style="width:14px; height:14px; border-radius:50%;
-                    background:${bin.color}; border:1.5px solid rgba(0,0,0,0.15);
-                    flex-shrink:0;"></div>
-                <span style="color:#555;">${bin.label}</span>
+            <div class="map-legend-box recruit-legend-box">
+                <div class="map-legend-header">
+                    <span>Avg Live Olys / Shell</span>
+                    <button class="legend-toggle-btn" type="button" aria-label="Toggle legend">−</button>
+                </div>
+                <div class="map-legend-body">
+                    ${[
+                        { color: "#c8c8c8", label: "No data" },
+                        { color: "#ffffcc", label: "0" },
+                        { color: "#ffeda0", label: "0 – 1" },
+                        { color: "#fed976", label: "1 – 2" },
+                        { color: "#feb24c", label: "2 – 3" },
+                        { color: "#fd8d3c", label: "3 – 5" },
+                        { color: "#f03b20", label: "5 – 10" },
+                        { color: "#bd0026", label: "10 – 20" },
+                        { color: "#67000d", label: "≥ 20" },
+                    ].map(bin => `
+                        <div class="map-legend-row">
+                            <span class="map-legend-swatch" style="background:${bin.color};"></span>
+                            <span>${bin.label}</span>
+                        </div>
+                    `).join("")}
+                </div>
             </div>
-        `).join("")}
-    </div>
-`;
+        `;
+
+        const box = div.querySelector('.map-legend-box');
+        const toggleBtn = div.querySelector('.legend-toggle-btn');
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            box.classList.toggle('collapsed');
+            toggleBtn.textContent = box.classList.contains('collapsed') ? '+' : '−';
+        });
+
+        L.DomEvent.disableClickPropagation(div);
         return div;
     };
 
     legend.addTo(map);
-    return legend;  // return so we can .remove() it when switching tabs
+    return legend; // return so we can .remove() it when switching tabs
 } // END recruitment legend builder
 
 
@@ -2889,7 +2891,7 @@ function buildRecruitmentTabContent(recruitData, recruitLayerManager, map) {
     const sliderNote = document.createElement("p");
     sliderNote.className = "filter-hint";
     sliderNote.style.margin = "4px 0 0 0";
-    sliderNote.textContent = "Drag the slider to explore recruitment across different years. Circle size and color reflect the average number of spat settled per shell at each station.";
+    sliderNote.textContent = "Drag the slider to explore recruitment across different years. Circle size and color reflect the average number of olys settled per shell at each station.";
     sliderContainer.appendChild(sliderNote);
 
     // -----------------------------------------------
@@ -3452,33 +3454,35 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     let enhancementLegend; // we'll store a reference so the filter panel can show/hide it
 
     legend.onAdd = function() {
-        // L.DomUtil.create() is Leaflet's helper for creating DOM elements
-        // First arg is tag name, second is CSS class
         const div = L.DomUtil.create('div', 'map-legend');
-
         div.innerHTML = `
-            <div style="
-                background: white; padding: 12px; border-radius: 8px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 13px;">
-
-                <!-- No story site row: plain blue circle -->
-                <div style="display: flex; align-items: center; margin: 5px 0;">
-                    <div style="
-                        background-color: var(--marker-standard); width: 14px; height: 14px; border-radius: 50%;
-                        border: 2px solid var(--marker-stroke); margin-right: 8px; flex-shrink: 0;"></div>
-                    Enhancement Site
+            <div class="map-legend-box">
+                <div class="map-legend-header">
+                    <span>Site Types</span>
+                    <button class="legend-toggle-btn" type="button" aria-label="Toggle legend">−</button>
                 </div>
-
-                <!-- Enhancement Site with story -->
-                <div style="display: flex; align-items: center; margin: 5px 0;">
-                    <div style="
-                        background-color: var(--marker-story); width: 14px; height: 14px; border-radius: 50%;
-                        border: 2px solid var(--marker-stroke); margin-right: 8px; flex-shrink: 0;"></div>
-                    Enhancement Story - Click to learn more
+                <div class="map-legend-body">
+                    <div class="map-legend-row">
+                        <span class="map-legend-swatch" style="background-color: var(--marker-standard);"></span>
+                        Enhancement Site
+                    </div>
+                    <div class="map-legend-row">
+                        <span class="map-legend-swatch" style="background-color: var(--marker-story);"></span>
+                        Enhancement Story - Click to learn more
+                    </div>
                 </div>
+            </div>
         `;
 
-        // return the element so leaflet can place it
+        const box = div.querySelector('.map-legend-box');
+        const toggleBtn = div.querySelector('.legend-toggle-btn');
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            box.classList.toggle('collapsed');
+            toggleBtn.textContent = box.classList.contains('collapsed') ? '+' : '−';
+        });
+
+        L.DomEvent.disableClickPropagation(div); // stop taps on the button/box reaching the map
         return div;
     };
 
@@ -3744,12 +3748,22 @@ setTimeout(() => {
 
         /* ---------- Intro Layout ---------- */
 
-        .intro-cards {
+        .intro-hero-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin: 16px 0;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 1.5rem;
+            align-items: start;
         }
+
+        .intro-hero-grid > * {
+            min-width: 0;
+        }
+
+        @media (max-width: 700px) {
+            .intro-hero-grid {
+                grid-template-columns: 1fr;
+            }
+         }
 
         /* ---------- Intro Text Panel ---------- */
 
@@ -3888,8 +3902,81 @@ setTimeout(() => {
         }
 
         /* ---------- Recruitment Legend ---------- */
-        /* Prevent legend from blocking map interaction. */
+            /* Prevent legend from blocking map interaction. */
 
+        /* ---------- Map Legends (shared box for enhancement + recruitment) ---------- */
+
+        .map-legend-box {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            font-size: 13px;
+            max-width: 220px;
+            box-sizing: border-box;
+            pointer-events: auto; /* legend itself stays clickable even though the wrapper below is not */
+        }
+
+        .recruit-legend-box {
+            min-width: 170px;
+            font-size: 12px;
+            padding: 14px;
+        }
+
+        .map-legend-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 700;
+            color: #045B4C;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .map-legend-box.collapsed .map-legend-header {
+            margin-bottom: 0;
+        }
+
+        .legend-toggle-btn {
+            border: none;
+            background: none;
+            color: #045B4C;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 0 0 10px;
+            flex-shrink: 0;
+        }
+
+        .map-legend-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .map-legend-swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid var(--marker-stroke, #fff);
+            flex-shrink: 0;
+        }
+
+        .recruit-legend-box .map-legend-swatch {
+            border: 1.5px solid rgba(0,0,0,0.15);
+        }
+
+        .map-legend-box.collapsed .map-legend-body {
+            display: none;
+        }
+
+        /* Leaflet control wrapper stays click-through outside the box;
+        .map-legend-box above re-enables pointer events for its own content */
+        .map-legend,
         .recruit-legend {
             pointer-events: none;
         }
@@ -4302,13 +4389,67 @@ setTimeout(() => {
 
         /* -----------------------------------------------
             Mobile layout MORE WORK HERE NEEDED
-            Stack intro cards vertically
         ----------------------------------------------- */
 
+        /* Stack intro cards vertically */
         @media (max-width: 700px) {
+
+            .map-legend-box {
+                max-width: 150px;
+                font-size: 11px;
+                padding: 8px 10px;
+            }
+
+            .recruit-legend-box {
+                min-width: 0;
+            }
+
+            .map-legend-swatch {
+                width: 11px;
+                height: 11px;
+            }
 
             .intro-cards { 
                 grid-template-columns: 1fr; 
+            }
+        }
+
+        /* Shrink built-in Observable card padding */
+
+        @media (max-width: 600px) {
+
+
+            #observablehq-center {
+                margin: 6px;
+            }
+
+            /* Reduce body padding on the sides */
+            body {
+                padding-left: 4px;
+                padding-right: 4px;
+            }
+
+            /* Reduce Observable's built-in card padding */
+            .card {
+                padding: 12px !important;
+            }
+
+            /* Tighten the gap between filter panel and map */
+            .dashboard-grid {
+                gap: 4px;
+            }
+
+            /* Tighten the intro hero panel padding too, if it's also cramped */
+            #intro-hero {
+                padding: 0.5rem;
+            }
+
+            .intro-panel {
+                padding: 10px;
+            }
+
+            .intro-card {
+                padding: 12px;
             }
         }
 
