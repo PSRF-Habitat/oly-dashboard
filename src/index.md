@@ -473,6 +473,7 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
     // (This lets us position tooltips relative to the chart)
     const wrapper = document.createElement("div");
     wrapper.style.position = "relative";
+    wrapper.style.containerType = "inline-size";
     wrapper.appendChild(chart);
 
     // Create container for tooltip
@@ -499,13 +500,13 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
     // hovering over different types of points (pop estimates or enhancement actions)
     function buildEventTooltipHTML(event) {
         return `
-            <div style="border-left:4px solid #999; border-radius:10px; overflow:hidden; min-width:220px; max-width:280px;">
-                <div style="padding:14px 16px;">
-                    <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:8px;">
-                        <span style="font-size:15px; font-weight:700; color:#045B4C;">${event.year}</span>
-                        <span style="font-size:12px; font-weight:600; color:#999; text-transform:uppercase; letter-spacing:0.4px;">${event.label || "Enhancement Action"}</span>
+            <div style="border-left:4px solid #999; border-radius:10px; overflow:hidden; width:clamp(260px, 46cqw, 380px);">
+                <div style="padding:clamp(8px, 2cqw, 10px) clamp(14px, 4cqw, 18px);">
+                    <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:5px;">
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); font-weight:700; color:#045B4C;">${event.year}</span>
+                        <span style="font-size:clamp(10px, 2.4cqw, 12px); font-weight:600; color:#999; text-transform:uppercase; letter-spacing:0.4px;">${event.label || "Enhancement Action"}</span>
                     </div>
-                    <p style="font-size:13px; line-height:1.6; color:#444; margin:0;">
+                    <p style="font-size:clamp(11px, 2.8cqw, 13px); line-height:1.4; color:#444; margin:0;">
                         ${event.description || "No description recorded."}
                     </p>
                 </div>
@@ -515,14 +516,14 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
 
     function buildPopulationTooltipHTML(point) {
         return `
-            <div style="border-left:4px solid #045B4C; border-radius:10px; overflow:hidden; min-width:180px;">
-                <div style="padding:14px 16px;">
-                    <div style="font-size:11px; font-weight:600; color:#045B4C; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px;">
+            <div style="border-left:4px solid #045B4C; border-radius:10px; overflow:hidden; width:max-content; min-width:clamp(160px, 26cqw, 190px); max-width:clamp(210px, 34cqw, 260px);">
+                <div style="padding:clamp(10px, 3cqw, 14px) clamp(11px, 3.3cqw, 16px);">
+                    <div style="font-size:clamp(9px, 2.2cqw, 11px); font-weight:600; color:#045B4C; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:4px; white-space:nowrap;">
                         Estimated Population
                     </div>
-                    <div style="display:flex; align-items:baseline; gap:8px;">
-                        <span style="font-size:15px; font-weight:700; color:#222;">${point.year}</span>
-                        <span style="font-size:15px; color:#444;">${point.population_estimate.toLocaleString()} oysters</span>
+                    <div style="display:flex; align-items:baseline; gap:8px; white-space:nowrap;">
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); font-weight:700; color:#222;">${point.year}</span>
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); color:#444;">${point.population_estimate.toLocaleString()} oysters</span>
                     </div>
                 </div>
             </div>
@@ -575,8 +576,12 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
             const spaceRight = wrapperRect.width - px;
             const spaceAbove = py;
 
-            const left = spaceRight - OFFSET >= tw ? px + OFFSET : px - tw - OFFSET;
-            const top = spaceAbove - OFFSET >= th ? py - th - OFFSET : py + OFFSET;
+            let left = spaceRight - OFFSET >= tw ? px + OFFSET : px - tw - OFFSET;
+            let top = spaceAbove - OFFSET >= th ? py - th - OFFSET : py + OFFSET;
+
+            // Clamp so the tooltip never spills outside the wrapper's bounds
+            left = Math.max(4, Math.min(left, wrapperRect.width - tw - 4));
+            top = Math.max(4, Math.min(top, wrapperRect.height - th - 4));
 
             tooltip.style.left = `${left}px`;
             tooltip.style.top = `${top}px`;
