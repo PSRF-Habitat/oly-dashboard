@@ -1585,7 +1585,7 @@ function buildChicoBayPanel() {
 
     // --- Layout HTML ---
     panel.innerHTML =  `
-        <!-- Carousel placeholder -->
+        <!-- Carousel -->
         <div id="chico-carousel"></div>
 
         <!-- Intro quote -->
@@ -1707,6 +1707,9 @@ function buildChicoBayPanel() {
         tooltipPhotos["Chico Bay"], // First photo is the tooltip photo
         // Add more photos in like this once we have them:
         // FileAttachment("data/images/chicobay_2.jpg").href,
+        FileAttachment("data/images/chico_survey.jpg").href,
+        FileAttachment("data/images/chico_oly_closeup.jpg").href,
+        FileAttachment("data/images/chico_landscape.jpg").href,
     ].filter(Boolean);
     buildCarousel(panel.querySelector("#chico-carousel"), photos);
 
@@ -4062,7 +4065,7 @@ setTimeout(() => {
         .carousel-images {
             position: relative;
             width: 100%;
-            padding-bottom: 45%;
+            padding-bottom: 65%;
         }
 
         .carousel-image {
