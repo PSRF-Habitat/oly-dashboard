@@ -247,7 +247,7 @@ const enhancementStoryIcon = L.divIcon({
 // Creates scroll buttons and dots for photo count
 // ===================================================
 // ===================================================
-function buildCarousel(container, photos) {
+function buildCarousel(container, photos, captions = []) {
     // If no photos, leave the container empty
     if(!photos || photos.length === 0) return;
 
@@ -260,7 +260,10 @@ function buildCarousel(container, photos) {
                 ${photos.map((url, i) =>
                   // For each photo URL, it creates an <img> tag.
                   // The first image gets the class "active" (i === 0 means index is 0)
-                  `<img src="${url}" class="carousel-image ${i === 0 ? 'active' : ''}">`
+                  `<div class="carousel-slide ${i === 0 ? 'active' : ''}">
+                        <img src="${url}" class="carousel-image">
+                        ${captions[i] ? `<div class="carousel-caption">${captions[i]}</div>` : ''}
+                    </div>`
                 // Stitch all the generated <img> strings together
                 ).join('')}
             </div>
@@ -272,7 +275,7 @@ function buildCarousel(container, photos) {
          </div>
     `;
     // Find all <img> elements inside this container that have the class "carousel-image"
-    const images = container.querySelectorAll('.carousel-image');
+    const slides = container.querySelectorAll('.carousel-slide');
 
     const dotsContainer = container.querySelector('.carousel-dots');
 
@@ -280,7 +283,7 @@ function buildCarousel(container, photos) {
     let currentIndex = 0;
 
     // Loop over each image by its index to create one dot per photo
-    images.forEach((_, i) => {
+    slides.forEach((_, i) => {
         const dot = document.createElement('span');
         // This is a shorthand for if/else: condition ? value_if_true : value_if_false
         // Same as: if i == 0: 'carousel-dot active' else: 'carousel-dot'
@@ -300,7 +303,7 @@ function buildCarousel(container, photos) {
     // ----------------------------------------------   
     function showImage(index) {
         // Remove active class from whicever image is currently showing
-        images[currentIndex].classList.remove('active');
+        slides[currentIndex].classList.remove('active');
 
         // Also remove active from currently lit up dot
         dots[currentIndex].classList.remove('active');
@@ -309,7 +312,7 @@ function buildCarousel(container, photos) {
         currentIndex = index;
 
         // Add active class to the new image
-        images[currentIndex].classList.add('active');
+        slides[currentIndex].classList.add('active');
 
         // Also add active class to the new dot
         dots[currentIndex].classList.add('active');
@@ -318,12 +321,12 @@ function buildCarousel(container, photos) {
     // Wire up the prev button (.onclick sets what happens when it's clicked)
     container.querySelector('.prev').onclick = () => {
         // Wraps around, so if we are on 0 and go back it will go to the last image
-        showImage((currentIndex - 1 + images.length) % images.length);
+        showImage((currentIndex - 1 + slides.length) % slides.length);
     };
 
     // Wire up the next button
     container.querySelector('.next').onclick = () => {
-        showImage((currentIndex + 1) % images.length);
+        showImage((currentIndex + 1) % slides.length);
     };
 } // END CAROUSEL BUILDER FUNCTION
 
@@ -689,6 +692,7 @@ function createDensityTimelinePlot(densData, timelineData, siteName) {
         x: {
             label: null,
             tickFormat: "d",
+            interval: 1,
             tickSpacing: 60,
             padding: 0.1,
             insetLeft: 10,
@@ -1303,13 +1307,25 @@ function buildFidalgoBayPanel() {
     // Photos for the carousel
     const photos = [
         tooltipPhotos["Fidalgo Bay"], // First photo is the tooltip photos
-        // Add more photos in like this once we have them:
-        // FileAttachment("data/images/fidalgo_2.jpg").href, 
-        // etc,
-        // etc
-        FileAttachment("data/images/fidalgo2.jpeg").href
+        FileAttachment("data/images/happy_elsa.jpg").href,
+        FileAttachment("data/images/fidalgo_2002_betsy_billtaylor.JPG").href,
+        FileAttachment("data/images/fidalgo_2003_trestle_bags.jpg").href,
+        FileAttachment("data/images/fidalgo_2006_paulbetsy.jpg").href,
+        FileAttachment("data/images/fidalgo_2013_shell_barge.JPG").href,
+        FileAttachment("data/images/fidalgo_pretty_olys_closeup.JPG").href,
     ].filter(Boolean);
-    buildCarousel(panel.querySelector("#fidalgo-carousel"), photos);
+
+    const captions = [
+        "View of Mount Baker from Fidalgo Bay",
+        "A happy Elsa with a shell bag",
+        "PSRF founder Besty and Bill Taylor prepping to place shell, 2002",
+        "Placing shell bags near the trestle, 2003",
+        "Betsy and Paul placing shell, 2006",
+        "Loads of shell for the 2013 bulk shell enhancement",
+        "Beautiful Olys!",
+    ];
+
+    buildCarousel(panel.querySelector("#fidalgo-carousel"), photos, captions);
 
     // Timeline
     // Combined population growth + enhancement timeline plot
@@ -1530,20 +1546,23 @@ function buildOysterBayPanel() {
         FileAttachment("data/images/oysterbay_survey_2026.jpg").href,
         FileAttachment("data/images/oysterbay_loads_of_olys_2026.png").href
     ].filter(Boolean);
-    buildCarousel(panel.querySelector("#oysterbay-carousel"), photos);
 
-    // Timeline
-   // panel.querySelector("#fidalgo-timeline")
-   //     .appendChild(createEnhancementTimeline(timeline_data, "Fidalgo Bay"));
+    const captions = [
+        "Close up of a diverse Oly habitat",
+        "Spraying bulk shell into the water at high tide",
+        "View of the enhancement plot creating structured substrate at low tide",
+        "Sofia counting Olys",
+        "Piles of oysters!"
+    ];
+
+    buildCarousel(panel.querySelector("#oysterbay-carousel"), photos, captions);
+
         
     // Population plot
-   panel.querySelector("#oysterbay-population-plot")
+    panel.querySelector("#oysterbay-population-plot")
        .appendChild(createPopulationTimelinePlot(oysterbay_pop_est, timeline_data, "Oyster Bay"));
-    // Shell height histogram
-    // Not yet 100% sure what this will look like, but this is one idea
-    // const fidalgoSizeData = fidalgo_heights; // Data will go in here when we have it!! 
-    // example for above: 
-    // [ann_densities.filter(d => d.location === "Fidalgo Bay" && d.shell_height_mm)]
+    
+    // Shell heights plot
     panel.querySelector("#oysterbay-size-plot")
        .appendChild(createShellHeightHistogram(oysterbay_heights));
 
@@ -1711,7 +1730,15 @@ function buildChicoBayPanel() {
         FileAttachment("data/images/chico_oly_closeup.jpg").href,
         FileAttachment("data/images/chico_landscape.jpg").href,
     ].filter(Boolean);
-    buildCarousel(panel.querySelector("#chico-carousel"), photos);
+
+    const captions = [
+            "Heading out to survey the enhancement",
+            "Counting Olys",
+            "Close up of an Oly cluster",
+            "Bulk shell creating firm, structured substrate",
+        ];
+
+    buildCarousel(panel.querySelector("#chico-carousel"), photos, captions);
 
     // Plots
       panel.querySelector("#chico-density-plot")
@@ -4068,23 +4095,54 @@ setTimeout(() => {
             padding-bottom: 65%;
         }
 
-        .carousel-image {
+        /* ---------- Slide Wrapper (image + caption) ---------- */
+
+        .carousel-slide {
             position: absolute;
-            top: 0; 
+            top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* contain or cover? not sure which i like better yet! */
             opacity: 0;
             transition: opacity 0.3s ease;
             pointer-events: none;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .carousel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
             background: transparent;
             border-radius: 12px;
         }
 
-        .carousel-image.active {
+        /* ---------- Caption ---------- */
+
+        .carousel-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 28px 16px 34px 16px; /* extra bottom padding clears the dots */
+            background: linear-gradient(to top, rgba(0,0,0,0.65), transparent);
+            color: white;
+            font-size: 13px;
+            line-height: 1.5;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+
+            /* Hover-to-reveal */
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .carousel-slide:hover .carousel-caption {
             opacity: 1;
-            pointer-events: auto;
         }
 
         /* ---------- Navigation Buttons ---------- */
@@ -4157,20 +4215,6 @@ setTimeout(() => {
         RESPONSIVE LAYOUT
         Screen-size adjustments for tablets and phones.
         ================================================== */
-
-        /* -----------------------------------------------
-            Dark mode adjustments
-            Leaflet reset button styling
-        ----------------------------------------------- */
-
-        /* @media (prefers-color-scheme: dark) {
-            .leaflet-reset-btn {
-                background: #222 !important;
-                color: #e0e0e0 !important;
-                border-color: rgba(255,255,255,0.3) !important;
-            }
-        } */
-
 
         /* -----------------------------------------------
             Smaller desktop
