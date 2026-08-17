@@ -176,7 +176,6 @@ const tooltipPhotos = {
   "Port Gamble Bay":  FileAttachment("data/images/portgamble_tooltip.jpg").href,
   "Quilcene Bay":     FileAttachment("data/images/quilcene_tooltip.jpg").href,
   "Sinclair Inlet":   FileAttachment("data/images/sinclair_tooltip.jpg").href,
-  "Legion Park":      FileAttachment("data/images/legion_SAMPLE_tooltip.jpg").href,
   "Fidalgo Bay":      FileAttachment("data/images/fidalgo_tooltip.jpeg").href,
   "Chico Bay":        FileAttachment("data/images/chicobay_tooltip.jpg").href,
   "Dogfish Bay":      FileAttachment("data/images/dogfish_tooltip.jpg").href,
