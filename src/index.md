@@ -82,7 +82,7 @@ pager: false
     <span class="intro-tip-text">
       Use the <strong>tabs</strong> in the panel on the left of the map to switch between exploring
       <strong>enhancement projects</strong> and <strong>recruitment monitoring</strong>. In the
-      Enhancement view, sites marked with an
+      Enhancement view, sites marked with a
       <span style="color:var(--marker-story); font-weight:600;">green dot</span>
       have a story — select one from the dropdown or click it directly. In the Recruitment view,
       click any station to see its settlement history.
@@ -106,11 +106,13 @@ const recruitment_data = (await FileAttachment("data/recruitment_unfiltered.csv"
 // Data for timeline
 const timeline_data = await FileAttachment("data/timeline_data.csv").csv({typed: true});
 
+
 // Fidalgo Bay population estimates
 const fidalgo_pop_est = await FileAttachment("data/fidalgo_population_estimates.csv").csv({typed: true});
 
 // Fidalgo Bay shell height
 const fidalgo_heights = await FileAttachment("data/fidalgo_heights_2023.csv").csv({typed: true});
+
 
 // Oyster Bay population estimates
 const oysterbay_pop_est = await FileAttachment("data/oysterbay_population_estimates.csv").csv({typed: true});
@@ -118,11 +120,20 @@ const oysterbay_pop_est = await FileAttachment("data/oysterbay_population_estima
 // Oyster Bay shell height
 const oysterbay_heights = await FileAttachment("data/oysterbay_2026_heights.csv").csv({typed: true});
 
+
 // Chico Bay density estimates
 const chicobay_dens_est = await FileAttachment("data/chicobay_density_estimates.csv").csv({typed: true});
 
 // Chico Bay shell height
 const chicobay_heights = await FileAttachment("data/chicobay_2021_heights.csv").csv({typed: true});
+
+
+// Silverdale population estimates
+const silverdale_pop_est = await FileAttachment("data/silverdale_population_estimates.csv").csv({typed: true});
+
+// Silverdale shell height
+const silverdale_heights = await FileAttachment("data/silverdale_heights_2026.csv").csv({typed: true});
+
 
 // ===================================================
 // IMPORT LIBRARIES
@@ -152,7 +163,7 @@ const story_sites = new Set([
   "Fidalgo Bay",
   "Oyster Bay",
   "Chico Bay",
-  //   "Silverdale",
+  "Silverdale",
   // Add more here as stories are written
 ]);
 
@@ -325,6 +336,47 @@ function buildCarousel(container, photos, captions = []) {
     };
 } // END CAROUSEL BUILDER FUNCTION
 
+// ===================================================
+// ===================================================
+// SHARED FUNCTION: FILTER INFO BUTTON
+// Small "i" button + popup used next to filter labels
+// (year slider, and every section on narrow screens)
+// ===================================================
+// ===================================================
+function createFilterInfoButton(hintText) {
+    const wrap = document.createElement("span");
+    wrap.className = "filter-info-wrap";
+    const btn = document.createElement("button");
+    btn.className = "filter-info-btn";
+    btn.textContent = "i";
+    btn.title = "More information";
+    btn.setAttribute("aria-label", "Show information");
+    btn.setAttribute("aria-expanded", "false");
+    const popup = document.createElement("div");
+    popup.className = "filter-info-popup";
+    popup.textContent = hintText;
+    document.body.appendChild(popup);
+    btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const wasOpen = popup.classList.contains("open");
+        document.querySelectorAll(".filter-info-popup.open").forEach(p => p.classList.remove("open"));
+        document.querySelectorAll(".filter-info-btn[aria-expanded='true']").forEach(b => b.setAttribute("aria-expanded", "false"));
+        if (wasOpen) return;
+        const rect = btn.getBoundingClientRect();
+        popup.classList.add("open");
+        const popupRect = popup.getBoundingClientRect();
+        let left = Math.min(rect.left, window.innerWidth - popupRect.width - 10);
+        left = Math.max(left, 10);
+        let top = rect.bottom + 6;
+        if (top + popupRect.height > window.innerHeight - 10) top = rect.top - popupRect.height - 6;
+        popup.style.left = `${left}px`;
+        popup.style.top = `${top}px`;
+        btn.setAttribute("aria-expanded", "true");
+    });
+    wrap.appendChild(btn);
+    return { wrap, btn, popup };
+} // END FILTER INFO BUTTON
+
 
 // ===================================================
 // ===================================================
@@ -405,6 +457,7 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
             tickSpacing: 60,
             padding: 0.1,
             insetLeft: 10,
+            interval: 1,
             insetRight: 10
         },
         // Y-axis (population)
@@ -546,10 +599,51 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
     const yScale = svgEl.scale ? svgEl.scale("y") : chart.scale("y");
     const svgNS = "http://www.w3.org/2000/svg"; // Required for creating SVG elements
 
-    // Function that creates an invisible clickable area over each point
+        // Detect touch so we can switch interaction mode
+    const isTouchDevice = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+
+    function positionAndShowTooltip(hitCircle, datum, buildHTML) {
+        tooltip.innerHTML = buildHTML(datum);
+        tooltip.style.display = "block";
+
+        const pointRect = hitCircle.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const px = pointRect.left + pointRect.width / 2 - wrapperRect.left;
+        const py = pointRect.top + pointRect.height / 2 - wrapperRect.top;
+
+        const tw = tooltip.offsetWidth;
+        const th = tooltip.offsetHeight;
+        const OFFSET = 3;
+
+        const spaceRight = wrapperRect.width - px;
+        const spaceAbove = py;
+
+        let left = spaceRight - OFFSET >= tw ? px + OFFSET : px - tw - OFFSET;
+        let top = spaceAbove - OFFSET >= th ? py - th - OFFSET : py + OFFSET;
+
+        left = Math.max(4, Math.min(left, wrapperRect.width - tw - 4));
+        top = Math.max(4, Math.min(top, wrapperRect.height - th - 4));
+
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+        tooltip.style.opacity = "0.88";
+    }
+
+    function hideTooltip() {
+        tooltip.style.opacity = "0";
+        tooltip.style.display = "none";
+    }
+
+    // On touch, tapping outside any point closes the open tooltip
+    if (isTouchDevice) {
+        wrapper.addEventListener("pointerdown", (e) => {
+            if (e.target.tagName !== "circle") hideTooltip();
+        });
+    }
+
     function addHoverPoint(datum, cx, cy, buildHTML) {
         // Create an invisible circle.
-        // The user can hover over this even though the actual chart point is small
+        // The user can hover/tap over this even though the actual chart point is small
         const hitCircle = document.createElementNS(svgNS, "circle");
         hitCircle.setAttribute("cx", cx);
         hitCircle.setAttribute("cy", cy);
@@ -558,45 +652,28 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
         hitCircle.style.cursor = "pointer";
         svgEl.appendChild(hitCircle);
 
-        // When mouse enters point:
-        hitCircle.addEventListener("pointerenter", () => {
-            // Fill tooltip with correct information
-            tooltip.innerHTML = buildHTML(datum);
-            // Show tooltip
-            tooltip.style.display = "block";
-
-            // Find point position on screen
-            const pointRect = hitCircle.getBoundingClientRect();
-            const wrapperRect = wrapper.getBoundingClientRect();
-            // Convert position relative to chart container
-            const px = pointRect.left + pointRect.width / 2 - wrapperRect.left;
-            const py = pointRect.top + pointRect.height / 2 - wrapperRect.top;
-
-            // Decide whether tooltip fits to the right or left
-            const tw = tooltip.offsetWidth;
-            const th = tooltip.offsetHeight;
-            const OFFSET = 3; // How far away from point to start tooltip
-
-            const spaceRight = wrapperRect.width - px;
-            const spaceAbove = py;
-
-            let left = spaceRight - OFFSET >= tw ? px + OFFSET : px - tw - OFFSET;
-            let top = spaceAbove - OFFSET >= th ? py - th - OFFSET : py + OFFSET;
-
-            // Clamp so the tooltip never spills outside the wrapper's bounds
-            left = Math.max(4, Math.min(left, wrapperRect.width - tw - 4));
-            top = Math.max(4, Math.min(top, wrapperRect.height - th - 4));
-
-            tooltip.style.left = `${left}px`;
-            tooltip.style.top = `${top}px`;
-            tooltip.style.opacity = "0.88";
-        });
-
-        // Hide tooltip when user leaves point
-        hitCircle.addEventListener("pointerleave", () => {
-            tooltip.style.opacity = "0";
-            tooltip.style.display = "none";
-        });
+        if (isTouchDevice) {
+            // Tap to open; tap the same point again to close
+            hitCircle.addEventListener("pointerdown", (e) => {
+                e.stopPropagation();
+                const isThisOpen = tooltip.style.display === "block" && tooltip.dataset.openFor === (cx + "," + cy);
+                if (isThisOpen) {
+                    hideTooltip();
+                    tooltip.dataset.openFor = "";
+                } else {
+                    positionAndShowTooltip(hitCircle, datum, buildHTML);
+                    tooltip.dataset.openFor = cx + "," + cy;
+                }
+            });
+        } else {
+            // Desktop: hover to show, leave to hide
+            hitCircle.addEventListener("pointerenter", () => {
+                positionAndShowTooltip(hitCircle, datum, buildHTML);
+            });
+            hitCircle.addEventListener("pointerleave", () => {
+                hideTooltip();
+            });
+        }
     }
     // Add hover areas for population points
     cleanPop.forEach(p => {
@@ -842,10 +919,51 @@ function createDensityTimelinePlot(densData, timelineData, siteName) {
     const yScale = svgEl.scale ? svgEl.scale("y") : chart.scale("y");
     const svgNS = "http://www.w3.org/2000/svg"; // Required for creating SVG elements
 
-    // Function that creates an invisible clickable area over each point
+        // Detect touch so we can switch interaction mode
+    const isTouchDevice = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+
+    function positionAndShowTooltip(hitCircle, datum, buildHTML) {
+        tooltip.innerHTML = buildHTML(datum);
+        tooltip.style.display = "block";
+
+        const pointRect = hitCircle.getBoundingClientRect();
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const px = pointRect.left + pointRect.width / 2 - wrapperRect.left;
+        const py = pointRect.top + pointRect.height / 2 - wrapperRect.top;
+
+        const tw = tooltip.offsetWidth;
+        const th = tooltip.offsetHeight;
+        const OFFSET = 3;
+
+        const spaceRight = wrapperRect.width - px;
+        const spaceAbove = py;
+
+        let left = spaceRight - OFFSET >= tw ? px + OFFSET : px - tw - OFFSET;
+        let top = spaceAbove - OFFSET >= th ? py - th - OFFSET : py + OFFSET;
+
+        left = Math.max(4, Math.min(left, wrapperRect.width - tw - 4));
+        top = Math.max(4, Math.min(top, wrapperRect.height - th - 4));
+
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+        tooltip.style.opacity = "0.88";
+    }
+
+    function hideTooltip() {
+        tooltip.style.opacity = "0";
+        tooltip.style.display = "none";
+    }
+
+    // On touch, tapping outside any point closes the open tooltip
+    if (isTouchDevice) {
+        wrapper.addEventListener("pointerdown", (e) => {
+            if (e.target.tagName !== "circle") hideTooltip();
+        });
+    }
+
     function addHoverPoint(datum, cx, cy, buildHTML) {
         // Create an invisible circle.
-        // The user can hover over this even though the actual chart point is small
+        // The user can hover/tap over this even though the actual chart point is small
         const hitCircle = document.createElementNS(svgNS, "circle");
         hitCircle.setAttribute("cx", cx);
         hitCircle.setAttribute("cy", cy);
@@ -854,45 +972,28 @@ function createDensityTimelinePlot(densData, timelineData, siteName) {
         hitCircle.style.cursor = "pointer";
         svgEl.appendChild(hitCircle);
 
-        // When mouse enters point:
-        hitCircle.addEventListener("pointerenter", () => {
-            // Fill tooltip with correct information
-            tooltip.innerHTML = buildHTML(datum);
-            // Show tooltip
-            tooltip.style.display = "block";
-
-            // Find point position on screen
-            const pointRect = hitCircle.getBoundingClientRect();
-            const wrapperRect = wrapper.getBoundingClientRect();
-            // Convert position relative to chart container
-            const px = pointRect.left + pointRect.width / 2 - wrapperRect.left;
-            const py = pointRect.top + pointRect.height / 2 - wrapperRect.top;
-
-            // Decide whether tooltip fits to the right or left
-            const tw = tooltip.offsetWidth;
-            const th = tooltip.offsetHeight;
-            const OFFSET = 3; // How far away from point to start tooltip
-
-            const spaceRight = wrapperRect.width - px;
-            const spaceAbove = py;
-
-            let left = spaceRight - OFFSET >= tw ? px + OFFSET : px - tw - OFFSET;
-            let top = spaceAbove - OFFSET >= th ? py - th - OFFSET : py + OFFSET;
-
-            // Clamp so the tooltip never spills outside the wrapper's bounds
-            left = Math.max(4, Math.min(left, wrapperRect.width - tw - 4));
-            top = Math.max(4, Math.min(top, wrapperRect.height - th - 4));
-
-            tooltip.style.left = `${left}px`;
-            tooltip.style.top = `${top}px`;
-            tooltip.style.opacity = "0.88";
-        });
-
-        // Hide tooltip when user leaves point
-        hitCircle.addEventListener("pointerleave", () => {
-            tooltip.style.opacity = "0";
-            tooltip.style.display = "none";
-        });
+        if (isTouchDevice) {
+            // Tap to open; tap the same point again to close
+            hitCircle.addEventListener("pointerdown", (e) => {
+                e.stopPropagation();
+                const isThisOpen = tooltip.style.display === "block" && tooltip.dataset.openFor === (cx + "," + cy);
+                if (isThisOpen) {
+                    hideTooltip();
+                    tooltip.dataset.openFor = "";
+                } else {
+                    positionAndShowTooltip(hitCircle, datum, buildHTML);
+                    tooltip.dataset.openFor = cx + "," + cy;
+                }
+            });
+        } else {
+            // Desktop: hover to show, leave to hide
+            hitCircle.addEventListener("pointerenter", () => {
+                positionAndShowTooltip(hitCircle, datum, buildHTML);
+            });
+            hitCircle.addEventListener("pointerleave", () => {
+                hideTooltip();
+            });
+        }
     }
     // Add hover areas for density points
     cleanDens.forEach(p => {
@@ -1118,7 +1219,7 @@ function buildSitePanel(siteName) {
     case "Fidalgo Bay":  return buildFidalgoBayPanel();
     case "Oyster Bay":  return buildOysterBayPanel();
     case "Chico Bay":    return buildChicoBayPanel();
-    // case "Silverdale":   return buildSilverdalePanel();
+    case "Silverdale":   return buildSilverdalePanel();
   }
 } // END BUILD SITE PANEL FUNCTION
 
@@ -1214,13 +1315,9 @@ function buildFidalgoBayPanel() {
             margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
         ">Population Growth &amp; Restoration Timeline</h3>
         <p style="font-size: 14px; color: #666; margin: 0 0 12px 0; font-style: italic;">
-            Estimated population size at Fidalgo Bay, 2001 to 2023
+            Estimated Olympia oyster population size at Fidalgo Bay, 2001 to 2023
         </p>
         <div id="fidalgo-population-plot"></div>
-        <div style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:12px; color:#888;">
-            <span style="display:inline-block; width:18px; height:0; border-top:2px dashed #999;"></span>
-            Enhancement action — hover the line for details
-        </div>
         </div>
 
         <!-- Data callout -->
@@ -1453,9 +1550,9 @@ function buildOysterBayPanel() {
         <h3 style="
             font-size: 16px; font-weight: 700; color: #045B4C;
             margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
-        ">Population Size Over Time</h3>
+        ">Population Growth & Restoration Timeline</h3>
         <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
-            Estimated population size at Oyster Bay, 2011 to 2026
+            Estimated Olympia oyster population size at Oyster Bay, 2011 to 2026
         </p>
         <div id="oysterbay-population-plot"></div>
         </div>
@@ -1642,7 +1739,7 @@ function buildChicoBayPanel() {
         <h3 style="
             font-size: 16px; font-weight: 700; color: #045B4C;
             margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
-        ">Oyster Density Over Time</h3>
+        ">Population Density & Restoration Timeline</h3>
         <p style="font-size: 14px; color: #666; margin: 0 0 12px 0; font-style: italic;">
             Average Olympia oysters per square meter, Chico Bay enhancement area
         </p>
@@ -1747,6 +1844,216 @@ function buildChicoBayPanel() {
 
 // ===================================================
 // ===================================================
+//
+// SITE PANEL: SILVERDALE (OLD MILL PARK)
+// Layout:
+//   Title --> Carousel --> Intro quote block -->
+//   About This Site (prose / history callout / prose) --> Our Work --> Timeline -->
+//   Impact text --> Shell height histogram -->
+//   Size context --> Looking Ahead --> Credits, Partners, Funders
+//
+// ===================================================
+// ===================================================
+function buildSilverdalePanel() {
+    const panel = document.createElement("div");
+
+    // --- Narrative ---
+    const narrative = {
+        intro: `At the head of Dyes Inlet, Old Mill Park sits adjacent to the heart of the commercial center of Silverdale. This vast stretch of tideland grants a diverse array of people access to quintessential central Puget Sound, and gives a front row seat to one of our largest habitat enhancement projects to date.`,
+
+        context1: `Tidelands at the head of a bay tend to be the best real estate an OIympia oyster could ask for. Water lingers here longest, protected and slow-moving, holding onto nutrients and larvae rather than flushing them out of the bay entirely. Knowing this, investigating the shoreline around Silverdale made sense, both as a search for ideal restoration habitat and as a chance to build population at the scale of a whole waterbody, following years of project work in the more southern reaches of Dyes Inlet.`,
+
+        history: `History backed up this instinct. In the 1930s, Takuji Yamashita, Japanese civil rights activist and oyster farmer, cultivated oysters commercially right at this spot, where an old oyster house still stands on the shoreline today. Growers of that area tended to build where native oysters were already thriving, which suggests these tidelands likely supported Olys to begin with.`,
+
+        context2: `A wild aggregation of Olys showed our team a ghost of that history during a site visit in 2021. This thinly scattered population skewed old, with plenty of large, mature individuals and few signs of a younger age class coming up behind them. Despite this, data from recruitment monitoring showed that larvae were indeed present in the water, but the available habitat for reliable settlement was low.`,
+
+        ourWork1: `These are the types of conditions that lend themselves to bulk shell projects, with the goal of providing substrate for existing larvae to settle to without having to add any living animal at all. The vast expanse of largely unstructured sand paired with the existing wild population in Silverdale and the thriving Oly populations in other pockets of Dyes Inlet presented a rare opportunity to restore Olympia oyster habitat at a landscape scale.`,
+
+        ourWork2: `Turning that opportunity into a project took years of planning and permitting, threading partnerships across sixteen different tideland owners and consulting closely with the Suquamish Tribe, who hold shellfish rights throughout Dyes Inlet. That effort resulted in a plan, identifying three areas within the site for enhancement. In 2023, it all came together: a 300-foot barge worked its way along the shoreline, spraying roughly 2,000 cubic yards of Pacific oyster shell across 20 acres of tideland.`,
+
+        impact: `Before the start of the project, the existing wild population at Silverdale sat at roughly 42,000 oysters. After adding 20 acres of habitat for juvenile Olys in 2023, we saw slow and steady growth through 2025, climbing to about 65,500. Then, in 2026, something shifted. Out on the tidelands, before any data had been collected or analyzed, it was already obvious that the work was taking hold. Olys were visible in the enhancement plots without having to search for them, visible in passing, underfoot, impossible to miss in a way that simply hadn't been true a year before. The numbers backed up what we already knew - the 2026 estimated population came in at nearly 200,000 individuals, more than triple the estimate for 2025.`,
+
+        sizeContext: `Size data adds a bit more detail to that growth. The largest individuals, in the 50-60mm range, mostly trace back to what's remaining of the older wild population. The overall size distribution isn't yet a normal bell curve, the shape you'd expect from a mature, self-sustaining bed, but with several strong settlement years now layered in, it's trending that way. The restoration is still young.`,
+
+        future: `What we're watching for now is whether that trajectory holds: a stretch of shoreline at the heart of Kitsap's commercial hub, visited by many, growing back into a stronghold for Olympia oysters, one large enough to seed the rest of Dyes Inlet with new generations of oysters for decades.`,
+
+        partnersLead: `Many thanks to our funders and partners,`,
+
+        partnersList: `[list those here]`
+    };
+
+    // --- Layout HTML ---
+    // Some of these are placeholder divs for dynamic content like plots
+    panel.innerHTML =  `
+        <!-- Site title 
+        <h2 style="
+        font-size: 32px; font-weight: 700; color: #045B4C;
+        text-align: center; margin: 0 0 24px 0;
+        letter-spacing: 0.5px; line-height: 1.2;
+        ">Silverdale</h2> -->
+
+        <!-- Carousel placeholder -->
+        <div id="silverdale-carousel"></div>
+
+        <!-- Intro quote -->
+        <div style="
+        font-size: 16px; line-height: 1.8; color: #333;
+        margin-bottom: 32px; padding: 24px;
+        background: linear-gradient(to right, #f0f7f6, transparent);
+        border-left: 4px solid #045B4C; font-style: italic;
+        ">${narrative.intro}</div>
+
+        <!-- About This Site -->
+        <div style="margin-bottom: 40px;">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">About</h3>
+
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0 0 20px 0;">
+            ${narrative.context1}
+        </p>
+
+        <div style="background: #f8f9fa; padding: 20px 24px; border-radius: 8px; margin: 0 0 20px 0;">
+            <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+                ${narrative.history}
+            </p>
+        </div>
+
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.context2}
+        </p>
+        </div>
+
+        <!-- Our Work -->
+        <div style="
+        background: linear-gradient(135deg, #e8f4f2 0%, #f0f7f6 100%);
+        padding: 24px; border-radius: 8px; border-left: 4px solid #045B4C;
+        margin-bottom: 40px;
+        ">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Our Work</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0 0 16px 0;">
+            ${narrative.ourWork1}
+        </p>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.ourWork2}
+        </p>
+        </div>
+
+        <!-- Population growth + enhancement timeline -->
+        <div style="
+        background: white; padding: 24px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 40px;
+        ">
+        <h3 style="
+            font-size: 16px; font-weight: 700; color: #045B4C;
+            margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Population Growth &amp; Restoration Timeline</h3>
+        <p style="font-size: 14px; color: #666; margin: 0 0 12px 0; font-style: italic;">
+            Estimated Olympia oyster population size at Silverdale, 2021 to 2026
+        </p>
+        <div id="silverdale-population-plot"></div>
+        </div>
+
+        <!-- Impact text -->
+        <div style="margin-bottom: 40px;">
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.impact}
+        </p>
+        </div>
+
+        <!-- Shell height section -->
+        <div style="
+        background: white; padding: 24px; border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 24px;
+        ">
+        <h3 style="
+            font-size: 16px; font-weight: 700; color: #045B4C;
+            margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Oyster Size Class Distribution</h3>
+        <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
+            Most recent distribution of individual oyster shell heights, measured 2026
+        </p>
+        <div id="silverdale-size-plot"></div>
+        </div>
+
+        <!-- Size context text -->
+        <div style="margin-bottom: 40px;">
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.sizeContext}
+        </p>
+        </div>
+
+        <!-- Looking Ahead -->
+        <div style="
+        background: linear-gradient(135deg, #f0f7f6 0%, #e8f4f2 100%);
+        padding: 28px; border-radius: 8px;
+        border-left: 4px solid #045B4C; margin-bottom: 40px;
+        ">
+        <h3 style="
+            font-size: 18px; font-weight: 700; color: #045B4C;
+            margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
+        ">Looking Ahead</h3>
+        <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
+            ${narrative.future}
+        </p>
+        </div>
+
+        <!-- Partners -->
+        <div style="
+            border-top: 1px solid #e0e0e0;
+            padding-top: 32px;
+            margin-bottom: 40px;
+        ">
+            <h3 style="
+                font-size: 14px; font-weight: 700; color: #045B4C;
+                margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px;
+            ">A Huge Thank You</h3>
+            <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0 0 12px 0;">
+                ${narrative.partnersLead}
+            </p>
+            <p style="font-size: 14px; line-height: 1.8; color: #666; margin: 0;">
+                ${narrative.partnersList}
+            </p>
+        </div>
+    `;
+
+    // Insert dyanmic content (plots!!) into placeholder divs built above
+
+    // Photos for the carousel
+    const photos = [
+        tooltipPhotos["Silverdale"], // First photo is the tooltip photos
+        // Add more photos in like this once we have them:
+        // FileAttachment("data/images/silverdale_barge_2023.jpg").href,
+        // FileAttachment("data/images/silverdale_oyster_house.jpg").href,
+        // etc,
+        // etc
+    ].filter(Boolean);
+
+    const captions = [
+        "View of the tidelands at Old Mill Park",
+        // add matching captions here as photos are added
+    ];
+
+    buildCarousel(panel.querySelector("#silverdale-carousel"), photos, captions);
+
+    // Timeline
+    // Combined population growth + enhancement timeline plot
+    panel.querySelector("#silverdale-population-plot")
+        .appendChild(createPopulationTimelinePlot(silverdale_pop_est, timeline_data, "Silverdale"));
+
+    // Shell height histogram
+    panel.querySelector("#silverdale-size-plot")
+        .appendChild(createShellHeightHistogram(silverdale_heights));
+
+    return panel;
+} // END BUILD SILVERDALE PANEL
+
+// ===================================================
+// ===================================================
 // YEAR SLIDER BUILDER (RECRUITMENT TAB)
 //
 // Creates an <input type="range"> slider for the
@@ -1759,47 +2066,39 @@ function buildChicoBayPanel() {
 //   onChange    - callback fn(year) called on slide
 // ===================================================
 // ===================================================
-function buildYearSlider(years, currentYear, onChange) {
-
-    // Outer div for label + slider + year display
+function buildYearSlider(years, currentYear, onChange, infoElement) {
     const wrapper = document.createElement("div");
-    // Style it
-    Object.assign(wrapper.style, {
-        padding: "0 4px",
-        marginBottom: "20px"
-    });
+    Object.assign(wrapper.style, { padding: "0 4px", marginBottom: "20px" });
 
-    // Label row: "YEAR" on the left and current selected year on right
     const labelRow = document.createElement("div");
     Object.assign(labelRow.style, {
         display: "flex",
         justifyContent: "space-between",
-        alignItems: "baseline",
+        alignItems: "center",
         marginBottom: "8px"
     });
+
+    // Group "Year" label + info icon together on the left
+    const labelGroup = document.createElement("span");
+    Object.assign(labelGroup.style, { display: "flex", alignItems: "center", gap: "4px" });
 
     const label = document.createElement("span");
     label.textContent = "Year";
     Object.assign(label.style, {
-        fontSize: "13px",
-        fontWeight: "600",
-        color: "#045B4C",
-        textTransform: "uppercase",
-        letterSpacing: "0.5px"
-    }); 
+        fontSize: "13px", fontWeight: "600", color: "#045B4C",
+        textTransform: "uppercase", letterSpacing: "0.5px"
+    });
+    labelGroup.appendChild(label);
+    if (infoElement) labelGroup.appendChild(infoElement);
 
-    // The big year number shown next to the label
     const yearDisplay = document.createElement("span");
     yearDisplay.textContent = currentYear;
     Object.assign(yearDisplay.style, {
-        fontSize: "18px",
-        fontWeight: "700",
-        color: "#045B4C",
-        fontVariantNumeric: "tabular-nums"  // prevents layout jumpyness as digits change
+        fontSize: "18px", fontWeight: "700", color: "#045B4C",
+        fontVariantNumeric: "tabular-nums"
     });
 
-    // Place them in the container
-    labelRow.appendChild(label);
+    labelRow.appendChild(labelGroup);
     labelRow.appendChild(yearDisplay);
 
     // Make the actual slider
@@ -2012,6 +2311,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     // Scrollable body
     // -----------------------------------------------
     const scrollBody = document.createElement("div");
+    scrollBody.className = "story-scroll-body";
     Object.assign(scrollBody.style, {
         flexGrow: "1",
         overflowY: "auto",
@@ -2052,7 +2352,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
 
         const stats = [
             { label: "All-time avg",  value: avgAll.toFixed(2),          unit: "live olys / shell" },
-            { label: "Best year",     value: maxYear ? maxYear.year : "—", unit: maxYear ? `${parseFloat(maxYear.index).toFixed(2)} live olys` : "" },
+            { label: "Highest year",     value: maxYear ? maxYear.year : "—", unit: maxYear ? `${parseFloat(maxYear.index).toFixed(2)} live olys` : "" },
             { label: "Lowest year",   value: minYear ? minYear.year : "—", unit: minYear ? `${parseFloat(minYear.index).toFixed(2)} live olys` : "" }
         ];
 
@@ -2260,7 +2560,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     domain: [2014, Math.max(...allData.map(d => d.year))]
                 },
                 y: {
-                    label: "Avg live olys / shell",
+                    label: "Recruitment Index (Avg olys / shell)",
                     labelAnchor: "top",
                     grid: true,
                     nice: true, 
@@ -2337,8 +2637,8 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                                 x: "year",
                                 y: "index",
                                 title: d => d.standard_station === station.standard_station
-                                    ? `★ ${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index} avg live olys/shell`
-                                    : `${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index} avg live olys/shell`
+                                    ? `★ ${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index} avg olys/shell`
+                                    : `${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index} avg olys/shell`
                             })
                         ),
 
@@ -2346,7 +2646,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     allArrowPoints.length > 0 ? Plot.tip(allArrowPoints, Plot.pointer({
                         x: "year",
                         y: () => yMax,
-                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index} avg live olys/shell`
+                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index} avg olys/shell`
                     })) : null
                     ],
                     style: { fontFamily: "inherit", fontSize: "13px" }
@@ -2424,6 +2724,11 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
         };
     });
 
+    // Detect touch so tapping a marker requires two taps (matches
+    // the native two-tap behavior on enhancement site markers):
+    // first tap opens the tooltip, second tap opens the panel
+    const isTouchDevice = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+
     
     // -----------------------------------------------
     // Store the markers
@@ -2463,7 +2768,7 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                 fillOpacity: 0.5
             });
 
-            marker.bindTooltip(`
+                        marker.bindTooltip(`
                 <div style="padding:10px 12px; min-width:160px;">
                     <p style="font-size:13px; font-weight:600; color:#222;
                         margin:0 0 4px 0; text-align:center;">
@@ -2473,6 +2778,11 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                         margin:0; text-transform:uppercase; letter-spacing:0.4px;">
                         Recruitment Station
                     </p>
+                    <div style="margin-top:8px; padding:6px 10px;
+                        background:#FCE8D6; border-radius:6px;
+                        font-size:10px; font-weight:700; color:#8A4B1F; text-align:center;">
+                         - Click icon to view recruitment history -
+                    </div>
                 </div>
             `, {
                 direction: "top",
@@ -2480,7 +2790,26 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                 className: "custom-tooltip"
             });
 
-            marker.on("click", () => onStationClick(stationRow));
+            if (isTouchDevice) {
+                let tapArmed = false;
+                let armResetTimer = null;
+
+                marker.on("click", () => {
+                    if (!tapArmed) {
+                        tapArmed = true;
+                        marker.openTooltip();
+                        // If the user doesn't tap again soon, require two fresh taps next time
+                        clearTimeout(armResetTimer);
+                        armResetTimer = setTimeout(() => { tapArmed = false; }, 3000);
+                    } else {
+                        tapArmed = false;
+                        clearTimeout(armResetTimer);
+                        onStationClick(stationRow);
+                    }
+                });
+            } else {
+                marker.on("click", () => onStationClick(stationRow));
+            }
             marker.on("mouseover", () => {
                 if (marker.getElement()) marker.getElement().style.cursor = "pointer";
             });
@@ -2516,7 +2845,7 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                 fillOpacity: value !== null ? 0.9 : 0.5
             });
 
-            marker.setTooltipContent(
+                        marker.setTooltipContent(
                 value !== null ? `
                     <div style="padding:10px 12px; min-width:180px;">
                         <p style="font-size:13px; font-weight:600; color:#222;
@@ -2527,7 +2856,12 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                         <div style="display:flex; justify-content:space-between;
                             font-size:12px; color:#555;">
                             <span style="color:#045B4C; font-weight:600;">${year}</span>
-                            <span>${value} avg live olys/shell</span>
+                            <span>${value} avg olys/shell</span>
+                        </div>
+                        <div style="margin-top:8px; padding:6px 10px;
+                            background:#FCE8D6; border-radius:6px;
+                            font-size:10px; font-weight:700; color:#8A4B1F; text-align:center;">
+                             - Click icon to view recruitment history -
                         </div>
                     </div>
                 ` : `
@@ -2539,6 +2873,11 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
                         <p style="font-size:12px; color:#aaa; text-align:center; margin:0;">
                             No data for ${year}
                         </p>
+                        <div style="margin-top:8px; padding:6px 10px;
+                            background:#FCE8D6; border-radius:6px;
+                            font-size:10px; font-weight:700; color:#8A4B1F; text-align:center;">
+                             - Click icon to view recruitment history -
+                        </div>
                     </div>
                 `
             );
@@ -2604,7 +2943,7 @@ function addRecruitmentLegend(map, maxValue) {
         div.innerHTML = `
             <div class="map-legend-box recruit-legend-box">
                 <div class="map-legend-header">
-                    <span>Avg Live Olys / Shell</span>
+                    <span>Avg Olys / Shell</span>
                     <button class="legend-toggle-btn" type="button" aria-label="Toggle legend">−</button>
                 </div>
                 <div class="map-legend-body">
@@ -2668,7 +3007,7 @@ function buildEnhancementTabContent(enhData, map, story_sites) {
                 <select id="site-selector" class="filter-select">
                     <option value="">Select a site...</option>
                 </select>
-                <div class="filter-hint">Zoom to a site and view its story</div>
+                <div class="filter-hint">Zoom to a site and view its restoration story</div>
             </div>
 
             <div class="filter-divider"></div>
@@ -2810,23 +3149,27 @@ function buildEnhancementTabContent(enhData, map, story_sites) {
 // ===================================================
 function buildRecruitmentTabContent(recruitData, recruitLayerManager, map) {
     const content = document.createElement("div");
-    content.className = "filter-tab-content hidden"; // hidden by default — enhancement starts active
+    content.className = "filter-tab-content hidden";
 
     // -----------------------------------------------
-    // Waterbody jump dropdown (only shows waterbodies that have coordinates)
+    // Waterbody jump dropdown
     // -----------------------------------------------
     const wbDropdownWrapper = document.createElement("div");
     wbDropdownWrapper.className = "filter-section";
+
     wbDropdownWrapper.innerHTML = `
-        <label style="display:block; font-size:13px; font-weight:600; color:#045B4C;
-            margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Jump to Waterbody</label>
+        <div class="filter-section-label">Jump to Waterbody</div>
+
         <select id="waterbody-selector" class="filter-select">
             <option value="">Select a waterbody...</option>
         </select>
-        <div class="filter-hint">Zoom to a waterbody and view its stations</div>
+
+        <div class="filter-hint">
+            Zoom to a waterbody and view its stations
+        </div>
     `;
 
-    // Populate the dropdown from the recruitment data
+    // Populate dropdown
     const uniqueWaterbodies = [...new Set(
         recruitData
             .filter(d => d.waterbody && d.latitude && d.latitude !== "NA")
@@ -2834,6 +3177,7 @@ function buildRecruitmentTabContent(recruitData, recruitLayerManager, map) {
     )].sort();
 
     const wbSelector = wbDropdownWrapper.querySelector("#waterbody-selector");
+
     uniqueWaterbodies.forEach(wb => {
         const option = document.createElement("option");
         option.value = wb;
@@ -2841,14 +3185,15 @@ function buildRecruitmentTabContent(recruitData, recruitLayerManager, map) {
         wbSelector.appendChild(option);
     });
 
-    // When a waterbody is selected, zoom the map to fit its stations
+    // Zoom to selected waterbody
     wbSelector.addEventListener("change", (e) => {
         const wb = e.target.value;
         if (!wb) return;
 
         const stations = recruitData.filter(d =>
             d.waterbody === wb &&
-            d.latitude && d.latitude !== "NA" &&
+            d.latitude &&
+            d.latitude !== "NA" &&
             !isNaN(parseFloat(d.latitude))
         );
 
@@ -2862,14 +3207,20 @@ function buildRecruitmentTabContent(recruitData, recruitLayerManager, map) {
                 [Math.min(...lats) - 0.02, Math.min(...lngs) - 0.02],
                 [Math.max(...lats) + 0.02, Math.max(...lngs) + 0.02]
             ),
-            { animate: true, padding: [30, 30] }
+            {
+                animate: true,
+                padding: [30, 30]
+            }
         );
     });
 
-    // Reset dropdown when user zooms back out
+    // Reset dropdown when zooming back out
     map.on("zoomend", () => {
-        if (map.getZoom() < 10) wbSelector.value = "";
+        if (map.getZoom() < 10) {
+            wbSelector.value = "";
+        }
     });
+
 
     // -----------------------------------------------
     // Year slider
@@ -2881,9 +3232,17 @@ function buildRecruitmentTabContent(recruitData, recruitLayerManager, map) {
         const years = recruitLayerManager.years;
         const latestYear = years[years.length - 1];
 
-        const slider = buildYearSlider(years, latestYear, (year) => {
-            recruitLayerManager.updateYear(year);
-        });
+        const { wrap: sliderInfoWrap } = createFilterInfoButton(
+            "Drag the slider to explore recruitment across different years. Circle size and color reflect the average number of olys settled per shell at each station."
+        );
+
+        const slider = buildYearSlider(
+            years,
+            latestYear,
+            (year) => recruitLayerManager.updateYear(year),
+            sliderInfoWrap
+        );
+
         sliderContainer.appendChild(slider);
         recruitLayerManager.updateYear(latestYear);
     }
@@ -2891,20 +3250,14 @@ function buildRecruitmentTabContent(recruitData, recruitLayerManager, map) {
     const sliderNote = document.createElement("p");
     sliderNote.className = "filter-hint";
     sliderNote.style.margin = "4px 0 0 0";
-    sliderNote.textContent = "Drag the slider to explore recruitment across different years. Circle size and color reflect the average number of olys settled per shell at each station.";
+    sliderNote.textContent =
+        "Drag the slider to explore recruitment across different years. Circle size and color reflect the average number of olys settled per shell at each station.";
+
     sliderContainer.appendChild(sliderNote);
 
-    // -----------------------------------------------
-    // Note about clicking stations
-    // -----------------------------------------------
-    const clickHint = document.createElement("div");
-    clickHint.className = "filter-section";
-    clickHint.innerHTML = `
-        <div class="filter-click-hint">▶ Click any station to view its recruitment history</div>
-    `;
 
     // -----------------------------------------------
-    // Assemble all sections with dividers
+    // Assemble sections
     // -----------------------------------------------
     const divider1 = document.createElement("div");
     divider1.className = "filter-divider";
@@ -2920,12 +3273,9 @@ function buildRecruitmentTabContent(recruitData, recruitLayerManager, map) {
 
     const divider3 = document.createElement("div");
     divider3.className = "filter-divider";
-    content.appendChild(divider3);
-
-    content.appendChild(clickHint);
 
     return { element: content };
-} // END buildRecruitmentTabContent
+}
 
 // ===================================================
 // ===================================================
@@ -3067,8 +3417,150 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
         enhancementLegend, recruitLayerManager, onTabSwitch
     });
 
-    return panel;
+    return { element: panel, enhContent: enh.element, recruitContent: recruit.element };
 } // END FILTER PANEL FUNCTION
+
+// ===================================================
+// ===================================================
+// RESPONSIVE MAP CONTROLS
+// Below 900px the card stacks above the map and the filter
+// controls (site selector, type toggles, waterbody dropdown,
+// year slider) get relocated onto the map itself so they're
+// reachable without scrolling back up. Tab switcher stays above.
+//
+// The explanatory hint text now in "i" icons
+// ===================================================
+// ===================================================
+function wireResponsiveMapControls(panelElement, enhContent, recruitContent, mapContainer) {
+
+    // Remember where the two sections live by default (inside the card)
+    // so we can put them back when the screen widens again
+    const homeParent = panelElement;
+
+    const overlay = document.createElement("div");
+    overlay.className = "map-controls-overlay"; // starts open
+
+    // Stop clicks/taps on the overlay (dropdowns, toggle buttons, slider)
+    // from bubbling down to the Leaflet map underneath it
+    L.DomEvent.disableClickPropagation(overlay);
+
+    // Tappable header: toggles the body open/closed, same +/− pattern as the legend
+    const overlayToggle = document.createElement("button");
+    overlayToggle.type = "button";
+    overlayToggle.className = "map-controls-toggle";
+    overlayToggle.innerHTML = `<span>Map Filters</span><span class="map-controls-arrow">−</span>`;
+    overlayToggle.addEventListener("click", () => {
+        overlay.classList.toggle("collapsed");
+        const isCollapsed = overlay.classList.contains("collapsed");
+        overlayToggle.querySelector(".map-controls-arrow").textContent = isCollapsed ? "+" : "−";
+        overlayToggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
+    });
+    overlayToggle.setAttribute("aria-expanded", "true");
+    overlay.appendChild(overlayToggle);
+
+    // Scrollable body: the filter controls get moved in here,
+    // not directly into the overlay
+    const overlayBody = document.createElement("div");
+    overlayBody.className = "map-controls-body";
+
+    overlay.appendChild(overlayBody);
+
+    mapContainer.appendChild(overlay);
+
+    // ------------------------------------------------
+    // Add a small "i" button to every filter section.
+    // The explanatory text stays visible on desktop,
+    // but becomes a popup on mobile
+    // ------------------------------------------------
+        function setupSectionInfo(content) {
+
+        const sections = content.querySelectorAll(".filter-section");
+
+        sections.forEach(section => {
+
+            const label = section.querySelector(".filter-section-label");
+
+            if (!label) return;
+
+            // Don't add the button more than once
+            if (label.querySelector(".filter-info-wrap")) return;
+
+            // Find explanatory text in this section
+            const hints = section.querySelectorAll(
+                ".filter-hint, .filter-click-hint"
+            );
+
+            // If there is no hint, don't create an empty info button
+            if (!hints.length) return;
+
+            const hintText = Array.from(hints)
+                .map(hint => hint.textContent.trim())
+                .filter(Boolean)
+                .join(" ");
+
+            const { wrap } = createFilterInfoButton(hintText);
+            label.appendChild(wrap);
+        });
+    }
+
+    // Set up both sections once
+    setupSectionInfo(enhContent);
+    setupSectionInfo(recruitContent);
+
+    // Close any open info popup when clicking elsewhere
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".filter-info-wrap")) {
+
+            document.querySelectorAll(".filter-info-popup.open")
+                .forEach(popup => {
+                    popup.classList.remove("open");
+                });
+
+            document.querySelectorAll(
+                ".filter-info-btn[aria-expanded='true']"
+            ).forEach(btn => {
+                btn.setAttribute("aria-expanded", "false");
+            });
+        }
+    });
+
+    // -----------------------------------------------
+    // applyLayout: moves enhContent/recruitContent between the
+    // card (desktop) and the map overlay's scrollable body (mobile)
+    // -----------------------------------------------
+    function applyLayout(isMobile) {
+        if (isMobile) {
+            overlayBody.appendChild(enhContent);
+            overlayBody.appendChild(recruitContent);
+
+            // Make sure both tabs have their info buttons
+            setupSectionInfo(enhContent);
+            setupSectionInfo(recruitContent);
+
+        } else {
+            homeParent.appendChild(enhContent);
+            homeParent.appendChild(recruitContent);
+
+            // Close any filter info popups
+            document.querySelectorAll(".filter-info-popup.open")
+                .forEach(popup => {
+                    popup.classList.remove("open");
+                });
+
+            document.querySelectorAll(
+                ".filter-info-btn[aria-expanded='true']"
+            ).forEach(btn => {
+                btn.setAttribute("aria-expanded", "false");
+            });
+        }
+    }
+
+    // Change layout at 900px
+    const mq = window.matchMedia("(max-width: 900px)");
+    applyLayout(mq.matches);          // set correct layout immediately
+    mq.addEventListener("change", (e) => applyLayout(e.matches));
+
+} // END responsive map controls function
 
 // ===================================================
 // ===================================================
@@ -3305,6 +3797,7 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         // This is the story and graphs that you can scroll through
         // -----------------------------------------------
         const scrollBody = document.createElement("div");
+        scrollBody.className = "story-scroll-body";
         Object.assign(scrollBody.style, {
             flexGrow: "1",  // expand to fill remaining height after buttonBar
             overflowY: "auto",   // show scrollbar only when content is taller than the div
@@ -3573,23 +4066,37 @@ setTimeout(() => {
     // Place the map inside the placeholder card — it stays here forever
     placeholder.appendChild(container);
 
-    // Build the filter panel once
+        // Build the filter panel once
     setTimeout(() => {
         const filterContainer = document.querySelector('#filter-container');
         if (filterContainer && container._enhancementLayer) {
             filterContainer.innerHTML = '';
-            filterContainer.appendChild(
-                createFilterPanel(
-                    container._enhancementLayer,
-                    container._recruitmentLayer,
-                    container._map,
-                    enh_sites_metadata,
-                    recruitment_data,                   // full recruitment CSV
-                    container._recruitLayerManager,  // layer manager with years + updateYear()
-                    container._enhancementLegend,    // legend ref so tabs can swap it
-                    () => { if (window.currentMapInstance?._resetView) window.currentMapInstance._resetView(); }
-                )
+
+            const filterPanel = createFilterPanel(
+                container._enhancementLayer,
+                container._recruitmentLayer,
+                container._map,
+                enh_sites_metadata,
+                recruitment_data,                   // full recruitment CSV
+                container._recruitLayerManager,  // layer manager with years + updateYear()
+                container._enhancementLegend,    // legend ref so tabs can swap it
+                () => { if (window.currentMapInstance?._resetView) window.currentMapInstance._resetView(); }
             );
+
+            filterContainer.appendChild(filterPanel.element);
+
+            // Below 900px, relocate the actual filter controls onto
+            // the map. mapPane is the Leaflet pane living inside the
+            // main map container - grab it via its class
+            const mapPane = container.querySelector(".map-pane");
+            if (mapPane) {
+                wireResponsiveMapControls(
+                    filterPanel.element,
+                    filterPanel.enhContent,
+                    filterPanel.recruitContent,
+                    mapPane
+                );
+            }
         }
     }, 100);
 
@@ -4172,6 +4679,172 @@ setTimeout(() => {
             font-style: italic;
         }
 
+        /* ---------- Map Controls Overlay ---------- */
+
+                    /* ---------- Map Controls Overlay ---------- */
+
+        .map-controls-overlay {
+            display: none;
+            position: absolute;
+            left: 12px;
+            bottom: 12px;
+            width: auto;
+            max-width: 200px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            font-size: 13px;
+            box-sizing: border-box;
+            z-index: 1500;
+        }
+
+        .map-controls-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            background: none;
+            color: #045B4C;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+        }
+
+        .map-controls-arrow {
+            font-size: 16px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        .map-controls-overlay.collapsed .map-controls-body {
+            display: none;
+        }
+
+        /* Only show the overlay on narrow screens */
+        @media (max-width: 900px) {
+            .map-controls-overlay {
+                display: block;
+            }
+
+            /* Hide explanatory text while controls are on the map */
+            .map-controls-body .filter-hint,
+            .map-controls-body .filter-click-hint {
+                display: none !important;
+            }
+        }
+
+        /* Scrollable body containing the filter controls */
+        .map-controls-body {
+            max-height: 45vh;
+            overflow-y: auto;
+            padding: 8px 10px 10px 10px;
+            box-sizing: border-box;
+        }
+
+        .map-controls-body .filter-tab-content:not(.hidden) {
+            display: block !important;
+        }
+
+        .map-controls-body .filter-section {
+            flex: none;
+            margin-bottom: 14px !important;
+        }
+
+        .map-controls-body .filter-section:last-child {
+            margin-bottom: 0 !important;
+        }
+
+        .map-controls-body .filter-section-label {
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .map-controls-body .filter-select {
+            padding: 6px 8px;
+            font-size: 12px;
+        }
+
+        .map-controls-body .type-toggle-btn {
+            padding: 5px 10px;
+            font-size: 11px;
+        }
+
+        .map-controls-body .filter-click-hint {
+            padding: 6px 8px;
+            font-size: 11px;
+        }
+
+
+        /* ---------------------------------------------
+        Per-filter "i" buttons
+        --------------------------------------------- */
+
+        .filter-info-wrap {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        .filter-info-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 13px;
+            height: 13px;
+            border: 1px solid #bbb;
+            border-radius: 50%;
+            background: none;
+            color: #aaa;
+            font-size: 8px;
+            font-weight: 700;
+            font-style: italic;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .filter-info-btn:hover,
+        .filter-info-btn:focus {
+            color: #777;
+            border-color: #777;
+            outline: none;
+        }
+
+        .filter-info-popup {
+            display: none;
+            position: fixed;
+            width: 190px;
+            max-width: calc(100vw - 20px);
+            background: white;
+            color: #444;
+            font-size: 11px;
+            font-style: normal;
+            font-weight: normal;
+            line-height: 1.5;
+            padding: 10px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 9999;
+            box-sizing: border-box;
+        }
+
+        .filter-info-popup.open {
+            display: block;
+        }
+
+        /* Info buttons are only needed when controls are on the map */
+        @media (min-width: 901px) {
+            .filter-info-wrap {
+                display: none;
+            }
+        }
+
         
     /* ==================================================
         PHOTO CAROUSEL
@@ -4371,6 +5044,7 @@ setTimeout(() => {
             .filter-divider {
                 display: none;
             }
+
         }
 
 
@@ -4394,6 +5068,40 @@ setTimeout(() => {
         /* Stack intro cards vertically */
         @media (max-width: 700px) {
 
+            /* Shrink enhancement site tooltips so they fit small screens */
+            .custom-tooltip {
+                max-width: 78vw !important;
+            }
+
+            .custom-tooltip > div {
+                min-width: 0 !important;
+                max-width: 78vw !important;
+            }
+
+            .custom-tooltip img {
+                height: 90px !important;
+            }
+
+            .custom-tooltip div[style*="padding:12px"] {
+                padding: 10px !important;
+            }
+
+            .custom-tooltip p[style*="font-size:15px"] {
+                font-size: 13px !important;
+            }
+
+            .custom-tooltip div[style*="font-size:12px"] {
+                font-size: 11px !important;
+            }
+
+            .custom-tooltip p[style*="font-size:12px"] {
+                font-size: 11px !important;
+            }
+
+            .custom-tooltip p[style*="font-size:11px"] {
+                font-size: 10px !important;
+            }
+
             .map-legend-box {
                 max-width: 150px;
                 font-size: 11px;
@@ -4411,6 +5119,21 @@ setTimeout(() => {
 
             .intro-cards { 
                 grid-template-columns: 1fr; 
+            }
+
+                        /* Tighten up story panel spacing so more content fits per screen */
+            .story-scroll-body {
+                padding: 10px !important;
+            }
+
+            .story-scroll-body > div > div {
+                padding: 14px !important;
+                margin-bottom: 20px !important;
+            }
+
+            .carousel {
+                width: 100% !important;
+                margin-bottom: 20px !important;
             }
         }
 
