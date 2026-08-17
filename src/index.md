@@ -47,7 +47,7 @@ pager: false
     <!-- LEFT: title + intro text card -->
     <div class="intro-panel">
       <h1 style="margin-top:0; color:#045B4C;">
-        Mapping Olympia Oyster Restoration Across Puget Sound
+        DRAFT - Mapping Olympia Oyster Restoration Across Puget Sound
       </h1>
       <p style="color:#333; margin-bottom:0;">
         This map tracks over two decades of work to restore Puget Sound's only native oyster. Explore where we've added shell and oysters to build habitat and reestablish populations, where larvae are settling and growing into new oysters each year, and how populations have changed at individual sites over time.
@@ -2218,13 +2218,27 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     // Shift layout: map shrinks to 30%, panel appears
     // (same pattern to showDetail() in enhancement tab)
     // -----------------------------------------------
-    mainContainer.style.display = "flex";
+        mainContainer.style.display = "flex";
     mainContainer.style.gap = "10px";
     mainContainer.classList.add("detail-open");
-    mapContainer.style.width = "30%";
-    mapContainer.style.flexShrink = "0";
+
+    const WIDE_BREAKPOINT = 1600;
+    const DETAIL_MAX_WIDTH = 900;
+    const GAP = 10;
+
+    if (mainContainer.offsetWidth >= WIDE_BREAKPOINT) {
+        detailContainer.style.width = `${DETAIL_MAX_WIDTH}px`;
+        detailContainer.style.flexShrink = "0";
+        mapContainer.style.width = `${mainContainer.offsetWidth - DETAIL_MAX_WIDTH - GAP}px`;
+        mapContainer.style.flexShrink = "0";
+    } else {
+        mapContainer.style.width = "30%";
+        mapContainer.style.flexShrink = "0";
+        detailContainer.style.width = "80%";
+        detailContainer.style.flexShrink = "";
+    }
+
     detailContainer.style.display = "flex";
-    setTimeout(() => detailContainer.style.opacity = "1", 10);
 
     // Wait for the map container's width transition to actually finish
     // before telling Leaflet to resize + recenter — same fix as showDetail()
@@ -3683,9 +3697,24 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         mainContainer.style.gap = "10px";   // small gap between map and story panel
         mainContainer.classList.add("detail-open");
 
-        // Shrink the map to 40% width
-        mapContainer.style.width = "30%";
-        mapContainer.style.flexShrink = "0";   // don't let flex squish it any further
+                // On very wide screens, cap the detail panel to a comfortable
+        // reading width and let the map claim the rest. Below that,
+        // fall back to the original 30/80 percentage split.
+        const WIDE_BREAKPOINT = 1600;
+        const DETAIL_MAX_WIDTH = 900;
+        const GAP = 10;
+
+        if (mainContainer.offsetWidth >= WIDE_BREAKPOINT) {
+            detailContainer.style.width = `${DETAIL_MAX_WIDTH}px`;
+            detailContainer.style.flexShrink = "0";
+            mapContainer.style.width = `${mainContainer.offsetWidth - DETAIL_MAX_WIDTH - GAP}px`;
+            mapContainer.style.flexShrink = "0";
+        } else {
+            mapContainer.style.width = "30%";
+            mapContainer.style.flexShrink = "0";
+            detailContainer.style.width = "80%";
+            detailContainer.style.flexShrink = "";
+        }
 
         // Show the detail panel as a flex column
         detailContainer.style.display = "flex";
@@ -3839,11 +3868,14 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
             // already invisible (opacity 0) so no visible jump occurs
             mainContainer.classList.remove("detail-open");
 
-            mainContainer.style.display = "block";  // reset to a single column so the map is full width
+                        mainContainer.style.display = "block";  // reset to a single column so the map is full width
             Object.assign(mapContainer.style, {
                 width: "100%",
-                height: "100%"
+                height: "100%",
+                flexShrink: ""
             });
+            detailContainer.style.width = "";
+            detailContainer.style.flexShrink = "";
             detailContainer.style.display = "none"; // hide the detail panel
 
             // Wait another sec for the layout shift to settle and
@@ -5173,6 +5205,20 @@ setTimeout(() => {
 
             .intro-card {
                 padding: 12px;
+            }
+        }
+
+        /* -----------------------------------------------
+            Very wide screens
+            Cap the story content's reading width so
+            paragraphs don't stretch edge-to-edge
+        ----------------------------------------------- */
+
+        @media (min-width: 1600px) {
+            .story-scroll-body > div {
+                max-width: 760px;
+                margin-left: auto;
+                margin-right: auto;
             }
         }
 
