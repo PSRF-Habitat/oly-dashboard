@@ -2236,6 +2236,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     }
 
     detailContainer.style.display = "flex";
+    setTimeout(() => detailContainer.style.opacity = "1", 10);
 
     // Wait for the map container's width transition to actually finish
     // before telling Leaflet to resize + recenter — same fix as showDetail()
