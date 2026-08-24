@@ -30,8 +30,6 @@ pager: false
 <!-- END Flash cards -->
 <!-- =================================================== -->
 
-<!-- --- -->
-
 <!-- =================================================== -->
 <!-- Intro text section -->
 <!-- =================================================== -->
@@ -176,7 +174,6 @@ const tooltipPhotos = {
   "Port Gamble Bay":  FileAttachment("data/images/portgamble_tooltip.jpg").href,
   "Quilcene Bay":     FileAttachment("data/images/quilcene_tooltip.jpg").href,
   "Sinclair Inlet":   FileAttachment("data/images/sinclair_tooltip.jpg").href,
-  "Legion Park":      FileAttachment("data/images/legion_SAMPLE_tooltip.jpg").href,
   "Fidalgo Bay":      FileAttachment("data/images/fidalgo_tooltip.jpg").href,
   "Chico Bay":        FileAttachment("data/images/chicobay_tooltip.jpg").href,
   "Dogfish Bay":      FileAttachment("data/images/dogfish_tooltip.jpg").href,
@@ -2237,6 +2234,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     }
 
     detailContainer.style.display = "flex";
+    setTimeout(() => detailContainer.style.opacity = "1", 10);
 
     // Wait for the map container's width transition to actually finish
     // before telling Leaflet to resize + recenter — same fix as showDetail()
