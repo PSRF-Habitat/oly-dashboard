@@ -2705,9 +2705,11 @@ function buildRecruitmentTooltipHTML(stationName, year, value, isMobile = false)
     const prompt = isMobile ? "Tap to view recruitment history →" : "Click icon to view recruitment history →";
     const displayName = stationName.replaceAll("_", " ");
 
+    const padding = isMobile ? "14px 34px 10px 14px" : "14px 14px 10px 14px";
+
     if (value === null) {
         return `
-            <div style="padding:14px 34px 10px 14px; min-width:160px;">
+            <div style="padding:${padding}; min-width:160px;">
                 <p style="font-size:13px; font-weight:600; color:#222; margin:0 0 4px 0; text-align:left;">${displayName}</p>
                 <p style="font-size:12px; color:#aaa; text-align:left; margin:0;">No data for ${year}</p>
                 <div data-explore style="margin-top:8px; padding:6px 10px; background:#FCE8D6; border-radius:6px;
@@ -2715,7 +2717,7 @@ function buildRecruitmentTooltipHTML(stationName, year, value, isMobile = false)
             </div>`;
     }
     return `
-        <div style="padding:14px 34px 10px 14px; min-width:180px;">
+        <div style="padding:${padding}; min-width:180px;">
             <p style="font-size:13px; font-weight:600; color:#222; margin:0 0 6px 0; text-align:left;">${displayName}</p>
             <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
             <div style="display:flex; justify-content:space-between; font-size:12px; color:#555;">
@@ -3951,12 +3953,23 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     const resetBtn = L.control({ position: "topleft" });
     resetBtn.onAdd = function() {
         const btn = L.DomUtil.create("button", "leaflet-reset-btn");
-        btn.title = "Reset zoom level";
-        btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 3h6M3 3v6M21 3h-6M21 3v6M3 21h6M3 21v-6M21 21h-6M21 21v-6"/>
-        </svg>`;
+        btn.title = "Reset default zoom";
+        btn.innerHTML = btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round">
+
+                <path d="M3 11.5L12 4l9 7.5"/>
+                <path d="M5 10v10h14V10"/>
+                <path d="M9 20v-6h6v6"/>
+            </svg>
+        `;
         Object.assign(btn.style, {
             background: "white",
             border: "2px solid rgba(0,0,0,0.2)",
@@ -4294,17 +4307,6 @@ setTimeout(() => {
             background: #f4f4f4 !important;
         }
 
-        /* Dark mode styling */
-        @media (prefers-color-scheme: dark) {
-
-            .leaflet-reset-btn {
-                background: #222 !important;
-                color: #e0e0e0 !important;
-                border-color: rgba(255,255,255,0.3) !important;
-            }
-
-        }
-
         /* ---------- Map Legends (shared box for enhancement + recruitment) ---------- */
 
         .map-legend-box {
@@ -4407,11 +4409,17 @@ setTimeout(() => {
         }
 
     /* ---------- Mobile Centered Tooltip ---------- */
+
+         /* Force tooltips to always render on top */
+        .leaflet-tooltip-pane {
+            z-index: 10000 !important;
+        }
+
         .mobile-tooltip-backdrop {
             position: absolute;
             inset: 0;
             background: rgba(0,0,0,0.25);
-            z-index: 2000;
+            z-index: 10000;
             opacity: 0;
             transition: opacity 0.2s ease;
             display: flex;
@@ -5011,9 +5019,8 @@ setTimeout(() => {
             }
         }
 
-
         /* -----------------------------------------------
-            Mobile layout MORE WORK HERE NEEDED
+            Mobile layout
         ----------------------------------------------- */
 
         /* Stack intro cards vertically */
