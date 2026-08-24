@@ -6,31 +6,6 @@ pager: false
 ---
 
 <!-- =================================================== -->
-<!-- Flash cards -->
-<!-- =================================================== -->
-<!-- <div class="stats-grid">
-  <div class="card">
-    <h1 class="muted">Acres Restored</h1>
-    <span class="big" style="color: #045B4C">141.3</span>
-  </div>
-  <div class="card">
-    <h1 class="muted">Sites Visited</h1>
-    <span class="big" style="color: #045B4C">777</span>
-  </div>
-  <div class="card">
-    <h1 class="muted">Some Other</h1>
-    <span class="big" style="color: #045B4C">222</span>
-  </div>
-  <div class="card">
-    <h1 class="muted">Catchy Facts</h1>
-    <span class="big" style="color: #045B4C">999</span>
-  </div>
-</div> -->
-<!-- =================================================== -->
-<!-- END Flash cards -->
-<!-- =================================================== -->
-
-<!-- =================================================== -->
 <!-- Intro text section -->
 <!-- =================================================== -->
 ```html
@@ -188,7 +163,6 @@ const tooltipPhotos = {
   // Add more here
 };
 
-
 // Cover photo for hero
 const coverPhoto = FileAttachment("data/images/cover.jpg").href;
 
@@ -196,14 +170,6 @@ const introHero = document.querySelector("#intro-hero");
 if (introHero) {
   introHero.style.backgroundImage = `url(${coverPhoto})`;
 }
-
-// // Header photo
-// const headerPhoto = FileAttachment("data/images/samish_tooltip.jpg").href;
-// const header = document.querySelector("#observablehq-header");
-// if (header) {
-//   header.style.backgroundImage = `url(${headerPhoto})`;
-// }
-
 
 // ===================================================
 // ===================================================
@@ -337,8 +303,7 @@ function buildCarousel(container, photos, captions = []) {
 // ===================================================
 // ===================================================
 // SHARED FUNCTION: FILTER INFO BUTTON
-// Small "i" button + popup used next to filter labels
-// (year slider, and every section on narrow screens)
+// Small "i" button + popup used next to filter labels on mobile
 // ===================================================
 // ===================================================
 function createFilterInfoButton(hintText) {
@@ -550,7 +515,6 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
     // ---------------------------------------------------
     // TOOLTIP HTML BUILDERS
     // ---------------------------------------------------
-    //
     // These functions create the content shown when
     // hovering over different types of points (pop estimates or enhancement actions)
     function buildEventTooltipHTML(event) {
@@ -597,7 +561,7 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
     const yScale = svgEl.scale ? svgEl.scale("y") : chart.scale("y");
     const svgNS = "http://www.w3.org/2000/svg"; // Required for creating SVG elements
 
-        // Detect touch so we can switch interaction mode
+    // Detect touch so we can switch interaction mode
     const isTouchDevice = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 
     function positionAndShowTooltip(hitCircle, datum, buildHTML) {
@@ -1069,16 +1033,68 @@ function createShellHeightHistogram(sizeData) {
 } // END SHELL HEIGHT HISTOGRAM BUILDER FUNCTION
 
 // ===================================================
+// SHARED FUNCTION: CENTERED MOBILE TOOLTIP
+// Shows tooltip-style content as a centered overlay
+// card on top of the map, instead of a native Leaflet
+// tooltip anchored to the marker 
+// (which I couldn't make look right on mobile)
+// ===================================================
+function showCenteredTooltip(mapContainer, innerHTML, { onExplore } = {}) {
+    // Remove any existing overlay first
+    const existing = mapContainer.querySelector('.mobile-tooltip-backdrop');
+    if (existing) existing.remove();
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'mobile-tooltip-backdrop';
+
+    const card = document.createElement('div');
+    card.className = 'mobile-tooltip-card';
+    card.innerHTML = innerHTML;
+
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'mobile-tooltip-close';
+    closeBtn.setAttribute('aria-label', 'Close');
+    card.appendChild(closeBtn);
+
+    function close() {
+        backdrop.classList.remove('open');
+        setTimeout(() => backdrop.remove(), 200);
+    }
+
+    closeBtn.addEventListener('click', (e) => { e.stopPropagation(); close(); });
+
+    // Tapping the backdrop (not the card) closes it too
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+
+    // Keep taps on the card from reaching the Leaflet map underneath
+    L.DomEvent.disableClickPropagation(card);
+
+    // Wire up the "explore" banner (if exists) to be a button
+    if (onExplore) {
+        const exploreEl = card.querySelector('[data-explore]');
+        if (exploreEl) {
+            exploreEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                close();
+                onExplore();
+            });
+        }
+    }
+
+    backdrop.appendChild(card);
+    mapContainer.appendChild(backdrop);
+    requestAnimationFrame(() => backdrop.classList.add('open'));
+
+    return { close };
+}
+
+// ===================================================
 // ===================================================
 // SHARED FUNCTION: MAP TOOLTIP CONTENT BUILDER
 // Builds HTML string for enhancement marker tooltip.
-// 3 cases:
-//      1. Story site: includes 'click to explore' banner
-//      2. Non-story site: no banner
-//      3. No timeline data: photo only + note
 // ===================================================
 // ===================================================
-function buildTooltipHTML(site, timelineData, isStorySite, photoUrl) {
+function buildTooltipHTML(site, timelineData, isStorySite, photoUrl, isMobile = false) {
 
     // --- PHOTO BLOCK ---
     // Full width image at top of tooltip
@@ -1177,10 +1193,10 @@ function buildTooltipHTML(site, timelineData, isStorySite, photoUrl) {
     // --- Explore banner ---
     // Only for story sites, telling user they can click
     const exploreBanner = isStorySite ? `
-        <div style="margin-top:10px; padding:7px 10px;
-            background:#FCE8D6; border-radius:6px;
+        <div data-explore style="margin-top:10px; padding:7px 10px;
+            background:#FCE8D6; border-radius:6px; cursor:pointer;
             font-size:10px; font-weight:700; color:#8A4B1F; text-align:center;">
-             - Click icon to explore restoration story - 
+            ${isMobile ? "Tap to explore restoration story →" : "Click icon to explore restoration story →"}
         </div>
     ` : "";
 
@@ -1661,11 +1677,6 @@ function buildOysterBayPanel() {
 //
 // SITE PANEL: CHICO BAY
 // Layout:
-//   Title --> Carousel --> Intro quote block -->
-//   About This Site --> Our Work --> 2018 By The Numbers callout -->
-//   Debate text --> Density plot placeholder --> Early results stat grid -->
-//   Density-by-zone stat grid --> Size class callout -->
-//   Looking Ahead --> Shell height plot placeholder --> Credits, Partners
 //
 // ===================================================
 // ===================================================
@@ -1840,12 +1851,8 @@ function buildChicoBayPanel() {
 // ===================================================
 // ===================================================
 //
-// SITE PANEL: SILVERDALE (OLD MILL PARK)
+// SITE PANEL: SILVERDALE
 // Layout:
-//   Title --> Carousel --> Intro quote block -->
-//   About This Site (prose / history callout / prose) --> Our Work --> Timeline -->
-//   Impact text --> Shell height histogram -->
-//   Size context --> Looking Ahead --> Credits, Partners, Funders
 //
 // ===================================================
 // ===================================================
@@ -2690,10 +2697,35 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     // Assemble and show
     detailContainer.appendChild(buttonBar);
     detailContainer.appendChild(scrollBody);
-
-
 } // END recruitment detail panel function
 
+
+// HTML for recruitment map tooltips (moved from inside map function to here)
+function buildRecruitmentTooltipHTML(stationName, year, value, isMobile = false) {
+    const prompt = isMobile ? "Tap to view recruitment history →" : "Click icon to view recruitment history →";
+    const displayName = stationName.replaceAll("_", " ");
+
+    if (value === null) {
+        return `
+            <div style="padding:14px 34px 10px 14px; min-width:160px;">
+                <p style="font-size:13px; font-weight:600; color:#222; margin:0 0 4px 0; text-align:left;">${displayName}</p>
+                <p style="font-size:12px; color:#aaa; text-align:left; margin:0;">No data for ${year}</p>
+                <div data-explore style="margin-top:8px; padding:6px 10px; background:#FCE8D6; border-radius:6px;
+                    font-size:10px; font-weight:700; color:#8A4B1F; text-align:center; cursor:pointer;">${prompt}</div>
+            </div>`;
+    }
+    return `
+        <div style="padding:14px 34px 10px 14px; min-width:180px;">
+            <p style="font-size:13px; font-weight:600; color:#222; margin:0 0 6px 0; text-align:left;">${displayName}</p>
+            <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:#555;">
+                <span style="color:#045B4C; font-weight:600;">${year}</span>
+                <span>${value} avg olys/shell</span>
+            </div>
+            <div data-explore style="margin-top:8px; padding:6px 10px; background:#FCE8D6; border-radius:6px;
+                font-size:10px; font-weight:700; color:#8A4B1F; text-align:center; cursor:pointer;">${prompt}</div>
+        </div>`;
+} // END build recruitment tooltip html
 
 // ===================================================
 // ===================================================
@@ -2703,7 +2735,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
 // Updates size and color when year selector changes
 // ===================================================
 // ===================================================
-function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStationClick) {
+function createRecruitmentLayerManager(recruitData, recruitLayer, map, mapContainer, onStationClick) {
 
     // -----------------------------------------------
     // Group data by year
@@ -2718,6 +2750,22 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
 
     // Sorted list of all unique years
     const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+
+    let currentYear = years[years.length - 1];
+
+    const yearDataCache = {};
+    function getYearData(year) {
+        if (!yearDataCache[year]) {
+            const map = {};
+            (byYear[year] || []).forEach(row => {
+                map[row.standard_station] = row;
+            });
+            yearDataCache[year] = map;
+        }
+        return yearDataCache[year];
+    }
+
+    const individualMarkers = {};
 
     // Build deduplicated station lookup: stationName -> { lat, lng }
     const stationInfo = {};
@@ -2734,110 +2782,43 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
         };
     });
 
-    // Detect touch so tapping a marker requires two taps (matches
-    // the native two-tap behavior on enhancement site markers):
-    // first tap opens the tooltip, second tap opens the panel
     const isTouchDevice = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 
-    
-    // -----------------------------------------------
-    // Store the markers
-    // -----------------------------------------------
-    const individualMarkers  = {};  // station name - L.circleMarker
-
-    // Track which mode we're in
-    let currentYear = years[years.length - 1];  // start at latest year
-
-    // -----------------------------------------------
-    // HELPER: build yearData lookup for a given year
-    // -----------------------------------------------
-    function getYearData(year) {
-        const yearData = {};
-        (byYear[year] || []).forEach(row => {
-            yearData[row.standard_station] = row;
-        });
-        return yearData;
+    function getStationValue(stationName, year) {
+        const row = getYearData(year)[stationName];
+        return (row && row.index !== null && !isNaN(row.index)) ? row.index : null;
     }
 
-    // -----------------------------------------------
-    // Build markers
-    // -----------------------------------------------
     function init() {
-
-        // --- Build individual station markers ---
         Object.entries(stationInfo).forEach(([stationName, info]) => {
-            // Find a full row for this station to pass to onStationClick
             const stationRow = recruitData.find(d => d.standard_station === stationName);
 
             const marker = L.circleMarker([info.lat, info.lng], {
-                radius: 7,
-                fillColor: "#e0e0e0",
-                color: "#999",
-                weight: 1.5,
-                opacity: 1,
-                fillOpacity: 0.5
-            });
-
-                        marker.bindTooltip(`
-                <div style="padding:10px 12px; min-width:160px;">
-                    <p style="font-size:13px; font-weight:600; color:#222;
-                        margin:0 0 4px 0; text-align:center;">
-                        ${stationName.replaceAll("_", " ")}
-                    </p>
-                    <p style="font-size:11px; color:#888; text-align:center;
-                        margin:0; text-transform:uppercase; letter-spacing:0.4px;">
-                        Recruitment Station
-                    </p>
-                    <div style="margin-top:8px; padding:6px 10px;
-                        background:#FCE8D6; border-radius:6px;
-                        font-size:10px; font-weight:700; color:#8A4B1F; text-align:center;">
-                         - Click icon to view recruitment history -
-                    </div>
-                </div>
-            `, {
-                direction: "top",
-                permanent: false,
-                className: "custom-tooltip"
+                radius: 7, fillColor: "#e0e0e0", color: "#999",
+                weight: 1.5, opacity: 1, fillOpacity: 0.5
             });
 
             if (isTouchDevice) {
-                let tapArmed = false;
-                let armResetTimer = null;
-
                 marker.on("click", () => {
-                    if (!tapArmed) {
-                        tapArmed = true;
-                        marker.openTooltip();
-                        // If the user doesn't tap again soon, require two fresh taps next time
-                        clearTimeout(armResetTimer);
-                        armResetTimer = setTimeout(() => { tapArmed = false; }, 3000);
-                    } else {
-                        tapArmed = false;
-                        clearTimeout(armResetTimer);
-                        onStationClick(stationRow);
-                    }
+                    const value = getStationValue(stationName, currentYear);
+                    const html = buildRecruitmentTooltipHTML(stationName, currentYear, value, true);
+                    showCenteredTooltip(mapContainer, html, {
+                        onExplore: () => onStationClick(stationRow)
+                    });
                 });
             } else {
+                marker.bindTooltip("", { direction: "top", permanent: false, className: "custom-tooltip" });
                 marker.on("click", () => onStationClick(stationRow));
             }
-            marker.on("mouseover", () => {
-                if (marker.getElement()) marker.getElement().style.cursor = "pointer";
-            });
 
+            marker.on("mouseover", () => { if (marker.getElement()) marker.getElement().style.cursor = "pointer"; });
             marker.addTo(recruitLayer);
-            individualMarkers[stationName] = marker;        
+            individualMarkers[stationName] = marker;
         });
 
-
-        // Start with most recent year of data shown
         updateYear(currentYear);
-            
     }
 
-    // -----------------------------------------------
-    // UPDATE YEAR
-    // Re-styles markers for the newly selected year
-    // -----------------------------------------------
     function updateYear(year) {
         currentYear = year;
         const yearData = getYearData(year);
@@ -2848,51 +2829,17 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, onStation
 
             marker.setRadius(spatToRadius(value));
             marker.setStyle({
-                fillColor: spatToColor(value),
-                color: value !== null ? "white" : "#999",
-                weight: 1.5,
-                opacity: 1,
-                fillOpacity: value !== null ? 0.9 : 0.5
+                fillColor: spatToColor(value), color: value !== null ? "white" : "#999",
+                weight: 1.5, opacity: 1, fillOpacity: value !== null ? 0.9 : 0.5
             });
 
-                        marker.setTooltipContent(
-                value !== null ? `
-                    <div style="padding:10px 12px; min-width:180px;">
-                        <p style="font-size:13px; font-weight:600; color:#222;
-                            margin:0 0 6px 0; text-align:center;">
-                            ${stationName.replaceAll("_", " ")}
-                        </p>
-                        <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
-                        <div style="display:flex; justify-content:space-between;
-                            font-size:12px; color:#555;">
-                            <span style="color:#045B4C; font-weight:600;">${year}</span>
-                            <span>${value} avg olys/shell</span>
-                        </div>
-                        <div style="margin-top:8px; padding:6px 10px;
-                            background:#FCE8D6; border-radius:6px;
-                            font-size:10px; font-weight:700; color:#8A4B1F; text-align:center;">
-                             - Click icon to view recruitment history -
-                        </div>
-                    </div>
-                ` : `
-                    <div style="padding:10px 12px; min-width:160px;">
-                        <p style="font-size:13px; font-weight:600; color:#222;
-                            margin:0 0 4px 0; text-align:center;">
-                            ${stationName.replaceAll("_", " ")}
-                        </p>
-                        <p style="font-size:12px; color:#aaa; text-align:center; margin:0;">
-                            No data for ${year}
-                        </p>
-                        <div style="margin-top:8px; padding:6px 10px;
-                            background:#FCE8D6; border-radius:6px;
-                            font-size:10px; font-weight:700; color:#8A4B1F; text-align:center;">
-                             - Click icon to view recruitment history -
-                        </div>
-                    </div>
-                `
-            );
+            // Native tooltip content only matters on desktop
+            if (!isTouchDevice) {
+                marker.setTooltipContent(buildRecruitmentTooltipHTML(stationName, year, value, false));
+            }
         });
 
+    
         // ===============================================
         // Layering Recruitment Markers
         // Reorders markers so that:
@@ -3588,6 +3535,7 @@ function wireResponsiveMapControls(panelElement, enhContent, recruitContent, map
 // ===================================================
 // ===================================================
 function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
+
     
     // -----------------------------------------------
     // BUILD THE CONTAINER DIVS
@@ -3637,6 +3585,8 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         boxSizing: "border-box",   // padding is included in the width/height calculation
         flexDirection: "column"   // when display becomes "flex", content stacks vertically
     });
+
+    const isTouchDevice = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 
     // Add both child divs into the main container 
     // appendChild() places an element inside another
@@ -3890,17 +3840,18 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     // styling, and click actions
     // ===================================================
     const recruitLayerManager = createRecruitmentLayerManager(
+    recruitData,
+    recruitmentLayer,
+    map,
+    mapContainer,
+    (station) => showRecruitmentDetail(
+        station,
         recruitData,
-        recruitmentLayer,
+        detailContainer,
         map,
-        (station) => showRecruitmentDetail(
-            station,
-            recruitData,
-            detailContainer,
-            map,
-            mainContainer,
-            mapContainer,
-            resetView
+        mainContainer,
+        mapContainer,
+        resetView
         )
     );
     recruitLayerManager.init();
@@ -3911,56 +3862,36 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     // Story sites get seperate styling
     // Story sites get a click handler that opens the detail panel!!
     // ===================================================
-    enhData.forEach(site => {
-        // Skip this row if coordinates are missing or invalid
-        if(!site.latitude || !site.longitude ||
+    enhData.forEach(site => {   
+        if (!site.latitude || !site.longitude ||
             site.latitude === 'NA' || site.longitude === 'NA' ||
             isNaN(parseFloat(site.latitude)) || isNaN(parseFloat(site.longitude))) return;
 
-        // story_sites is the Set defined at the top of the file
-        // .has() checks if site_name is in that Set
         const isStorySite = story_sites.has(site.site_name);
-
-        // Pick different color for story sites
-        // This is called a ternary: condition ? value_if_true : value_if_false
         const icon = isStorySite ? enhancementStoryIcon : enhancementIcon;
-
         const photoUrl = tooltipPhotos[site.site_name];
 
-        // Create the marker with the right icon
-        // By using an arrow function to build the tooltip, we allow
-        // Leaflet to build it only when the tooltip is about to open
-        // and not at the loading when the marker is created
-        const marker = L.marker(
-            [site.latitude, site.longitude],
-            { icon: icon }
-        )
-        .bindTooltip(
-            () => buildTooltipHTML(site, timelineData, isStorySite, photoUrl),
-            {
-                direction: 'auto',
-                permanent: false,
-                className: 'custom-tooltip'
-            }
-        )
-        .addTo(enhancementLayer);
+        const marker = L.marker([site.latitude, site.longitude], { icon }).addTo(enhancementLayer);
 
-        // Only story sites get a click handler and a pointer cursor
-        // Non story sites are visible on the map and show the tooltip
-        // but clicking doesn't do anything
-        if (isStorySite) {
-
-            // marker.on() is Leaflet's version of addEventListener
-            marker.on("click", () => showDetail(site));
-
-            // getElement() returns the HTML element for this marker so we
-            // can get the CSS cursor style that we create
-            marker.on("mouseover", () => {
-                marker.getElement().style.cursor = "pointer";
+        if (isTouchDevice) {
+            // On touch: tap opens a centered card instead of a native tooltip
+            marker.on("click", () => {
+                const html = buildTooltipHTML(site, timelineData, isStorySite, photoUrl, true);
+                showCenteredTooltip(mapContainer, html, {
+                    onExplore: isStorySite ? () => showDetail(site) : null
+                });
             });
+        } else {
+            marker.bindTooltip(
+                () => buildTooltipHTML(site, timelineData, isStorySite, photoUrl),
+                { direction: 'auto', permanent: false, className: 'custom-tooltip' }
+            );
+            if (isStorySite) {
+                marker.on("click", () => showDetail(site));
+                marker.on("mouseover", () => { marker.getElement().style.cursor = "pointer"; });
+            }
         }
 
-        // Store marker reference for the site selector dropdown
         window.markersBySite[site.site_name] = marker;
     });
 
@@ -4168,7 +4099,7 @@ setTimeout(() => {
             --marker-story: #3d9e06; 
             --marker-stroke: #FFFFFF;
             --recruit-no-data: #c8c8c8;
-}
+        }
 
         /* ---------- Header ---------- */
 
@@ -4179,16 +4110,6 @@ setTimeout(() => {
             align-items: center;
             padding: 0 30px;
         }
-
-        /* For using photo as header background */
-         /* #observablehq-header {
-            position: absolute;
-            background-size: cover;
-            background-position: center;
-            height: 150px;
-            align-items: center;
-            padding: 0 30px;
-        } */
 
         /* ---------- Body ---------- */
         /* Adds spacing so page content sits below the fixed header
@@ -4212,58 +4133,6 @@ setTimeout(() => {
             left: 0;
             padding: 0 30px;
             box-sizing: border-box;
-        }
-
-    /* ==================================================
-        FLASH CARDS
-        Displayed above the dashboard
-        ================================================== */
-
-        /* ---------- Grid Layout ---------- */
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            text-align: center;
-        }
-
-        .stats-grid > * {
-            min-width: 0;
-        }
-
-        /* ---------- Individual Cards ---------- */
-
-        .stats-grid .card {
-            padding: 12px 8px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* ---------- Large Text ---------- */
-
-        .stats-grid .big {
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2;
-
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-
-        .stats-grid h1.muted {
-            display: -webkit-box;
-            -webkit-box-orient: vertical;
-            -webkit-line-clamp: 2;
-
-            overflow: hidden;
-            text-overflow: ellipsis;
-
-            margin: 0 0 4px 0;
         }
 
      /* ==================================================
@@ -4436,9 +4305,6 @@ setTimeout(() => {
 
         }
 
-        /* ---------- Recruitment Legend ---------- */
-            /* Prevent legend from blocking map interaction. */
-
         /* ---------- Map Legends (shared box for enhancement + recruitment) ---------- */
 
         .map-legend-box {
@@ -4509,8 +4375,6 @@ setTimeout(() => {
             display: none;
         }
 
-        /* Leaflet control wrapper stays click-through outside the box;
-        .map-legend-box above re-enables pointer events for its own content */
         .map-legend,
         .recruit-legend {
             pointer-events: none;
@@ -4540,6 +4404,67 @@ setTimeout(() => {
         .custom-tooltip img {
             display: block;
             background: #f0f0f0;
+        }
+
+    /* ---------- Mobile Centered Tooltip ---------- */
+        .mobile-tooltip-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.25);
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .mobile-tooltip-backdrop.open {
+            opacity: 1;
+        }
+
+        .mobile-tooltip-card {
+            position: relative;
+            max-width: min(320px, calc(100vw - 40px));;
+            width: max-content;
+            max-height: 80%;
+            overflow-y: auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            transform: scale(0.92);
+            transition: transform 0.2s ease;
+        }
+
+        .mobile-tooltip-backdrop.open .mobile-tooltip-card {
+            transform: scale(1);
+        }
+
+        .mobile-tooltip-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .mobile-tooltip-close::before {
+            content: "×";
+            transform: translate(0, -1px);
         }
 
     /* ==================================================
@@ -4708,8 +4633,6 @@ setTimeout(() => {
         }
 
         /* ---------- Map Controls Overlay ---------- */
-
-                    /* ---------- Map Controls Overlay ---------- */
 
         .map-controls-overlay {
             display: none;
