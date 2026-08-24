@@ -1629,7 +1629,7 @@ function buildOysterBayPanel() {
     const photos = [
         FileAttachment("data/images/oysterbay_tooltip_lg.jpg").href,
         FileAttachment("data/images/oysterbay_enhancement.jpg").href,
-        FileAttachment("data/images/oysterbay_2012.jpg").href,
+        FileAttachment("data/images/oysterbay_2012.JPG").href,
         FileAttachment("data/images/oysterbay_survey_2026.jpg").href,
         FileAttachment("data/images/oysterbay_loads_of_olys_2026.jpg").href
     ].filter(Boolean);
