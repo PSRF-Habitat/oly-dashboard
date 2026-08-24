@@ -1402,7 +1402,7 @@ function buildFidalgoBayPanel() {
         FileAttachment("data/images/fidalgo_2002_betsy_billtaylor.JPG").href,
         FileAttachment("data/images/fidalgo_2003_trestle_bags.jpg").href,
         FileAttachment("data/images/fidalgo_2006_paulbetsy.jpg").href,
-        FileAttachment("data/images/fidalgo_2013_shell_barge.jpg").href,
+        FileAttachment("data/images/fidalgo_2013_shell_barge.JPG").href,
         FileAttachment("data/images/fidalgo_pretty_olys_closeup.jpg").href,
     ].filter(Boolean);
 
