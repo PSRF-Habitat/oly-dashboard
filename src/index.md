@@ -174,7 +174,7 @@ const tooltipPhotos = {
   "Port Gamble Bay":  FileAttachment("data/images/portgamble_tooltip.jpg").href,
   "Quilcene Bay":     FileAttachment("data/images/quilcene_tooltip.jpg").href,
   "Sinclair Inlet":   FileAttachment("data/images/sinclair_tooltip.jpg").href,
-  "Fidalgo Bay":      FileAttachment("data/images/fidalgo_tooltip.jpeg").href,
+  "Fidalgo Bay":      FileAttachment("data/images/fidalgo_tooltip.jpg").href,
   "Chico Bay":        FileAttachment("data/images/chicobay_tooltip.jpg").href,
   "Dogfish Bay":      FileAttachment("data/images/dogfish_tooltip.jpg").href,
   "Kiket and Lone Tree Lagoons": FileAttachment("data/images/lonetree.jpg").href,
@@ -187,6 +187,7 @@ const tooltipPhotos = {
   "Drayton Harbor":   FileAttachment("data/images/drayton_tooltip.jpg").href,
   // Add more here
 };
+
 
 // Cover photo for hero
 const coverPhoto = FileAttachment("data/images/cover.jpg").href;
@@ -1395,13 +1396,14 @@ function buildFidalgoBayPanel() {
 
     // Photos for the carousel
     const photos = [
-        tooltipPhotos["Fidalgo Bay"], // First photo is the tooltip photos
+       // tooltipPhotos["Fidalgo Bay"], // First photo is the tooltip photos
+        FileAttachment("data/images/fidalgo_tooltip_lg.jpg").href,
         FileAttachment("data/images/happy_elsa.jpg").href,
         FileAttachment("data/images/fidalgo_2002_betsy_billtaylor.JPG").href,
         FileAttachment("data/images/fidalgo_2003_trestle_bags.jpg").href,
         FileAttachment("data/images/fidalgo_2006_paulbetsy.jpg").href,
-        FileAttachment("data/images/fidalgo_2013_shell_barge.JPG").href,
-        FileAttachment("data/images/fidalgo_pretty_olys_closeup.JPG").href,
+        FileAttachment("data/images/fidalgo_2013_shell_barge.jpg").href,
+        FileAttachment("data/images/fidalgo_pretty_olys_closeup.jpg").href,
     ].filter(Boolean);
 
     const captions = [
@@ -1625,15 +1627,11 @@ function buildOysterBayPanel() {
 
     // Photos for the carousel
     const photos = [
-        tooltipPhotos["Oyster Bay"], // First photo is the tooltip photos
-        // Add more photos in like this once we have them:
-        // FileAttachment("data/images/fidalgo_2.jpg").href, 
-        // etc,
-        // etc
+        FileAttachment("data/images/oysterbay_tooltip_lg.jpg").href,
         FileAttachment("data/images/oysterbay_enhancement.jpg").href,
-        FileAttachment("data/images/oysterbay_2012.JPG").href,
+        FileAttachment("data/images/oysterbay_2012.jpg").href,
         FileAttachment("data/images/oysterbay_survey_2026.jpg").href,
-        FileAttachment("data/images/oysterbay_loads_of_olys_2026.png").href
+        FileAttachment("data/images/oysterbay_loads_of_olys_2026.jpg").href
     ].filter(Boolean);
 
     const captions = [
@@ -1812,9 +1810,9 @@ function buildChicoBayPanel() {
 
     // Photos for the carousel
     const photos = [
-        tooltipPhotos["Chico Bay"], // First photo is the tooltip photo
         // Add more photos in like this once we have them:
         // FileAttachment("data/images/chicobay_2.jpg").href,
+        FileAttachment("data/images/chicobay_tooltip_lg.jpg").href,
         FileAttachment("data/images/chico_survey.jpg").href,
         FileAttachment("data/images/chico_oly_closeup.jpg").href,
         FileAttachment("data/images/chico_landscape.jpg").href,
@@ -2022,7 +2020,7 @@ function buildSilverdalePanel() {
 
     // Photos for the carousel
     const photos = [
-        tooltipPhotos["Silverdale"], // First photo is the tooltip photos
+        FileAttachment("data/images/silverdale_tooltip_lg.jpg").href,
         // Add more photos in like this once we have them:
         // FileAttachment("data/images/silverdale_barge_2023.jpg").href,
         // FileAttachment("data/images/silverdale_oyster_house.jpg").href,
