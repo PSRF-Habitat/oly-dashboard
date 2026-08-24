@@ -1392,7 +1392,7 @@ function buildFidalgoBayPanel() {
         </div>
     `;
 
-    // Insert dyanmic content (plots!!) into placeholder divs built above
+    // Insert dyanmic content (plots!) into placeholder divs built above
 
     // Photos for the carousel
     const photos = [
