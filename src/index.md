@@ -156,7 +156,7 @@ const tooltipPhotos = {
   "Liberty Bay":      FileAttachment("data/images/libertybay_tooltip.jpg").href,
   "Oyster Bay":       FileAttachment("data/images/oysterbay_tooltip.jpg").href,
   "Samish Bay":       FileAttachment("data/images/samish_tooltip.jpg").href,
-  "Scanida":          FileAttachment("data/images/scandia_tooltip.jpg").href,
+  "Scandia":          FileAttachment("data/images/scandia_tooltip.jpg").href,
   "Silverdale":       FileAttachment("data/images/silverdale_tooltip.jpg").href,
   "Smith Cove":       FileAttachment("data/images/smithcove_tooltip.jpg").href,
   "Drayton Harbor":   FileAttachment("data/images/drayton_tooltip.jpg").href,
@@ -1685,17 +1685,19 @@ function buildChicoBayPanel() {
 
     // --- Narrative ---
     const narrative = {
-        intro: `A traditional shellfish harvesting area with historic importance, Chico Bay sits at the mouth of Chico Creek, one of the most productive chum streams in the Sound. Since purchase in the late 2000s, the Suquamish Tribe has been seeding the tidelands with clams and oysters, alongside harvesting a booming wild manila clam population around the corner near Erlands Point. Also at Erlands Point, a small, wild aggregation of Olympia oysters sparked inspiration for what Chico Bay could be.`,
+        intro: `A traditional shellfish harvesting area with historic importance, Chico Bay sits at the mouth of Chico Creek, one of the most productive chum streams in the Sound. Since purchase in the late 2000s, the Suquamish Tribe has been seeding the tidelands with clams and oysters, alongside harvesting a booming wild manila clam population around the corner near Erlands Point. Also at Erlands Point, a small, wild aggregation of Olympia oysters sparked inspiration for native oyster restoration in Chico Bay.`,
 
-        context: `With USDA conservation funding in hand and permission to work on a stretch of Tribally owned tideland, the team moved cautiously, staking out a series of 10-by-10 foot shell plots across the tideland to first test whether that inspiration could take hold on a larger scale. Before committing to a project design, we let those plots simmer for nearly a year, and results upon our return pointed us clearly downhill. High in the intertidal the shell plots sat mostly empty, but lower, near -1.5 feet MLLW, recruitment showed promise. Then, a closer look at the deepest reaches of the flat, around -3 feet, turned up something else: a scatter of old, solitary Olys, likely survivors of rare and irregular recruitment events rather than a self-sustaining population. Guided by these findings, the project footprint shifted down the beach from the initially anticipated plot, toward elevations where the bay was calling us to work.`,
+        context: `With USDA conservation funding in hand and permission to work on a stretch of Tribally owned tideland, the team moved cautiously, staking out a series of 10-by-10 foot shell plots across the tideland to first test whether that inspiration could take hold on a larger scale. Before committing to a project design, we let those plots simmer for nearly a year. Results upon our return catalyzed restoration actions. High in the intertidal the shell plots sat mostly empty, but lower, near -1.5 feet MLLW, recruitment to the shell showed promise. Then, a closer look at the deepest reaches of the flat, around -3 feet, turned up something else: a scatter of wild, old, solitary Olys, likely survivors of rare and irregular recruitment events rather than a self-sustaining population. Guided by these findings, the project footprint shifted down the beach from the initially anticipated plot, toward elevations where the bay was calling us to work.`,
 
-        ourWork: `In 2018, we put that plan into action. We spread 5 acres of Pacific oyster shell to provide settlement substrate for recruiting juveniles, paired with more that 1.15 million hatchery-reared baby Olys set on 450 bags of Pacific shell placed directly into the enhancement area. The stock enhancement piece was not without internal debate. With a wild population already present nearby, was a hatchery-grown boost really necessary, or should the shell alone have been enough to do the job? The project moved forward with both tools in hand, a bet on giving the bay every possible advantage.`,
+        ourWork: `In 2018, we put that plan into action. We spread 5 acres of Pacific oyster shell to provide settlement substrate for recruiting juveniles, paired with more that 1.15 million hatchery-reared baby Olys set on 450 bags of Pacific shell placed directly into the enhancement area. The stock enhancement piece was not without internal debate. With a wild population already present nearby, was a hatchery-grown boost really necessary, or should the shell alone have been enough to do the job? The project moved forward with both tools in hand, a bet on giving the Olys every possible advantage, and providing a one-two punch to accelerate recruitment.`,
 
-        earlyResultsIntro: `We checked back that following year, and by August 2019, the enhancement area was averaging 130 Olys per square meter across 40 samples, an encouraging early sign that the project was off to a good start. By April 2021, that average had settled to 80.8 Olys per square meter across 19 samples, though the variability between samples in both years was wide. That same 2021 survey mapped 3.7 acres of shell still visibility available for settlement, and oyster density near the seeded cultch specifically reached 367.7 Olys per square meter, compared to just 4.3 oysters per square meter in the outer enhancement area.`,
+        betsySalmonNote: `The bay itself seemed to welcome the Olys home before we’d even finished the work. As the tide rolled in and we hurried to spread the last of the seed in the dark of night, chum salmon bumped up against our legs, coursing toward the mouth of Chico Creek to spawn - consecrating the new bed and its place in the larger ecosystem.`,
+
+        earlyResultsIntro: `We checked back that following year, and by August 2019, the enhancement area was averaging 130 Olys per square meter across 40 samples, an encouraging early sign that the project was off to a good start. By April 2021, that average had settled to 80.8 Olys per square meter across 19 samples, though the variability between samples in both years was wide. That same 2021 survey mapped 3.7 acres of shell still visibly available for settlement, and oyster density near the seeded cultch specifically reached 367.7 Olys per square meter, compared to just 4.3 oysters per square meter in the outer enhancement area.`,
 
         sizeClasses: `Also in 2021, Olys of multiple size classes were present, ranging from 35mm-55mm individuals (likely tracing back to the original 2018 cohort or 2019 natural set), down to 15mm oysters representing a newer wave of settlement from 2020, a sign that the population was not just surviving, but reproducing on its own.`,
 
-        future: `Chico Bay’s smoldering Oly population is still early in its story. The 2021 numbers capture a single snapshot of a population that’s only three years past planting, on tideland with a much longer memory than that. What comes next is still being written, and it’s worth going back to read.`,
+        future: `Chico Bay’s smoldering Oly population is still early in its story. The 2021 numbers capture a single snapshot of a population that’s only three years past planting, on tideland with a much longer memory than that. What comes next is still being written.`,
 
         partnersList: `This project was made possible through generous support from USDA, the National Fish & Wildlife Foundation, the Burning Foundation, and the Washington Women’s Foundation, in partnership with the Suquamish Tribe.`
     };
@@ -1725,15 +1727,24 @@ function buildChicoBayPanel() {
         </div>
 
         <!-- Our Work -->
-        <div style="
-        background: #f8f9fa; padding: 24px; border-radius: 8px; margin-bottom: 24px;
-        ">
+        <div style="margin-bottom: 40px;">
         <h3 style="
             font-size: 18px; font-weight: 700; color: #045B4C;
             margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 0.5px;
         ">Our Work</h3>
         <p style="font-size: 15px; line-height: 1.8; color: #444; margin: 0;">
             ${narrative.ourWork}
+        </p>
+        </div>
+
+        <!-- Betsy salmon note -->
+        <div style="
+        padding: 20px;
+        background: linear-gradient(135deg, #f0f7f6 0%, #e8f4f2 100%);
+        border-radius: 8px; border-left: 4px solid #045B4C; margin-bottom: 40px;
+        ">
+        <p style="font-size: 15px; line-height: 1.7; color: #333; margin: 0;">
+            ${narrative.betsySalmonNote}
         </p>
         </div>
 
@@ -1861,27 +1872,27 @@ function buildSilverdalePanel() {
 
     // --- Narrative ---
     const narrative = {
-        intro: `At the head of Dyes Inlet, Old Mill Park sits adjacent to the heart of the commercial center of Silverdale. This vast stretch of tideland grants a diverse array of people access to quintessential central Puget Sound, and gives a front row seat to one of our largest habitat enhancement projects to date.`,
+        intro: `At the head of Dyes Inlet, Old Mill Park sits adjacent to the heart of Silverdale’s commercial center. This vast stretch of tideland gives a diverse array of people access to quintessential central Puget Sound, and provides a front row seat to one of our largest habitat enhancement projects to date. `,
 
-        context1: `Tidelands at the head of a bay tend to be the best real estate an OIympia oyster could ask for. Water lingers here longest, protected and slow-moving, holding onto nutrients and larvae rather than flushing them out of the bay entirely. Knowing this, investigating the shoreline around Silverdale made sense, both as a search for ideal restoration habitat and as a chance to build population at the scale of a whole waterbody, following years of project work in the more southern reaches of Dyes Inlet.`,
+        context1: `Tidelands at the head of a bay tend to be the best real estate for OIympia oyster restoration projects. Water lingers here longest, protected and slow-moving, holding onto nutrients and larvae rather than flushing them out of the bay entirely. With this in mind, we spent time investigating the shoreline around Silverdale, both as a search for ideal restoration habitat and as a chance to build population at the scale of a whole waterbody, following years of project work in the more southern reaches of Dyes Inlet.`,
 
         history: `History backed up this instinct. In the 1930s, Takuji Yamashita, Japanese civil rights activist and oyster farmer, cultivated oysters commercially right at this spot, where an old oyster house still stands on the shoreline today. Growers of that area tended to build where native oysters were already thriving, which suggests these tidelands likely supported Olys to begin with.`,
 
-        context2: `A wild aggregation of Olys showed our team a ghost of that history during a site visit in 2021. This thinly scattered population skewed old, with plenty of large, mature individuals and few signs of a younger age class coming up behind them. Despite this, data from recruitment monitoring showed that larvae were indeed present in the water, but the available habitat for reliable settlement was low.`,
+        context2: `A wild aggregation of Olys showed our team a ghost of that history during a site visit in 2021. This thinly scattered population skewed old, with plenty of large, mature individuals and few signs of a younger age class coming up behind them. Data from recruitment monitoring showed that larvae were indeed present in the water, but the available habitat for reliable settlement was low.`,
 
-        ourWork1: `These are the types of conditions that lend themselves to bulk shell projects, with the goal of providing substrate for existing larvae to settle to without having to add any living animal at all. The vast expanse of largely unstructured sand paired with the existing wild population in Silverdale and the thriving Oly populations in other pockets of Dyes Inlet presented a rare opportunity to restore Olympia oyster habitat at a landscape scale.`,
+        ourWork1: `These are the types of conditions that lend themselves to bulk shell projects, with the goal of providing substrate for existing larvae to settle on without having to add any living animal at all. The vast expanse of largely unstructured sand paired with the existing wild population in Silverdale and the thriving Oly populations in other pockets of Dyes Inlet presented a rare opportunity to restore Olympia oyster habitat at a landscape scale.`,
 
-        ourWork2: `Turning that opportunity into a project took years of planning and permitting, threading partnerships across sixteen different tideland owners and consulting closely with the Suquamish Tribe, who hold shellfish rights throughout Dyes Inlet. That effort resulted in a plan, identifying three areas within the site for enhancement. In 2023, it all came together: a 300-foot barge worked its way along the shoreline, spraying roughly 2,000 cubic yards of Pacific oyster shell across 20 acres of tideland.`,
+        ourWork2: `Turning that opportunity into a project took years of planning and permitting, threading partnerships across sixteen different tideland owners and consulting closely with the Suquamish Tribe, who hold shellfish rights throughout Dyes Inlet. That effort resulted in the identification of three areas for enhancement. And in 2023, it all came together: a 300-foot barge worked its way along the shoreline, spraying roughly 2,000 cubic yards of Pacific oyster shell across 20 acres of tideland.`,
 
-        impact: `Before the start of the project, the existing wild population at Silverdale sat at roughly 42,000 oysters. After adding 20 acres of habitat for juvenile Olys in 2023, we saw slow and steady growth through 2025, climbing to about 65,500. Then, in 2026, something shifted. Out on the tidelands, before any data had been collected or analyzed, it was already obvious that the work was taking hold. Olys were visible in the enhancement plots without having to search for them, visible in passing, underfoot, impossible to miss in a way that simply hadn't been true a year before. The numbers backed up what we already knew - the 2026 estimated population came in at nearly 200,000 individuals, more than triple the estimate for 2025.`,
+        impact: `Before the start of the project, the existing wild population at Silverdale sat at roughly 42,000 oysters. After adding 20 acres of habitat for juvenile Olys in 2023, we saw slow and steady growth through 2025, climbing to about 65,500. Then, in 2026, something shifted. Out on the tidelands, before any data had been collected or analyzed, it was already obvious that the work was taking hold. Olys were visible in the enhancement plots without having to search for them, visible underfoot, impossible to miss in a way that simply hadn’t been true a year before. The numbers backed up what we already knew - the 2026 estimated population came in at nearly 200,000 individuals, more than triple the estimate for 2025.`,
 
-        sizeContext: `Size data adds a bit more detail to that growth. The largest individuals, in the 50-60mm range, mostly trace back to what's remaining of the older wild population. The overall size distribution isn't yet a normal bell curve, the shape you'd expect from a mature, self-sustaining bed, but with several strong settlement years now layered in, it's trending that way. The restoration is still young.`,
+        sizeContext: `Size data adds a bit more detail to that growth. The largest individuals, in the 50-60mm range, mostly trace back to what's remaining of the older wild population. The overall size distribution isn't yet a normal bell curve, the shape you'd expect from a mature, self-sustaining bed, but with several strong settlement years now layered in, it's trending that way. So while the restoration is still young, Olys are making their move.`,
 
         future: `What we're watching for now is whether that trajectory holds: a stretch of shoreline at the heart of Kitsap's commercial hub, visited by many, growing back into a stronghold for Olympia oysters, one large enough to seed the rest of Dyes Inlet with new generations of oysters for decades.`,
 
-        partnersLead: `Many thanks to our funders and partners,`,
+        partnersLead: `Many thanks to our funders and partners, including:`,
 
-        partnersList: `[list those here]`
+        partnersList: `Builders Vision, Suquamish Tribe, The Nature Conservancy SOAR Program, National Fish & Wildlife Foundation, Kitsap County Parks, Washington Department of Natural Resources, Washington Department of Fish & Wildlife Habitat Program, Private tideland owners`
     };
 
     // --- Layout HTML ---
