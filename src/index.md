@@ -2224,8 +2224,8 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
 
     // Add some summary stats
     const avgAll = stationData.reduce((s, d) => s + d.index, 0) / (stationData.length || 1);
-    const maxYear = stationData.reduce((best, d) => d.index > best.index ? d : best, stationData[0]);
-    const minYear = stationData.reduce((worst, d) => d.index < worst.index ? d : worst, stationData[0]);
+    const maxYear = Math.max(...stationData.map(d => d.index));
+    const minYear = Math.min(...stationData.map(d => d.index));
 
     // -----------------------------------------------
     // Shift layout: map shrinks to 30%, panel appears
@@ -2379,9 +2379,9 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
         });
 
         const stats = [
-            { label: "All-time avg",  value: avgAll.toFixed(2),          unit: "live olys / shell" },
-            { label: "Highest year",     value: maxYear ? maxYear.year : "—", unit: maxYear ? `${parseFloat(maxYear.index).toFixed(2)} live olys` : "" },
-            { label: "Lowest year",   value: minYear ? minYear.year : "—", unit: minYear ? `${parseFloat(minYear.index).toFixed(2)} live olys` : "" }
+            { label: "Lowest year",  value: minYear.toFixed(2), unit: "live olys / shell" },
+            { label: "All-time avg",  value: avgAll.toFixed(2), unit: "live olys / shell" },
+            { label: "Highest year", value: maxYear.toFixed(2), unit: "live olys / shell" },
         ];
 
         stats.forEach(stat => {
