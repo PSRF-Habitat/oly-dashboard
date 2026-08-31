@@ -3621,7 +3621,7 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
 
     // Add the basemap layer
     // Using map imagery from CartoDB
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key=cb1_27l9_1_fbbd1159f330d48fb0b23264', {
         attribution: '© OpenStreetMap © CartoDB', // Attribution required for free use
         maxZoom: 15
     }).addTo(map);
