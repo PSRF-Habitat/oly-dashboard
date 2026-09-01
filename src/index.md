@@ -2039,16 +2039,27 @@ function buildSilverdalePanel() {
     // Photos for the carousel
     const photos = [
         FileAttachment("data/images/silverdale_tooltip_lg.jpg").href,
-        // Add more photos in like this once we have them:
-        // FileAttachment("data/images/silverdale_barge_2023.jpg").href,
-        // FileAttachment("data/images/silverdale_oyster_house.jpg").href,
-        // etc,
-        // etc
+        FileAttachment("data/images/silverdale_shell_piles.jpg").href,
+        FileAttachment("data/images/silverdale_2023_jodie_cannon.jpg").href,
+        FileAttachment("data/images/silverdale_hose_action.jpg").href,
+        FileAttachment("data/images/silverdale_barge_moving_shell_2023.jpg").href,
+        FileAttachment("data/images/silverdale_shell_in_uhaul.jpg").href,
+        FileAttachment("data/images/silverdale_shell_in_lagoon.jpg").href,
+        FileAttachment("data/images/silverdale_placing_shell_lagoon.jpg").href,
+        FileAttachment("data/images/silverdale_shellplot_2026.jpg").href,
     ].filter(Boolean);
 
+    // List captions in same order as photos
     const captions = [
         "View of the tidelands at Old Mill Park",
-        // add matching captions here as photos are added
+        "Piles of shell loaded on the barge and ready to be spread",
+        "Jodie Toft using the water cannon to spread tons of Pacific oyster shell, creating habitat for Oly settlement",
+        "It takes teamwork to operate the water cannon!",
+        "Working our way through the shell",
+        "In addition to the bulk shell, bags of seeded cultch (Oly larvae settled on Pacific shell in the hatchery) were added to a small lagoon neighboring the bulk shell plot",
+        "It takes lots of hands to make projects happen at this scale!",
+        "Placing bags of seeded cultch in the lagoon",
+        "A look at the bulk shell plot at low tide, still in place 3 years after project inception",
     ];
 
     buildCarousel(panel.querySelector("#silverdale-carousel"), photos, captions);
