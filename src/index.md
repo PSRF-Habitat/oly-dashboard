@@ -9,12 +9,19 @@ pager: false
 <!-- Intro text section -->
 <!-- =================================================== -->
 ```html
+<div id="page-loader" class="page-loader">
+  <div class="page-loader-pulse"></div>
+</div>
+
 <!-- Main container -->
-<div id="intro-hero" style="
+<div id="intro-hero" class="page-fade" style="
   border-radius: 16px;
   padding: 2rem;
   margin: 1rem 0 2rem 0;
 ">
+
+<div class="intro-hero-content">
+
   <!-- 3 card layout: 1 left, 2 right -->
   <div class="intro-hero-grid">
     <!-- LEFT: title + intro text card -->
@@ -61,6 +68,8 @@ pager: false
       click any station to see its settlement history.
     </span>
   </div>
+
+  </div><!-- /.intro-hero-content -->
 </div>
 ```
 
@@ -166,10 +175,37 @@ const tooltipPhotos = {
 // Cover photo for hero
 const coverPhoto = FileAttachment("data/images/cover.jpg").href;
 
-const introHero = document.querySelector("#intro-hero");
-if (introHero) {
-  introHero.style.backgroundImage = `url(${coverPhoto})`;
+const pageReady = { photo: false, map: false };
+
+const pageLoader = document.querySelector("#page-loader");
+
+function checkPageReady() {
+    if (pageReady.photo && pageReady.map) {
+        if (pageLoader) {
+            pageLoader.classList.add("page-loader-hidden");
+            setTimeout(() => pageLoader.remove(), 450);
+        }
+        document.querySelectorAll(".page-fade").forEach(el => el.classList.add("ready"));
+    }
 }
+
+const introHero = document.querySelector("#intro-hero");
+const heroPhotoPreloader = new Image();
+heroPhotoPreloader.onload = () => {
+    if (introHero) introHero.style.backgroundImage = `url(${coverPhoto})`;
+    pageReady.photo = true;
+    checkPageReady();
+};
+heroPhotoPreloader.onerror = () => {
+    pageReady.photo = true;
+    checkPageReady();
+};
+heroPhotoPreloader.src = coverPhoto;
+
+// const introHero = document.querySelector("#intro-hero");
+// if (introHero) {
+//   introHero.style.backgroundImage = `url(${coverPhoto})`;
+// }
 
 // ===================================================
 // ===================================================
@@ -1096,13 +1132,18 @@ function showCenteredTooltip(mapContainer, innerHTML, { onExplore } = {}) {
 // ===================================================
 function buildTooltipHTML(site, timelineData, isStorySite, photoUrl, isMobile = false) {
 
-    // --- PHOTO BLOCK ---
+     // --- PHOTO BLOCK ---
     // Full width image at top of tooltip
     // If no photo exists, render nothing
+    // Shows a pulsing placeholder behind the image until it loads,
+    // then fades the image in and hides the pulse
     const photoHTML = photoUrl ? `
-        <img src="${photoUrl}" style="
-            width: 100%; height: 130px; object-fit: cover;
-            display: block;">
+        <div class="tooltip-photo-wrap">
+            <div class="tooltip-photo-pulse"></div>
+            <img src="${photoUrl}" class="tooltip-photo-img"
+                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                onerror="this.previousElementSibling.style.display='none'; this.style.display='none';">
+        </div>
     ` : "";
 
     // --- Meta Rows ---
@@ -4092,6 +4133,8 @@ setTimeout(() => {
                 );
             }
         }
+        pageReady.map = true;
+        checkPageReady();
     }, 100);
 
     // Watch the placeholder for size changes using ResizeObserver.
@@ -4181,9 +4224,55 @@ setTimeout(() => {
         #intro-hero {
             background-size: cover;
             background-position: center;
+            background-color: #f4f4f4;
             color: white;
             border: 2px solid #000;
+            position: relative;
         }
+
+        .page-loader {
+            position: fixed;
+            top: 150px; /* clears the header bar so it stays visible, like the screenshot */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.4s ease;
+        }
+
+        .page-loader.page-loader-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .page-loader-pulse {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--brand-teal);
+            animation: page-pulse-grow 1.4s ease-out infinite;
+        }
+
+        @keyframes page-pulse-grow {
+            0%   { transform: scale(0.5); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+        .page-fade {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .page-fade.ready {
+            opacity: 1;
+        }
+
+
 
         /* ---------- Intro Layout ---------- */
 
@@ -4428,6 +4517,43 @@ setTimeout(() => {
         .custom-tooltip img {
             display: block;
             background: #f0f0f0;
+        }
+
+        .tooltip-photo-wrap {
+            width: 100%;
+            height: 130px;
+            position: relative;
+            background: #f0f0f0;
+            overflow: hidden;
+        }
+
+        .tooltip-photo-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            margin: -6px 0 0 -6px;
+            border-radius: 50%;
+            background: var(--brand-teal);
+            animation: tooltip-pulse 1.1s ease-in-out infinite;
+        }
+
+        @keyframes tooltip-pulse {
+            0%   { transform: scale(0.7); opacity: 0.6; }
+            50%  { transform: scale(1);   opacity: 1;   }
+            100% { transform: scale(0.7); opacity: 0.6; }
+        }
+
+        .tooltip-photo-img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            display: block;
+            position: relative;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
     /* ---------- Mobile Centered Tooltip ---------- */
@@ -5175,15 +5301,16 @@ setTimeout(() => {
 
 <!-- Display everything in cards on the page -->
 <!-- Map card div lives here permanently, outside Observable's control to fix wonkyness with resizing -->
-<div id="persistent-map-card" style="grid-column: span 3;"></div>
-
-<div class="dashboard-grid">
-  <div class="card">
-    ${(function() {
-      const div = document.createElement('div');
-      div.id = 'filter-container';
-      return div;
-    })()}
-  </div>
-  <div class="card" id="map-card-placeholder"></div>
+<div id="map-section" class="page-fade">
+    <div id="persistent-map-card" style="grid-column: span 3;"></div>
+    <div class="dashboard-grid">
+    <div class="card">
+        ${(function() {
+        const div = document.createElement('div');
+        div.id = 'filter-container';
+        return div;
+        })()}
+    </div>
+    <div class="card" id="map-card-placeholder"></div>
+    </div>
 </div>
