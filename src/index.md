@@ -2436,9 +2436,9 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
         });
 
         const stats = [
-            { label: "Lowest year",  value: minYear.toFixed(2), unit: "live olys / shell" },
-            { label: "All-time avg",  value: avgAll.toFixed(2), unit: "live olys / shell" },
-            { label: "Highest year", value: maxYear.toFixed(2), unit: "live olys / shell" },
+            { label: "Lowest year",  value: minYear.toFixed(2), unit: "olys / shell" },
+            { label: "All-time avg",  value: avgAll.toFixed(2), unit: "olys / shell" },
+            { label: "Highest year", value: maxYear.toFixed(2), unit: "olys / shell" },
         ];
 
         stats.forEach(stat => {
@@ -2752,7 +2752,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
         } else {
             const noData = document.createElement("p");
             noData.textContent = stationData.length === 1
-                ? `Only one year of data available (${stationData[0].year}: ${stationData[0].index.toFixed(1)} live olys/shell).`
+                ? `Only one year of data available (${stationData[0].year}: ${stationData[0].index.toFixed(1)} olys/shell).`
                 : "No recruitment data recorded for this station.";
             Object.assign(noData.style, { fontSize: "13px", color: "#999", fontStyle: "italic", margin: "0" });
             chartWrapper.appendChild(noData);
@@ -2970,7 +2970,7 @@ function addRecruitmentLegend(map, maxValue) {
         div.innerHTML = `
             <div class="map-legend-box recruit-legend-box">
                 <div class="map-legend-header">
-                    <span>Avg Olys / Shell</span>
+                    <span>Recruitment Index</span>
                     <button class="legend-toggle-btn" type="button" aria-label="Toggle legend">−</button>
                 </div>
                 <div class="map-legend-body">
@@ -3351,9 +3351,20 @@ function buildTabBar() {
 //   - Call onTabSwitch() so oysterMap() can respond
 // ===================================================
 // ===================================================
-function wireTabSwitching({ enhTab, recruitTab, enh, recruit, enhancementLayer, recruitmentLayer, map, enhancementLegend, recruitLayerManager, onTabSwitch }) {
+function wireTabSwitching({ enhTab, recruitTab, enh, recruit, enhancementLayer, recruitmentLayer, map, enhancementLegend, recruitLayerManager, onTabSwitch, tabSubtext }) {
     // Track the active recruitment legend so we can remove it on tab switch
     let activeRecruitLegend = null;
+
+    // Explanatory text shown below the tab buttons, keyed by tab id
+    const subtextByTab = {
+        enhancement: `See where we have taken restoration action to improve habitat and rebuild Olympia oyster populations in Puget Sound. These actions could include:
+            <ul style="margin:6px 0 0 0; padding-left:18px;">
+                <li><strong>Bulk shell:</strong> Adding bulk Pacific oyster shell to enhance available Olympia oyster habitat</li>
+                <li><strong>Seeded cultch:</strong> Boosting habitat and larval presence by placing Pacific oyster shell seeded with juvenile Olympia oysters</li>
+                <li><strong>Singles:</strong> Planting single adult Olympias on the beach</li>
+            </ul>`,
+        recruitment: "Explore annual monitoring sites tracking Olympia oyster larvae settlement throughout Puget Sound using a metric we call Recruitment Index. The Recruitment Index gives us clues about presence and magnitude of larvae in a waterbody."
+    };
 
     function switchTab(tabId) {
         // Update tab button styles
@@ -3366,6 +3377,9 @@ function wireTabSwitching({ enhTab, recruitTab, enh, recruit, enhancementLayer, 
         // Show/hide the right content section
         enh.element.classList.toggle("hidden", !showingEnhancement);
         recruit.element.classList.toggle("hidden", showingEnhancement);
+
+        // Swap the explanatory subtext to match the active tab
+        if (tabSubtext) tabSubtext.innerHTML = subtextByTab[tabId];
 
         if (showingEnhancement) {
             // Show enhancement layer, hide recruitment layer
@@ -3421,10 +3435,15 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     const { element: tabBar, enhTab, recruitTab } = buildTabBar();
     panel.appendChild(tabBar);
 
-    // Subtext explaining what each tab shows
+        // Subtext explaining what each tab shows — content swaps per tab
     const tabSubtext = document.createElement("div");
     tabSubtext.style.cssText = "font-size:11px; color:#666; font-style:italic; line-height:1.6; margin-bottom:24px;";
-    tabSubtext.textContent = "Enhancement shows restoration sites. Recruitment shows long-term monitoring stations tracking annual oyster settlement.";
+        tabSubtext.innerHTML = `See where we have taken restoration action to improve habitat and rebuild Olympia oyster populations in Puget Sound. These actions could include:
+        <ul style="margin:6px 0 0 0; padding-left:18px;">
+                <li><strong>Bulk shell:</strong> Adding bulk Pacific oyster shell to enhance available Olympia oyster habitat</li>
+                <li><strong>Seeded cultch:</strong> Boosting habitat and larval presence by placing Pacific oyster shell seeded with juvenile Olympia oysters</li>
+                <li><strong>Singles:</strong> Planting single adult Olympias on the beach</li>
+            </ul>`;
     panel.appendChild(tabSubtext);
 
     // Build both tabs' content
@@ -3437,11 +3456,12 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     panel.appendChild(enh.element);
     panel.appendChild(recruit.element);
 
-    // Wire up tab-switching behavior (layer swap, legend swap, styles)
+    // Wire up tab-switching behavior (layer swap, legend swap, styles, subtext)
     wireTabSwitching({
         enhTab, recruitTab, enh, recruit,
         enhancementLayer, recruitmentLayer, map,
-        enhancementLegend, recruitLayerManager, onTabSwitch
+        enhancementLegend, recruitLayerManager, onTabSwitch,
+        tabSubtext
     });
 
     return { element: panel, enhContent: enh.element, recruitContent: recruit.element };
