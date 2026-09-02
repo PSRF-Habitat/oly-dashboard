@@ -169,6 +169,11 @@ const tooltipPhotos = {
   "Silverdale":       FileAttachment("data/images/silverdale_tooltip.jpg").href,
   "Smith Cove":       FileAttachment("data/images/smithcove_tooltip.jpg").href,
   "Drayton Harbor":   FileAttachment("data/images/drayton_tooltip.jpg").href,
+  "Anna's Bay":       FileAttachment("data/images/annas_tooltip.jpg").href,
+  "Chuckanut Bay":    FileAttachment("data/images/chuckanut_tooltip.jpg").href,
+  "Henderson Inlet":  FileAttachment("data/images/henderson_tooltip.jpg").href,
+  "Palela Bay":       FileAttachment("data/images/palela_tooltip.jpg").href,
+  "Sequim Bay":       FileAttachment("data/images/sequim_tooltip.jpg").href
   // Add more here
 };
 
