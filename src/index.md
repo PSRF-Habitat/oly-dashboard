@@ -29,32 +29,37 @@ pager: false
       <h1 style="margin-top:0; color:#045B4C;">
         DRAFT - Mapping Olympia Oyster Restoration Across Puget Sound
       </h1>
-      <p style="color:#333; margin-bottom:0;">
-        This map tracks over two decades of work to restore Puget Sound's only native oyster. Explore where we've added shell and oysters to build habitat and reestablish populations, where larvae are settling and growing into new oysters each year, and how populations have changed at individual sites over time.
-      </p>
+      <p style="color:#333; margin-bottom:8px;">
+        This map tracks over two decades of work to reestablish Puget Sound's only native oyster. Explore the map below to dig into data showcasing the approach and scale of enhancement projects, results from population surveys following restoration action, and recruitment monitoring tracking annual larval settlement across the Sound
     </div>
-
-    <!-- RIGHT: two stacked callout cards -->
+         <!-- RIGHT: two stacked "About the Data" callout cards -->
     <div>
       <div class="intro-card intro-card--enhancement" style="margin-bottom:1.5rem;">
-        <div class="intro-card-label" style="color:#045B4C; font-size:1rem;">
-          Enhancement Sites
+        <div class="intro-card-label" style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; color:#045B4C; font-size:1rem;">
+          <span>Enhancement</span>
+          <a href="https://www.shoremonitoring.org/olympia_oysters/" target="_blank" rel="noopener" style="font-size:0.75rem; font-weight:600; color:#045B4C; white-space:nowrap;">
+            Learn more →
+          </a>
         </div>
         <p>
-          Places where we've added shell, juvenile, or adult oysters to build habitat and reestablish populations.
+          Here you will find population or density estimates and shell height data from field surveys at our enhancement sites.
+        </p>
         </p>
       </div>
 
       <div class="intro-card intro-card--recruitment">
-        <div class="intro-card-label" style="color:#045B4C; font-size:1rem;">
-          Recruitment Monitoring
+        <div class="intro-card-label" style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; color:#045B4C; font-size:1rem;">
+          <span>Recruitment</span>
+          <a href="https://restorationfund.org/programs/olympiaoysters/#recruitment_monitoring" target="_blank" rel="noopener" style="font-size:0.75rem; font-weight:600; color:#045B4C; white-space:nowrap;">
+            Learn more →
+          </a>
         </div>
         <p>
-          Annual tracking of where and how many juvenile oysters are settling across the Sound.
+          Here you can compare recruitment index values across stations and years.
         </p>
       </div>
     </div>
-  </div>
+    </div>
 
   <!-- Tip container -->
   <div class="intro-tip">
