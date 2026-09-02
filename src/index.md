@@ -30,7 +30,7 @@ pager: false
         DRAFT - Mapping Olympia Oyster Restoration Across Puget Sound
       </h1>
       <p style="color:#333; margin-bottom:8px;">
-        This map tracks over two decades of work to reestablish Puget Sound's only native oyster. Explore the map below to dig into data showcasing the approach and scale of enhancement projects, results from population surveys following restoration action, and recruitment monitoring tracking annual larval settlement across the Sound
+        This map tracks over two decades of work to reestablish Puget Sound's only native oyster. Explore the map below and dig into data showcasing the approach and scale of enhancement projects, results from population surveys following restoration action, and recruitment monitoring tracking annual larval settlement across the Sound
     </div>
          <!-- RIGHT: two stacked "About the Data" callout cards -->
     <div>
@@ -87,7 +87,7 @@ pager: false
 const enh_sites_metadata = await FileAttachment("data/enhancement_sites_metadata.csv").csv({typed: true});
 
 // Recruitment data
-const recruitment_data = (await FileAttachment("data/recruitment_unfiltered.csv").csv({typed: true}))
+const recruitment_data = (await FileAttachment("data/recruitment_for_dash.csv").csv({typed: true}))
     .map(d => ({...d, index: (d.index === "NA" || d.index === null || d.index === "") ? null : +d.index}));
 
 // Data for timeline
@@ -2281,7 +2281,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
 
     // Filter to current station and sort by year
     const stationData = allData
-        .filter(d => d.standard_station === station.standard_station && d.year && d.index != null)
+        .filter(d => d.station_name_for_dash === station.station_name_for_dash && d.year && d.index != null)
         .sort((a, b) => a.year - b.year);
 
     // Add some summary stats
@@ -2383,8 +2383,15 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     backButton.onmouseleave = () => { backButton.style.backgroundColor = "white";   backButton.style.color = "#045B4C"; };
     backButton.onclick = resetView;
 
+        const titleWrap = document.createElement("div");
+    Object.assign(titleWrap.style, {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end"
+    });
+
     const stationTitle = document.createElement("h2");
-    stationTitle.textContent = station.standard_station;
+    stationTitle.textContent = station.station_name_for_dash;
     Object.assign(stationTitle.style, {
         margin: "0",
         fontSize: "22px",
@@ -2393,9 +2400,23 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
         letterSpacing: "0.5px",
         textAlign: "right"
     });
+    titleWrap.appendChild(stationTitle);
+
+    if (station.standard_station_id) {
+        const stationSubtitle = document.createElement("div");
+        stationSubtitle.textContent = `Station ID: ${station.standard_station_id}`;
+        Object.assign(stationSubtitle.style, {
+            fontSize: "12px",
+            fontWeight: "500",
+            color: "#999",
+            marginTop: "2px",
+            textAlign: "right"
+        });
+        titleWrap.appendChild(stationSubtitle);
+    }
 
     buttonBar.appendChild(backButton);
-    buttonBar.appendChild(stationTitle);
+    buttonBar.appendChild(titleWrap);
 
     // -----------------------------------------------
     // Scrollable body
@@ -2589,22 +2610,22 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
             ? []   // no comparison lines for "this station only"
             : allData.filter(d => {
                 if (currentScope === "waterbody") 
-                    return d.waterbody === station.waterbody && d.standard_station !== station.standard_station;
+                    return d.waterbody === station.waterbody && d.station_name_for_dash !== station.station_name_for_dash;
                 if (currentScope === "basin") 
-                    return d.basin === station.basin && d.standard_station !== station.standard_station;
+                    return d.basin === station.basin && d.station_name_for_dash !== station.station_name_for_dash;
                 if (currentScope === "sound") 
-                    return d.standard_station !== station.standard_station;
+                    return d.station_name_for_dash !== station.station_name_for_dash;
                 return false;
             });
 
         // Get unique comparison station names
-        const compStationNames = [...new Set(comparisonStations.map(d => d.standard_station))];
+        const compStationNames = [...new Set(comparisonStations.map(d => d.station_name_for_dash))];
 
         // Build comparison line data: one array per station
         // Each array is that station's full time series
         const compLines = compStationNames.map(s =>
             allData
-                .filter(d => d.standard_station === s && d.year && d.index !== null && !isNaN(d.index))
+                .filter(d => d.station_name_for_dash === s && d.year && d.index !== null && !isNaN(d.index))
                 .sort((a, b) => a.year - b.year)
         ).filter(arr => arr.length > 1);  // skip stations with only one data point
 
@@ -2634,7 +2655,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
             .map(d => ({...d, indexClamped: yMax}));
         const allArrowPoints = [...arrowPoints, ...arrowPointsHighlighted];
 
-        if (stationData.length > 1) {
+        if (stationData.length >= 1) {
             const chart = Plot.plot({
                 height: 260,
                 marginLeft: 50,
@@ -2675,7 +2696,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                         text: () => "^",
                         fontSize: 20,
                         fontWeight: "bold",
-                        fill: d => d.standard_station === station.standard_station ? "#045B4C" : "#bbb",
+                        fill: d => d.station_name_for_dash === station.station_name_for_dash ? "#045B4C" : "#bbb",
                         stroke: "white",
                         strokeWidth: 3,
                         dy: -2
@@ -2726,9 +2747,9 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                             Plot.pointer({
                                 x: "year",
                                 y: "index",
-                                title: d => d.standard_station === station.standard_station
-                                    ? `★ ${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index} avg olys/shell`
-                                    : `${d.standard_station.replaceAll("_", " ")}\n${d.year}: ${d.index} avg olys/shell`
+                                title: d => d.station_name_for_dash === station.station_name_for_dash
+                                    ? `★ ${d.station_name_for_dash.replaceAll("_", " ")}\n${d.year}: ${d.index} avg olys/shell`
+                                    : `${d.station_name_for_dash.replaceAll("_", " ")}\n${d.year}: ${d.index} avg olys/shell`
                             })
                         ),
 
@@ -2736,7 +2757,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
                     allArrowPoints.length > 0 ? Plot.tip(allArrowPoints, Plot.pointer({
                         x: "year",
                         y: () => yMax,
-                        title: d => `${d.standard_station.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index} avg olys/shell`
+                        title: d => `${d.station_name_for_dash.replaceAll("_", " ")} (off scale)\n${d.year}: ${d.index} avg olys/shell`
                     })) : null
                     ],
                     style: { fontFamily: "inherit", fontSize: "13px" }
@@ -2756,9 +2777,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
 
         } else {
             const noData = document.createElement("p");
-            noData.textContent = stationData.length === 1
-                ? `Only one year of data available (${stationData[0].year}: ${stationData[0].index.toFixed(1)} olys/shell).`
-                : "No recruitment data recorded for this station.";
+            noData.textContent = "No recruitment data recorded for this station.";
             Object.assign(noData.style, { fontSize: "13px", color: "#999", fontStyle: "italic", margin: "0" });
             chartWrapper.appendChild(noData);
         }
@@ -2774,16 +2793,21 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
 
 
 // HTML for recruitment map tooltips (moved from inside map function to here)
-function buildRecruitmentTooltipHTML(stationName, year, value, isMobile = false) {
+function buildRecruitmentTooltipHTML(stationName, year, value, isMobile = false, stationId = null) {
     const prompt = isMobile ? "Tap to view recruitment history →" : "Click icon to view recruitment history →";
     const displayName = stationName.replaceAll("_", " ");
+    const idHTML = stationId
+        ? `<p style="font-size:11px; color:#999; margin:0 0 6px 0; text-align:left;">Station ID: ${stationId}</p>`
+        : "";
 
     const padding = isMobile ? "14px 34px 10px 14px" : "14px 14px 10px 14px";
 
-    if (value === null) {
+        if (value === null) {
         return `
             <div style="padding:${padding}; min-width:160px;">
-                <p style="font-size:13px; font-weight:600; color:#222; margin:0 0 4px 0; text-align:left;">${displayName}</p>
+                <p style="font-size:13px; font-weight:600; color:#222; margin:0 0 1px 0; text-align:left;">${displayName}</p>
+                ${idHTML}
+                <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
                 <p style="font-size:12px; color:#aaa; text-align:left; margin:0;">No data for ${year}</p>
                 <div data-explore style="margin-top:8px; padding:6px 10px; background:#FCE8D6; border-radius:6px;
                     font-size:10px; font-weight:700; color:#8A4B1F; text-align:center; cursor:pointer;">${prompt}</div>
@@ -2791,7 +2815,8 @@ function buildRecruitmentTooltipHTML(stationName, year, value, isMobile = false)
     }
     return `
         <div style="padding:${padding}; min-width:180px;">
-            <p style="font-size:13px; font-weight:600; color:#222; margin:0 0 6px 0; text-align:left;">${displayName}</p>
+            <p style="font-size:13px; font-weight:600; color:#222; margin:0 0 2px 0; text-align:left;">${displayName}</p>
+            ${idHTML}
             <div style="height:1px; background:#e8e8e8; margin:0 0 6px 0;"></div>
             <div style="display:flex; justify-content:space-between; font-size:12px; color:#555;">
                 <span style="color:#045B4C; font-weight:600;">${year}</span>
@@ -2833,7 +2858,7 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, mapContai
         if (!yearDataCache[year]) {
             const map = {};
             (byYear[year] || []).forEach(row => {
-                map[row.standard_station] = row;
+                map[row.station_name_for_dash] = row;
             });
             yearDataCache[year] = map;
         }
@@ -2846,12 +2871,12 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, mapContai
     const stationInfo = {};
     const seen = new Set();
     recruitData.forEach(row => {
-        if (seen.has(row.standard_station)) return;
+        if (seen.has(row.station_name_for_dash)) return;
         if (!row.latitude || !row.longitude ||
             row.latitude === "NA" || row.longitude === "NA" ||
             isNaN(parseFloat(row.latitude))) return;
-        seen.add(row.standard_station);
-        stationInfo[row.standard_station] = {
+        seen.add(row.station_name_for_dash);
+        stationInfo[row.station_name_for_dash] = {
             lat: parseFloat(row.latitude),
             lng: parseFloat(row.longitude)
         };
@@ -2864,9 +2889,9 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, mapContai
         return (row && row.index !== null && !isNaN(row.index)) ? row.index : null;
     }
 
-    function init() {
+        function init() {
         Object.entries(stationInfo).forEach(([stationName, info]) => {
-            const stationRow = recruitData.find(d => d.standard_station === stationName);
+            const stationRow = recruitData.find(d => d.station_name_for_dash === stationName);
 
             const marker = L.circleMarker([info.lat, info.lng], {
                 radius: 7, fillColor: "#e0e0e0", color: "#999",
@@ -2876,7 +2901,7 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, mapContai
             if (isTouchDevice) {
                 marker.on("click", () => {
                     const value = getStationValue(stationName, currentYear);
-                    const html = buildRecruitmentTooltipHTML(stationName, currentYear, value, true);
+                    const html = buildRecruitmentTooltipHTML(stationName, currentYear, value, true, stationRow?.standard_station_id);
                     showCenteredTooltip(mapContainer, html, {
                         onExplore: () => onStationClick(stationRow)
                     });
@@ -2910,7 +2935,8 @@ function createRecruitmentLayerManager(recruitData, recruitLayer, map, mapContai
 
             // Native tooltip content only matters on desktop
             if (!isTouchDevice) {
-                marker.setTooltipContent(buildRecruitmentTooltipHTML(stationName, year, value, false));
+                const stationRow = recruitData.find(d => d.station_name_for_dash === stationName);
+                marker.setTooltipContent(buildRecruitmentTooltipHTML(stationName, year, value, false, stationRow?.standard_station_id));
             }
         });
 
@@ -5215,6 +5241,10 @@ setTimeout(() => {
             }
 
             .custom-tooltip img {
+                height: 90px !important;
+            }
+
+            .tooltip-photo-wrap {
                 height: 90px !important;
             }
 
