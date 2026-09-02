@@ -35,7 +35,7 @@ pager: false
          <!-- RIGHT: two stacked "About the Data" callout cards -->
     <div>
       <div class="intro-card intro-card--enhancement" style="margin-bottom:1.5rem;">
-        <div class="intro-card-label" style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; color:#045B4C; font-size:1rem;">
+        <div class="intro-card-label" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 8px; color:#045B4C; font-size:1rem;">
           <span>Enhancement</span>
           <a href="https://www.shoremonitoring.org/olympia_oysters/" target="_blank" rel="noopener" style="font-size:0.75rem; font-weight:600; color:#045B4C; white-space:nowrap;">
             Learn more →
@@ -48,7 +48,7 @@ pager: false
       </div>
 
       <div class="intro-card intro-card--recruitment">
-        <div class="intro-card-label" style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; color:#045B4C; font-size:1rem;">
+        <div class="intro-card-label" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 8px; color:#045B4C; font-size:1rem;">
           <span>Recruitment</span>
           <a href="https://restorationfund.org/programs/olympiaoysters/#recruitment_monitoring" target="_blank" rel="noopener" style="font-size:0.75rem; font-weight:600; color:#045B4C; white-space:nowrap;">
             Learn more →
