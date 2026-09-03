@@ -2176,6 +2176,38 @@ function buildYearSlider(years, currentYear, onChange, infoElement) {
     labelRow.appendChild(labelGroup);
     labelRow.appendChild(yearDisplay);
 
+    // -----------------------------------------------
+    // Slider row: play/pause button + range slider side by side
+    // -----------------------------------------------
+    const sliderRow = document.createElement("div");
+    Object.assign(sliderRow.style, {
+        display: "flex",
+        alignItems: "center",
+        gap: "10px"
+    });
+
+    // Play/pause button
+    const playBtn = document.createElement("button");
+    playBtn.type = "button";
+    playBtn.setAttribute("aria-label", "Play year animation");
+    Object.assign(playBtn.style, {
+        flexShrink: "0",
+        width: "28px",
+        height: "28px",
+        borderRadius: "50%",
+        border: "2px solid #045B4C",
+        background: "white",
+        color: "#045B4C",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "0",
+        fontSize: "12px",
+        transition: "all 0.15s ease"
+    });
+    playBtn.innerHTML = "▶";
+
     // Make the actual slider
     const slider = document.createElement("input");
     slider.type = "range";
@@ -2184,10 +2216,13 @@ function buildYearSlider(years, currentYear, onChange, infoElement) {
     slider.value = years.indexOf(currentYear);
     slider.step = 1;
     Object.assign(slider.style, {
-        width: "100%",
+        flex: "1",
         accentColor: "#045B4C",
         cursor: "pointer"
     });
+
+    sliderRow.appendChild(playBtn);
+    sliderRow.appendChild(slider);
 
     // Min/max year labels underneath slider
     const rangeLabels = document.createElement("div");
@@ -2208,9 +2243,58 @@ function buildYearSlider(years, currentYear, onChange, infoElement) {
         onChange(year); // this will update the map
     });
 
+    // -----------------------------------------------
+    // Play/pause animation logic
+    // Steps through years on an interval; loops back
+    // to the start when it reaches the end
+    // -----------------------------------------------
+    let playInterval = null;
+    const STEP_MS = 800; // time between years while playing
+
+    function stopPlaying() {
+        if (playInterval) {
+            clearInterval(playInterval);
+            playInterval = null;
+        }
+        playBtn.innerHTML = "▶";
+        playBtn.setAttribute("aria-label", "Play year animation");
+    }
+
+    function startPlaying() {
+        // If already at the last year, restart from the beginning
+        if (parseInt(slider.value) >= years.length - 1) {
+            slider.value = 0;
+            slider.dispatchEvent(new Event("input"));
+        }
+
+        playBtn.innerHTML = "❚❚";
+        playBtn.setAttribute("aria-label", "Pause year animation");
+
+        playInterval = setInterval(() => {
+            const nextIndex = parseInt(slider.value) + 1;
+            if (nextIndex > years.length - 1) {
+                stopPlaying();
+                return;
+            }
+            slider.value = nextIndex;
+            slider.dispatchEvent(new Event("input"));
+        }, STEP_MS);
+    }
+
+    playBtn.addEventListener("click", () => {
+        if (playInterval) {
+            stopPlaying();
+        } else {
+            startPlaying();
+        }
+    });
+
+    // If the user manually drags the slider while playing, stop the animation
+    slider.addEventListener("pointerdown", stopPlaying);
+
     // Put it all together
     wrapper.appendChild(labelRow);
-    wrapper.appendChild(slider);
+    wrapper.appendChild(sliderRow);
     wrapper.appendChild(rangeLabels);
 
     return wrapper;
