@@ -38,7 +38,7 @@ pager: false
         <div class="intro-card-label" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 8px; color:#045B4C; font-size:1rem;">
           <span>Enhancement</span>
           <a href="https://www.shoremonitoring.org/olympia_oysters/" target="_blank" rel="noopener" style="font-size:0.75rem; font-weight:600; color:#045B4C; white-space:nowrap;">
-            Learn more →
+            Learn more about methods →
           </a>
         </div>
         <p>
@@ -51,7 +51,7 @@ pager: false
         <div class="intro-card-label" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 8px; color:#045B4C; font-size:1rem;">
           <span>Recruitment</span>
           <a href="https://restorationfund.org/programs/olympiaoysters/#recruitment_monitoring" target="_blank" rel="noopener" style="font-size:0.75rem; font-weight:600; color:#045B4C; white-space:nowrap;">
-            Learn more →
+            Learn more about methods →
           </a>
         </div>
         <p>
@@ -588,7 +588,7 @@ function createPopulationTimelinePlot(popData, timelineData, siteName) {
                     </div>
                     <div style="display:flex; align-items:baseline; gap:8px; white-space:nowrap;">
                         <span style="font-size:clamp(12px, 3.2cqw, 15px); font-weight:700; color:#222;">${point.year}</span>
-                        <span style="font-size:clamp(12px, 3.2cqw, 15px); color:#444;">${point.population_estimate.toLocaleString()} oysters</span>
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); color:#444;">${point.population_estimate.toLocaleString(undefined, { maximumFractionDigits: 0 })} oysters</span>
                     </div>
                 </div>
             </div>
@@ -905,7 +905,7 @@ function createDensityTimelinePlot(densData, timelineData, siteName) {
                     </div>
                     <div style="display:flex; align-items:baseline; gap:8px; white-space:nowrap;">
                         <span style="font-size:clamp(12px, 3.2cqw, 15px); font-weight:700; color:#222;">${point.year}</span>
-                        <span style="font-size:clamp(12px, 3.2cqw, 15px); color:#444;">${point.density_estimate.toLocaleString()} oysters per m<sup>2</sup></span>
+                        <span style="font-size:clamp(12px, 3.2cqw, 15px); color:#444;">${point.density_estimate.toLocaleString(undefined, { maximumFractionDigits: 2 })} oysters per m<sup>2</sup></span>
                     </div>
                     <div style="font-size:clamp(10px, 2.6cqw, 12px); color:#888; margin-top:3px; white-space:nowrap;">
                         ± ${point.std_err.toLocaleString(undefined, { maximumFractionDigits: 1 })} SE
@@ -1736,9 +1736,9 @@ function buildChicoBayPanel() {
 
     // --- Narrative ---
     const narrative = {
-        intro: `A traditional shellfish harvesting area with historic importance, Chico Bay sits at the mouth of Chico Creek, one of the most productive chum streams in the Sound. Since purchase in the late 2000s, the Suquamish Tribe has been seeding the tidelands with clams and oysters, alongside harvesting a booming wild manila clam population around the corner near Erlands Point. Also at Erlands Point, a small, wild aggregation of Olympia oysters sparked inspiration for native oyster restoration in Chico Bay.`,
+        intro: `A traditional shellfish harvesting area with historic importance, Chico Bay sits at the mouth of Chico Creek, one of the most productive chum streams in the Sound. Since purchase in the late 2000s, the Suquamish Tribe has been seeding the tidelands with clams and oysters, alongside harvesting a booming wild Manila clam population around the corner near Erlands Point. Also at Erlands Point, a small, wild aggregation of Olympia oysters sparked inspiration for native oyster restoration in Chico Bay.`,
 
-        context: `With USDA conservation funding in hand and permission to work on a stretch of Tribally owned tideland, the team moved cautiously, staking out a series of 10-by-10 foot shell plots across the tideland to first test whether that inspiration could take hold on a larger scale. Before committing to a project design, we let those plots simmer for nearly a year. Results upon our return catalyzed restoration actions. High in the intertidal the shell plots sat mostly empty, but lower, near -1.5 feet MLLW, recruitment to the shell showed promise. Then, a closer look at the deepest reaches of the flat, around -3 feet, turned up something else: a scatter of wild, old, solitary Olys, likely survivors of rare and irregular recruitment events rather than a self-sustaining population. Guided by these findings, the project footprint shifted down the beach from the initially anticipated plot, toward elevations where the bay was calling us to work.`,
+        context: `With U.S. Department of Agriculture conservation funding in hand and permission to work on a stretch of Tribally-owned tideland, the team moved cautiously, staking out a series of 10-by-10 foot shell plots across the tideland to first test whether the small, wild aggregation of Olympia oysters at Erlands Point could take hold on a larger scale. Before committing to a project design, we let those plots simmer for nearly a year. Results upon our return catalyzed restoration actions. High in the intertidal the shell plots sat mostly empty. But lower, near -1.5 feet MLLW, recruitment to the shell showed promise. Then, a closer look at the deepest reaches of the flat, around -3 feet, turned up something else: a scatter of wild, old, solitary Olys, likely survivors of rare and irregular recruitment events rather than a self-sustaining population. Guided by these findings, we shifted the project footprint down the beach from the initially anticipated plot, toward elevations where the bay was calling us to work.`,
 
         ourWork: `In 2018, we put that plan into action. We spread 5 acres of Pacific oyster shell to provide settlement substrate for recruiting juveniles, paired with more that 1.15 million hatchery-reared baby Olys set on 450 bags of Pacific shell placed directly into the enhancement area. The stock enhancement piece was not without internal debate. With a wild population already present nearby, was a hatchery-grown boost really necessary, or should the shell alone have been enough to do the job? The project moved forward with both tools in hand, a bet on giving the Olys every possible advantage, and providing a one-two punch to accelerate recruitment.`,
 
@@ -2176,6 +2176,38 @@ function buildYearSlider(years, currentYear, onChange, infoElement) {
     labelRow.appendChild(labelGroup);
     labelRow.appendChild(yearDisplay);
 
+    // -----------------------------------------------
+    // Slider row: play/pause button + range slider side by side
+    // -----------------------------------------------
+    const sliderRow = document.createElement("div");
+    Object.assign(sliderRow.style, {
+        display: "flex",
+        alignItems: "center",
+        gap: "10px"
+    });
+
+    // Play/pause button
+    const playBtn = document.createElement("button");
+    playBtn.type = "button";
+    playBtn.setAttribute("aria-label", "Play year animation");
+    Object.assign(playBtn.style, {
+        flexShrink: "0",
+        width: "28px",
+        height: "28px",
+        borderRadius: "50%",
+        border: "2px solid #045B4C",
+        background: "white",
+        color: "#045B4C",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "0",
+        fontSize: "12px",
+        transition: "all 0.15s ease"
+    });
+    playBtn.innerHTML = "▶";
+
     // Make the actual slider
     const slider = document.createElement("input");
     slider.type = "range";
@@ -2184,10 +2216,13 @@ function buildYearSlider(years, currentYear, onChange, infoElement) {
     slider.value = years.indexOf(currentYear);
     slider.step = 1;
     Object.assign(slider.style, {
-        width: "100%",
+        flex: "1",
         accentColor: "#045B4C",
         cursor: "pointer"
     });
+
+    sliderRow.appendChild(playBtn);
+    sliderRow.appendChild(slider);
 
     // Min/max year labels underneath slider
     const rangeLabels = document.createElement("div");
@@ -2208,9 +2243,58 @@ function buildYearSlider(years, currentYear, onChange, infoElement) {
         onChange(year); // this will update the map
     });
 
+    // -----------------------------------------------
+    // Play/pause animation logic
+    // Steps through years on an interval; loops back
+    // to the start when it reaches the end
+    // -----------------------------------------------
+    let playInterval = null;
+    const STEP_MS = 800; // time between years while playing
+
+    function stopPlaying() {
+        if (playInterval) {
+            clearInterval(playInterval);
+            playInterval = null;
+        }
+        playBtn.innerHTML = "▶";
+        playBtn.setAttribute("aria-label", "Play year animation");
+    }
+
+    function startPlaying() {
+        // If already at the last year, restart from the beginning
+        if (parseInt(slider.value) >= years.length - 1) {
+            slider.value = 0;
+            slider.dispatchEvent(new Event("input"));
+        }
+
+        playBtn.innerHTML = "❚❚";
+        playBtn.setAttribute("aria-label", "Pause year animation");
+
+        playInterval = setInterval(() => {
+            const nextIndex = parseInt(slider.value) + 1;
+            if (nextIndex > years.length - 1) {
+                stopPlaying();
+                return;
+            }
+            slider.value = nextIndex;
+            slider.dispatchEvent(new Event("input"));
+        }, STEP_MS);
+    }
+
+    playBtn.addEventListener("click", () => {
+        if (playInterval) {
+            stopPlaying();
+        } else {
+            startPlaying();
+        }
+    });
+
+    // If the user manually drags the slider while playing, stop the animation
+    slider.addEventListener("pointerdown", stopPlaying);
+
     // Put it all together
     wrapper.appendChild(labelRow);
-    wrapper.appendChild(slider);
+    wrapper.appendChild(sliderRow);
     wrapper.appendChild(rangeLabels);
 
     return wrapper;
@@ -3051,7 +3135,7 @@ function addRecruitmentLegend(map, maxValue) {
 // their interactivity.
 // ===================================================
 // ===================================================
-function buildEnhancementTabContent(enhData, map, story_sites) {
+function buildEnhancementTabContent(enhData, map, story_sites, onSiteSelect) {
     const content = document.createElement("div");
     content.className = "filter-tab-content";
 
@@ -3088,10 +3172,6 @@ function buildEnhancementTabContent(enhData, map, story_sites) {
     // -----------------------------------------------
     const siteSelector = content.querySelector('#site-selector');
 
-    // Track currently open enhancement tooltip so we can
-    // close it before opening a new one
-    let currentOpenMarker = null;
-
     // Build the list of sites to show in the dropdown
     // Only include sites that have valid coordinates and are in story_sites
     const uniqueSites = [...new Set(
@@ -3114,26 +3194,13 @@ function buildEnhancementTabContent(enhData, map, story_sites) {
     });
 
     // Listen for when the user selects a site from the dropdown
+    // Jumps straight into that site's story panel (showDetail handles its own zoom/centering)
     siteSelector.addEventListener('change', (e) => {
         const selectedSite = e.target.value;
+        if (!selectedSite || !onSiteSelect) return;
 
-        // Only proceed if something was selected AND that site has a marker on the map
-        if (selectedSite && window.markersBySite[selectedSite]) {
-            const marker = window.markersBySite[selectedSite];
-            const latLng = marker.getLatLng();
-
-            // If a tooltip is already open, close it before opening a new one!!!
-            if (currentOpenMarker) currentOpenMarker.closeTooltip();
-
-            // Recenter the map on this site. animate:true makes it look nice!
-            map.setView(latLng, 12, { animate: true, duration: 0.5 });
-
-            // Wait 600ms for the zoom animation to finish, then open the tooltip
-            setTimeout(() => {
-                marker.openTooltip();
-                currentOpenMarker = marker;
-            }, 600);
-        }
+        const siteData = enhData.find(site => site.site_name === selectedSite);
+        if (siteData) onSiteSelect(siteData);
     });
 
     // When the user zooms out past zoom level 11,
@@ -3392,7 +3459,7 @@ function wireTabSwitching({ enhTab, recruitTab, enh, recruit, enhancementLayer, 
             <ul style="margin:6px 0 0 0; padding-left:18px;">
                 <li><strong>Bulk shell:</strong> Adding bulk Pacific oyster shell to enhance available Olympia oyster habitat</li>
                 <li><strong>Seeded cultch:</strong> Boosting habitat and larval presence by placing Pacific oyster shell seeded with juvenile Olympia oysters</li>
-                <li><strong>Singles:</strong> Planting single adult Olympias on the beach</li>
+                <li><strong>Singles:</strong> Planting single small-adult Olympias on the beach</li>
             </ul>`,
         recruitment: "Explore annual monitoring sites tracking Olympia oyster larvae settlement throughout Puget Sound using a metric we call Recruitment Index. The Recruitment Index gives us clues about presence and magnitude of larvae in a waterbody."
     };
@@ -3452,7 +3519,7 @@ function wireTabSwitching({ enhTab, recruitTab, enh, recruit, enhancementLayer, 
 // 
 // ===================================================
 // ===================================================
-function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, recruitData, recruitLayerManager, enhancementLegend, onTabSwitch) {
+function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, recruitData, recruitLayerManager, enhancementLegend, onTabSwitch, onSiteSelect) {
     const panel = document.createElement("div");
     panel.style.padding = "0";
 
@@ -3473,12 +3540,12 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
         <ul style="margin:6px 0 0 0; padding-left:18px;">
                 <li><strong>Bulk shell:</strong> Adding bulk Pacific oyster shell to enhance available Olympia oyster habitat</li>
                 <li><strong>Seeded cultch:</strong> Boosting habitat and larval presence by placing Pacific oyster shell seeded with juvenile Olympia oysters</li>
-                <li><strong>Singles:</strong> Planting single adult Olympias on the beach</li>
+                <li><strong>Singles:</strong> Planting single small-adult Olympias on the beach</li>
             </ul>`;
     panel.appendChild(tabSubtext);
 
     // Build both tabs' content
-    const enh = buildEnhancementTabContent(enhData, map, story_sites);
+    const enh = buildEnhancementTabContent(enhData, map, story_sites, onSiteSelect);
     const recruit = buildRecruitmentTabContent(recruitData, recruitLayerManager, map);
 
     // The enhancement tab's type-toggle filter needs a live reference to enhancementLayer
@@ -4126,6 +4193,7 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
     mainContainer._recruitLayerManager = recruitLayerManager;
     mainContainer._enhancementLegend = enhancementLegend;
     mainContainer._resetView = resetView;  // expose so filter panel can call it from outside
+    mainContainer._showDetail = showDetail;  // expose so the "Read a Story" dropdown can jump straight to a site's story
 
     // Return the whole assembled container div
     return mainContainer;
@@ -4171,7 +4239,8 @@ setTimeout(() => {
                 recruitment_data,                   // full recruitment CSV
                 container._recruitLayerManager,  // layer manager with years + updateYear()
                 container._enhancementLegend,    // legend ref so tabs can swap it
-                () => { if (window.currentMapInstance?._resetView) window.currentMapInstance._resetView(); }
+                () => { if (window.currentMapInstance?._resetView) window.currentMapInstance._resetView(); },
+                (site) => { if (window.currentMapInstance?._showDetail) window.currentMapInstance._showDetail(site); }
             );
 
             filterContainer.appendChild(filterPanel.element);
@@ -5374,3 +5443,28 @@ setTimeout(() => {
     <div class="card" id="map-card-placeholder"></div>
     </div>
 </div>
+
+<div class="card" id="partners-acknowledgment" style="grid-column: span 3; box-sizing: border-box;">
+    <h3 style="
+        width: 100%;
+        box-sizing: border-box;
+        margin: 0 0 12px 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #045B4C;
+        letter-spacing: 0.5px;
+    ">With Gratitude to Our Partners & Funders</h3>
+    <p style="
+        width: 100%;
+        max-width: none;
+        box-sizing: border-box;
+        margin: 0;
+        font-size: 11px;
+        font-style: italic;
+        line-height: 1.5;
+        color: #666;
+    ">
+        Washington Department of Fish & Wildlife, Suquamish Tribe, Skokomish Tribe, Squaxin Island Tribe, Jamestown S’Klallam Tribe, Port Gamble S’Klallam Tribe, Swinomish Indian Tribal Community, Samish Indian Nation, Nisqually Indian Tribe, Lummi Nation, Northwest Indian College, Northwest Indian Fisheries Commission, Taylor Shellfish, Baywater, Hood Canal Oyster Co., Calm Cove, Olympia Oyster Co., Drayton Harbor Oyster Co., Rock Point Oyster Co., Chelsea Farms, Hama Hama, Seattle Shellfish, Chuckanut Shellfish Farm, Little Skookum Shellfish Growers, Minterbrook Oyster Co., Pacific Seafood, Sound Fresh, Set & Drift, Brenner Oyster Co., Nick Jones Family Farm, Blau Oyster Co., Pacific Coast Shellfish Growers Association, NOAA Community-based Restoration Program, Northwest Fisheries Science Center & Manchester Research Station,U.S. Navy,U.S. Department of Agriculture (NRCS), Environmental Protection Agency, Washington Department of Fish & Wildlife, Washington Department of Natural Resources, Washington Department of Ecology, Washington Conservation Corps, Washington Department of Health, Counties (Kitsap, Skagit, Thurston, Jefferson, Clallam, Whatcom), Port of Seattle, Port of Poulsbo, Port of Brownsville, City of Poulsbo, City of Anacortes, Kitsap Public Health District, Thurston Conservation District, Henderson Inlet Shellfish Protection District, National Fish & Wildlife Foundation, Rose Foundation, Benjamin & Margaret Hall Foundation, Charlotte Martin Foundation, Buster and Nancy Alvord Fund at Seattle Foundation, Burning Foundation, Seattle Foundation (GiveBig, Donor Advised Funds), Quail Roost Foundation, Safeway Foundation, Fish America Foundation, The Russell Family Foundation, Bob Kuehlthau Family Foundation, East Kitsap Community Salmon Fund, The Nature Conservancy, Northwest Straits Commission, Northwest Straits Foundation, Skagit County MRC, Jefferson County MRC, Clallam County MRC, Whatcom County MRC, Coastal Conservation Association (CCA) Washington, NOOC – Native Olympia Oyster Collaborative, Pacific Shellfish Institute, Padilla Bay Estuarine Research Reserve, Puget Soundkeepers Alliance, West Sound Local Integrating Organization (Puget Sound Partnership), Elliott’s Oyster House (Oyster New Year), Walrus & Carpenter Picnics (Taylor Shellfish), Bainbridge Organic Distillers, Patagonia, Alki Oyster Fest, Confluence Environmental, Delta Marine, Miller Brewing Company, Kiana Lodge, Proud Pour, Oyster Tracker, Fred Hill Materials, East Bremerton Rotary Club, University of Washington, UW-Tacoma, Vancouver Island University – Centre for Shellfish Research, Washington Sea Grant, Washington State University, Meyer’s Pt., University of Chicago, Private donors & tideland owners (countless), writers, reporters, film-makers.
+    </p>
+</div>
+
