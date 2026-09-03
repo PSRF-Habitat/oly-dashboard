@@ -30,7 +30,7 @@ pager: false
         DRAFT - Mapping Olympia Oyster Restoration Across Puget Sound
       </h1>
       <p style="color:#333; margin-bottom:8px;">
-        This map tracks over two decades of work to reestablish Puget Sound's only native oyster. Explore the map below and dig into data showcasing the approach and scale of enhancement projects, results from population surveys following restoration action, and recruitment monitoring tracking annual larval settlement across the Sound
+        This map tracks over two decades of work to reestablish Puget Sound's only native oyster. Explore the map below and dig into data showcasing the approach and scale of enhancement projects, results from population surveys following restoration action, and recruitment monitoring tracking annual larval settlement across the Sound.
     </div>
          <!-- RIGHT: two stacked "About the Data" callout cards -->
     <div>
@@ -42,7 +42,7 @@ pager: false
           </a>
         </div>
         <p>
-          Here you will find population or density estimates and shell height data from field surveys at our enhancement sites.
+          In this map view, explore our project work alongside population or density estimates and shell height data from field surveys at our enhancement sites.
         </p>
         </p>
       </div>
@@ -55,7 +55,7 @@ pager: false
           </a>
         </div>
         <p>
-          Here you can compare recruitment index values across stations and years.
+          In this map view, compare recruitment index values across stations and years.
         </p>
       </div>
     </div>
