@@ -2217,6 +2217,7 @@ function buildYearSlider(years, currentYear, onChange, infoElement) {
     slider.step = 1;
     Object.assign(slider.style, {
         flex: "1",
+        minWidth: "0",
         accentColor: "#045B4C",
         cursor: "pointer"
     });
