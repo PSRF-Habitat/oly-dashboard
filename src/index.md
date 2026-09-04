@@ -178,7 +178,8 @@ const tooltipPhotos = {
   "Chuckanut Bay":    FileAttachment("data/images/chuckanut_tooltip.jpg").href,
   "Henderson Inlet":  FileAttachment("data/images/henderson_tooltip.jpg").href,
   "Palela Bay":       FileAttachment("data/images/palela_tooltip.jpg").href,
-  "Sequim Bay":       FileAttachment("data/images/sequim_tooltip.jpg").href
+  "Sequim Bay":       FileAttachment("data/images/sequim_tooltip.jpg").href,
+  "Miller Bay":       FileAttachment("data/images/miller_tooltip.jpg").href,
   // Add more here
 };
 
