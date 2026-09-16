@@ -24,6 +24,7 @@ pager: false
 
   <!-- 3 card layout: 1 left, 2 right -->
   <div class="intro-hero-grid">
+
     <!-- LEFT: title + intro text card -->
     <div class="intro-panel">
       <h1 style="margin-top:0; color:#045B4C;">
@@ -32,7 +33,9 @@ pager: false
       <p style="color:#333; margin-bottom:8px;">
         This map tracks over two decades of work to reestablish Puget Sound's only native oyster. Explore the map below and dig into data showcasing the approach and scale of enhancement projects, results from population surveys following restoration action, and recruitment monitoring tracking annual larval settlement across the Sound.
     </div>
-         <!-- RIGHT: two stacked "About the Data" callout cards -->
+
+    <!-- RIGHT: two stacked "About the Data" callout cards -->
+    <!-- enhancement -->
     <div>
       <div class="intro-card intro-card--enhancement" style="margin-bottom:1.5rem;">
         <div class="intro-card-label" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 8px; color:#045B4C; font-size:1rem;">
@@ -47,6 +50,7 @@ pager: false
         </p>
       </div>
 
+      <!-- recruitment -->
       <div class="intro-card intro-card--recruitment">
         <div class="intro-card-label" style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 8px; color:#045B4C; font-size:1rem;">
           <span>Recruitment</span>
@@ -74,8 +78,8 @@ pager: false
     </span>
   </div>
 
-  </div><!-- /.intro-hero-content -->
-</div>
+  </div>
+</div> 
 ```
 
 ```js
@@ -142,7 +146,7 @@ const zoom = 8;
 
 // ===================================================
 // SITES THAT HAVE FULL STORY PANELS
-// This is a list of all sites that have a written story
+// This is a list of all sites that have a written story.
 // To add a new story site, add its name here AND
 // add a case in buildSitePanel() below.
 // ===================================================
@@ -174,49 +178,75 @@ const tooltipPhotos = {
   "Silverdale":       FileAttachment("data/images/silverdale_tooltip.jpg").href,
   "Smith Cove":       FileAttachment("data/images/smithcove_tooltip.jpg").href,
   "Drayton Harbor":   FileAttachment("data/images/drayton_tooltip.jpg").href,
-  "Anna's Bay":       FileAttachment("data/images/annas_tooltip.jpg").href,
+  "Skokomish Flats":  FileAttachment("data/images/annas_tooltip.jpg").href,
   "Chuckanut Bay":    FileAttachment("data/images/chuckanut_tooltip.jpg").href,
   "Henderson Inlet":  FileAttachment("data/images/henderson_tooltip.jpg").href,
   "Palela Bay":       FileAttachment("data/images/palela_tooltip.jpg").href,
   "Sequim Bay":       FileAttachment("data/images/sequim_tooltip.jpg").href,
   "Miller Bay":       FileAttachment("data/images/miller_tooltip.jpg").href,
+  "Ostrich Bay":      FileAttachment("data/images/ostrich_tooltip.jpg").href,
+  "Triangle Cove":    FileAttachment("data/images/trianglecove_tooltip.jpg").href,
   // Add more here
 };
 
 // Cover photo for hero
 const coverPhoto = FileAttachment("data/images/cover.jpg").href;
 
+// ===================================================
+// PAGE-READY LOADING GATE
+// Keeps a loading screen up until BOTH slow-loading
+// pieces of the page are finished:
+//   1) the hero background photo
+//   2) the Leaflet map + filter panel
+// Once both are built, the loader fades out and the whole
+// page fades in together, instead of pieces popping in
+// one at a time as they finish.
+// ===================================================
+
+// Checklist of what we're waiting on
 const pageReady = { photo: false, map: false };
 
+// Grab the loading spinner
 const pageLoader = document.querySelector("#page-loader");
 
+// Called every time either flag below flips to true.
+// Does nothing until BOTH photo and map are ready.
 function checkPageReady() {
     if (pageReady.photo && pageReady.map) {
         if (pageLoader) {
-            pageLoader.classList.add("page-loader-hidden");
-            setTimeout(() => pageLoader.remove(), 450);
+            pageLoader.classList.add("page-loader-hidden");  // triggers CSS opacity transition
+            setTimeout(() => pageLoader.remove(), 450);  // remove loader after transition finishes
         }
+
+        // Show each element marked .page-fade at the same time
         document.querySelectorAll(".page-fade").forEach(el => el.classList.add("ready"));
     }
 }
 
+// ===== Loading Gate pt. 1 ===== // 
+// ((Pt. 2 completed far below in script near map build))
+
+// Pre-load hero photo
 const introHero = document.querySelector("#intro-hero");
+// Create an image object
 const heroPhotoPreloader = new Image();
+
 heroPhotoPreloader.onload = () => {
+    // When the photo is successfully downloaded, make it the background
     if (introHero) introHero.style.backgroundImage = `url(${coverPhoto})`;
+
     pageReady.photo = true;
-    checkPageReady();
+    checkPageReady(); // Can we fade out loader yet?
 };
+
 heroPhotoPreloader.onerror = () => {
+    // If the photo failed to load, mark the photo as "ready" anyways so a broken image doesn't make the page never load
     pageReady.photo = true;
     checkPageReady();
 };
+// actually download the photo
 heroPhotoPreloader.src = coverPhoto;
 
-// const introHero = document.querySelector("#intro-hero");
-// if (introHero) {
-//   introHero.style.backgroundImage = `url(${coverPhoto})`;
-// }
 
 // ===================================================
 // ===================================================
@@ -392,7 +422,6 @@ function createFilterInfoButton(hintText) {
 // ===================================================
 // SHARED FUNCTION: POPULATION + TIMELINE COMBINED PLOT
 // Overlays enhancement timeline onto a site's population chart
-// Uses custom built tooltip - might change later
 // ===================================================
 // ===================================================
 function createPopulationTimelinePlot(popData, timelineData, siteName) {
@@ -1492,10 +1521,6 @@ function buildFidalgoBayPanel() {
         .appendChild(createPopulationTimelinePlot(fidalgo_pop_est, timeline_data, "Fidalgo Bay"));
 
     // Shell height histogram
-    // Not yet 100% sure what this will look like, but this is one idea
-    // const fidalgoSizeData = fidalgo_heights; // Data will go in here when we have it!! 
-    // example for above: 
-    // [ann_densities.filter(d => d.location === "Fidalgo Bay" && d.shell_height_mm)]
     panel.querySelector("#fidalgo-size-plot")
         .appendChild(createShellHeightHistogram(fidalgo_heights));
 
@@ -1507,7 +1532,6 @@ function buildFidalgoBayPanel() {
 // ===================================================
 //
 // SITE PANEL: OYSTER BAY
-// Layout:
 //
 // ===================================================
 // ===================================================
@@ -1526,7 +1550,7 @@ function buildOysterBayPanel() {
         
         results: `Low exposure, calm water, no major terrestrial inputs, and the kind of hydrodynamics favorable for larval retention made Oyster Bay an exceptional environment for these animals. The Olys here, as the team would come to learn, tend to dance to their own beat, recruiting strongly in years when settlement elsewhere in the Sound lays low.`,
 
-        impact: `For the next several years, Brian returned regularly to keep an eye on things. Then, in 2020, the team returned and what they found was unexpected: the shell placed in 2011 had largely been buried into the sediment. But the oysters, they had gone everywhere. From the deep zone where they’d originally lived, the population had spread across the beach, climbing all the way up to the +1 foot elevation and filling the full normal intertidal range of the species, down to the -2 feet and perhaps even deeper. And this wasn’t a scattered population, but rather dense, semi-structured aggregations boasting more than 100 Olys per square meter in many places.`,
+        impact: `For the next several years, Brian returned regularly to keep an eye on things. Then, in 2020, the team returned and what they found was unexpected: the shell placed in 2011 had largely been buried into the sediment. But the oysters, they had gone everywhere. From the deep zone where they’d originally lived, the population had spread across the beach, climbing all the way up to the +1 foot elevation and filling the full normal intertidal range of the species, down to the -2 feet and even deeper. And this wasn’t a scattered population, but rather dense, semi-structured aggregations boasting more than 100 Olys per square meter in many places.`,
 
         restorationQuestion: `The question the team carried home was one that follows many restoration projects: did the 2011 project kick this off, or did the team act at precisely the right moment, just as a broader upswing in natural reproduction was already underway?`,
 
@@ -1728,7 +1752,6 @@ function buildOysterBayPanel() {
 // ===================================================
 //
 // SITE PANEL: CHICO BAY
-// Layout:
 //
 // ===================================================
 // ===================================================
@@ -1915,7 +1938,6 @@ function buildChicoBayPanel() {
 // ===================================================
 //
 // SITE PANEL: SILVERDALE
-// Layout:
 //
 // ===================================================
 // ===================================================
@@ -2304,7 +2326,7 @@ function buildYearSlider(years, currentYear, onChange, infoElement) {
 
 // ===================================================
 // ===================================================
-// RECRUITMENT COLOR SCALE 
+// RECRUITMENT COLOR & SIZE SCALE 
 //
 // Maps an index value to a color based on BA's established bins
 // Writing as a function because it will be called each time the 
@@ -2335,14 +2357,14 @@ function spatToColor(value, maxValue) {
     if (value <= 10)        return "#f03b20";  // 5–10
     if (value <= 20)        return "#bd0026";  // 10–20
     return                         "#67000d";  // >=20
-} // END recruitment color scale
+} 
 
 // Circle radius scaled to index value
 function spatToRadius(value) {
     if (value === null || isNaN(value)) return 5;
     if (value === 0) return 5;
     return 5 + Math.sqrt(value) * 1.8;
-}
+} // END recruitment color & size scale
 
 // ===================================================
 // ===================================================
@@ -2379,7 +2401,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     // Shift layout: map shrinks to 30%, panel appears
     // (same pattern to showDetail() in enhancement tab)
     // -----------------------------------------------
-        mainContainer.style.display = "flex";
+    mainContainer.style.display = "flex";
     mainContainer.style.gap = "10px";
     mainContainer.classList.add("detail-open");
 
@@ -2469,7 +2491,7 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
     backButton.onmouseleave = () => { backButton.style.backgroundColor = "white";   backButton.style.color = "#045B4C"; };
     backButton.onclick = resetView;
 
-        const titleWrap = document.createElement("div");
+    const titleWrap = document.createElement("div");
     Object.assign(titleWrap.style, {
         display: "flex",
         flexDirection: "column",
@@ -2878,7 +2900,11 @@ function showRecruitmentDetail(station, allData, detailContainer, map, mainConta
 } // END recruitment detail panel function
 
 
-// HTML for recruitment map tooltips (moved from inside map function to here)
+
+// ===================================================
+// RECRUITMENT MAP TOOLTIP HTML
+// ===================================================
+
 function buildRecruitmentTooltipHTML(stationName, year, value, isMobile = false, stationId = null) {
     const prompt = isMobile ? "Tap to view recruitment history →" : "Click icon to view recruitment history →";
     const displayName = stationName.replaceAll("_", " ");
@@ -3518,7 +3544,6 @@ function wireTabSwitching({ enhTab, recruitTab, enh, recruit, enhancementLayer, 
 // ===================================================
 // FILTER PANEL
 // Builds filter panel content all together
-// 
 // ===================================================
 // ===================================================
 function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, recruitData, recruitLayerManager, enhancementLegend, onTabSwitch, onSiteSelect) {
@@ -3535,7 +3560,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     const { element: tabBar, enhTab, recruitTab } = buildTabBar();
     panel.appendChild(tabBar);
 
-        // Subtext explaining what each tab shows — content swaps per tab
+    // Subtext explaining what each tab shows - content swaps per tab
     const tabSubtext = document.createElement("div");
     tabSubtext.style.cssText = "font-size:11px; color:#666; font-style:italic; line-height:1.6; margin-bottom:24px;";
         tabSubtext.innerHTML = `See where we have taken restoration action to improve habitat and rebuild Olympia oyster populations in Puget Sound. These actions could include:
@@ -3550,7 +3575,7 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
     const enh = buildEnhancementTabContent(enhData, map, story_sites, onSiteSelect);
     const recruit = buildRecruitmentTabContent(recruitData, recruitLayerManager, map);
 
-    // The enhancement tab's type-toggle filter needs a live reference to enhancementLayer
+    // The enhancement tab's type-toggle filter needs a reference to enhancementLayer
     enh.element._enhancementLayer = enhancementLayer;
 
     panel.appendChild(enh.element);
@@ -3570,10 +3595,11 @@ function createFilterPanel(enhancementLayer, recruitmentLayer, map, enhData, rec
 // ===================================================
 // ===================================================
 // RESPONSIVE MAP CONTROLS
-// Below 900px the card stacks above the map and the filter
-// controls (site selector, type toggles, waterbody dropdown,
-// year slider) get relocated onto the map itself so they're
-// reachable without scrolling back up. Tab switcher stays above.
+// In narrow windows below 900px, the filter card stacks above 
+// the map and the filter controls (site selector, type toggles, 
+// waterbody dropdown, year slider) get relocated onto the map 
+// itself so they're reachable without scrolling back up. 
+// Tab switcher stays above.
 //
 // The explanatory hint text now in "i" icons
 // ===================================================
@@ -3588,10 +3614,10 @@ function wireResponsiveMapControls(panelElement, enhContent, recruitContent, map
     overlay.className = "map-controls-overlay"; // starts open
 
     // Stop clicks/taps on the overlay (dropdowns, toggle buttons, slider)
-    // from bubbling down to the Leaflet map underneath it
+    // from bleeding down to the Leaflet map underneath it
     L.DomEvent.disableClickPropagation(overlay);
 
-    // Tappable header: toggles the body open/closed, same +/− pattern as the legend
+    // Tappable header: toggles the body open/closed
     const overlayToggle = document.createElement("button");
     overlayToggle.type = "button";
     overlayToggle.className = "map-controls-toggle";
@@ -3833,8 +3859,8 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         mainContainer.style.gap = "10px";   // small gap between map and story panel
         mainContainer.classList.add("detail-open");
 
-                // On very wide screens, cap the detail panel to a comfortable
-        // reading width and let the map claim the rest. Below that,
+        // On very wide screens, cap the detail panel to a comfortable
+        // reading width and let the map take the rest of the space. Below that,
         // fall back to the original 30/80 percentage split.
         const WIDE_BREAKPOINT = 1600;
         const DETAIL_MAX_WIDTH = 900;
@@ -3860,7 +3886,7 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
         setTimeout(() => detailContainer.style.opacity = "1", 10);
 
         // Wait for the map container's width transition to actually finish
-        // before telling Leaflet to resize + recenter. Trying to fix weird centering issue
+        // before telling Leaflet to resize + recenter
         const handleResize = (e) => {
             // Only react to the width transition, not other properties
             if (e.propertyName !== "width") return;
@@ -4206,7 +4232,7 @@ function oysterMap(enhData, recruitData, timelineData, {width} = {}) {
 // INSTANTIATE MAP
 // Build once, place in a persistent div, use
 // ResizeObserver to keep width in sync without
-// ever rebuilding the map or touching its DOM.
+// ever rebuilding the map
 // ===================================================
 
 // Wait for the placeholder card to exist in the DOM
@@ -4227,7 +4253,7 @@ setTimeout(() => {
     // Place the map inside the placeholder card — it stays here forever
     placeholder.appendChild(container);
 
-        // Build the filter panel once
+    // Build the filter panel once
     setTimeout(() => {
         const filterContainer = document.querySelector('#filter-container');
         if (filterContainer && container._enhancementLayer) {
@@ -4238,9 +4264,9 @@ setTimeout(() => {
                 container._recruitmentLayer,
                 container._map,
                 enh_sites_metadata,
-                recruitment_data,                   // full recruitment CSV
+                recruitment_data,  // full recruitment CSV
                 container._recruitLayerManager,  // layer manager with years + updateYear()
-                container._enhancementLegend,    // legend ref so tabs can swap it
+                container._enhancementLegend,  // legend ref so tabs can swap it
                 () => { if (window.currentMapInstance?._resetView) window.currentMapInstance._resetView(); },
                 (site) => { if (window.currentMapInstance?._showDetail) window.currentMapInstance._showDetail(site); }
             );
@@ -4249,7 +4275,7 @@ setTimeout(() => {
 
             // Below 900px, relocate the actual filter controls onto
             // the map. mapPane is the Leaflet pane living inside the
-            // main map container - grab it via its class
+            // main map container
             const mapPane = container.querySelector(".map-pane");
             if (mapPane) {
                 wireResponsiveMapControls(
@@ -4260,12 +4286,14 @@ setTimeout(() => {
                 );
             }
         }
+
+        // Second half of page loader gate
         pageReady.map = true;
-        checkPageReady();
+        checkPageReady(); // check if we can remove loading icon
     }, 100);
 
     // Watch the placeholder for size changes using ResizeObserver.
-    // This fires when the card changes width — e.g. on window resize.
+    // This fires when the card changes width (on window resize)
     // We just update the container width and tell Leaflet to redraw.
     const observer = new ResizeObserver(entries => {
         for (const entry of entries) {
@@ -5358,7 +5386,7 @@ setTimeout(() => {
                 grid-template-columns: 1fr; 
             }
 
-                        /* Tighten up story panel spacing so more content fits per screen */
+            /* Tighten up story panel spacing so more content fits per screen */
             .story-scroll-body {
                 padding: 10px !important;
             }
