@@ -3611,7 +3611,7 @@ function wireResponsiveMapControls(panelElement, enhContent, recruitContent, map
     const homeParent = panelElement;
 
     const overlay = document.createElement("div");
-    overlay.className = "map-controls-overlay"; // starts open
+    overlay.className = "map-controls-overlay collapsed"; // starts closed
 
     // Stop clicks/taps on the overlay (dropdowns, toggle buttons, slider)
     // from bleeding down to the Leaflet map underneath it
@@ -3621,14 +3621,14 @@ function wireResponsiveMapControls(panelElement, enhContent, recruitContent, map
     const overlayToggle = document.createElement("button");
     overlayToggle.type = "button";
     overlayToggle.className = "map-controls-toggle";
-    overlayToggle.innerHTML = `<span>Map Filters</span><span class="map-controls-arrow">−</span>`;
+    overlayToggle.innerHTML = `<span>Map Filters</span><span class="map-controls-arrow">+</span>`;
     overlayToggle.addEventListener("click", () => {
         overlay.classList.toggle("collapsed");
         const isCollapsed = overlay.classList.contains("collapsed");
         overlayToggle.querySelector(".map-controls-arrow").textContent = isCollapsed ? "+" : "−";
         overlayToggle.setAttribute("aria-expanded", isCollapsed ? "false" : "true");
     });
-    overlayToggle.setAttribute("aria-expanded", "true");
+    overlayToggle.setAttribute("aria-expanded", "false");
     overlay.appendChild(overlayToggle);
 
     // Scrollable body: the filter controls get moved in here,
@@ -4948,8 +4948,8 @@ setTimeout(() => {
         .map-controls-overlay {
             display: none;
             position: absolute;
-            left: 12px;
-            bottom: 12px;
+            right: 5px;
+            bottom: 20px;
             width: auto;
             max-width: 200px;
             background: white;
