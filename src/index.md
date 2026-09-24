@@ -1441,7 +1441,7 @@ function buildFidalgoBayPanel() {
         <h3 style="
             font-size: 16px; font-weight: 700; color: #045B4C;
             margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
-        ">Oyster Size Class Distribution</h3>
+        ">Oyster Size Class Distribution <span class="info-tip" data-tip="Oyster size-frequency distribution is a measure of how the oyster population is distributed across various size classes and provides information about oyster growth and the survivorship and mortality of cohorts.">ⓘ</span></h3>
         <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
             Most recent distribution of individual oyster shell heights, measured 2023
         </p>
@@ -1676,7 +1676,7 @@ function buildOysterBayPanel() {
         <h3 style="
             font-size: 16px; font-weight: 700; color: #045B4C;
             margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
-        ">Oyster Size Class Distribution</h3>
+        ">Oyster Size Class Distribution <span class="info-tip" data-tip="Oyster size-frequency distribution is a measure of how the oyster population is distributed across various size classes and provides information about oyster growth and the survivorship and mortality of cohorts.">ⓘ</span></h3>
         <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
             Most recent distribution of individual oyster shell heights, measured 2026
         </p>
@@ -1869,7 +1869,7 @@ function buildChicoBayPanel() {
         <h3 style="
             font-size: 16px; font-weight: 700; color: #045B4C;
             margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
-        ">Oyster Size Class Distribution</h3>
+        ">Oyster Size Class Distribution <span class="info-tip" data-tip="Oyster size-frequency distribution is a measure of how the oyster population is distributed across various size classes and provides information about oyster growth and the survivorship and mortality of cohorts.">ⓘ</span></h3>
         <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
             Distribution of individual oyster shell heights, measured 2021
         </p>
@@ -2060,7 +2060,7 @@ function buildSilverdalePanel() {
         <h3 style="
             font-size: 16px; font-weight: 700; color: #045B4C;
             margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;
-        ">Oyster Size Class Distribution</h3>
+        ">Oyster Size Class Distribution <span class="info-tip" data-tip="Oyster size-frequency distribution is a measure of how the oyster population is distributed across various size classes and provides information about oyster growth and the survivorship and mortality of cohorts.">ⓘ</span></h3>
         <p style="font-size: 14px; color: #666; margin: 0 0 20px 0; font-style: italic;">
             Most recent distribution of individual oyster shell heights, measured 2026
         </p>
@@ -5104,6 +5104,31 @@ setTimeout(() => {
         @media (min-width: 901px) {
             .filter-info-wrap {
                 display: none;
+            }
+        }
+
+        /* Info buttons for shell height histograms */
+        .info-tip { position: relative; cursor: help; font-size: 13px; color: #045B4C; }
+        .info-tip::after {
+            content: attr(data-tip);
+            position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%);
+            width: 240px; background: white; color: #444; font-size: 12px;
+            font-weight: normal; text-transform: none; letter-spacing: normal; line-height: 1.5;
+            padding: 10px 12px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 0; pointer-events: none; transition: opacity 0.1s; z-index: 20;
+        }
+        .info-tip:hover::after,
+        .info-tip:active::after { opacity: 1; }
+
+        /* On narrow screens, anchor to the right edge of the icon instead of
+        centering, and cap the width so it can never overflow the viewport */
+        @media (max-width: 600px) {
+            .info-tip::after {
+                left: auto;
+                right: -10px;
+                transform: none;
+                width: 220px;
+                max-width: calc(100vw - 40px);
             }
         }
 
