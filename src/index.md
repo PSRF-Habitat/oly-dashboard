@@ -1338,7 +1338,7 @@ function buildFidalgoBayPanel() {
     const narrative = {
         intro: `White clouds rise from grey smokestacks, blurring a sprawling refinery into the distant silhouette of Mount Baker. A retired railroad trestle cuts across the bay like an old scar. Human ambition is written plainly on the shoreline, and yet, millions of Olympia oysters tell a remarkable success story.`,
 
-        context: `The story of Fidalgo Bay begins with a rumor: that Olympia oysters once resided in these shallow waters. By the early 2000s, none remained, but the bay’s protected shorelines and limited predators made it an ideal candidate for restoration. In 2002, alongside a strong network of partners, we spread Pacific oyster shell covered in Olympia oyster seed beside the old trestle on the eastern shore, marking the first Olympia oyster restoration effort in northern Puget Sound.`,
+        context: `The story of Fidalgo Bay begins with a rumor: that Olympia oysters, once residing in these shallow waters, might have been spotted again. We searched the summer of 2001 with our best Oly expert - Bill Taylor - but came up empty-handed. Surprisingly, though, the bay’s protected shorelines and limited predators seemed to provide ideal habitat conditions. So in 2002, alongside a strong network of partners, we spread Olympia oyster seed set on Pacific oyster shell beside the old trestle on the eastern shore. This marked the first Olympia oyster restoration effort in northern Puget Sound.`,
 
         ourWork: `What followed was a years-long conversation with the bay. Additional seeded cultch were added in subsequent years. Non-seed bearing Pacific oyster shell was introduced in 2006, 2008, and 2013 to enhance the substrate and expand the area available for larval settlement. When monitoring revealed that nearly all natural recruitment was concentrated on the eastern side, likely shaped by summer current patterns, we responded by seeding the west side of the bay in 2016. In 2018, two new half-acre plots of bulk Pacific shell were added, one on each side of the bay, and the west side was seeded once more months later to give larval abundance a fresh boost.`,
 
@@ -1352,7 +1352,7 @@ function buildFidalgoBayPanel() {
 
         partnersLead: `The story of Fidalgo Bay is, at its heart, a story showcasing the power of reiterative enhancement actions and strong community partnerships. Walk these tidelands today and you’ll find something quite extraordinary. This would not have been possible without the extensive efforts of this incredible network of partners and community members.`,
 
-        partnersList: `Taylor Shellfish, WDFW, Skagit County Marine Resources Committee (MRC), Swinomish Indian Tribal Community, Samish Indian Nation, Northwest Straits Foundation, Rose Foundation, City of Anacortes, and many others.`
+        partnersList: `Taylor Shellfish, WDFW, Skagit County Marine Resources Committee (MRC), Swinomish Indian Tribal Community, Samish Indian Nation, Northwest Straits Foundation, Rose Foundation, City of Anacortes, Shell Puget Sound Refinery, and many others.`
     };
 
     // --- Layout HTML ---
@@ -1760,7 +1760,7 @@ function buildChicoBayPanel() {
 
     // --- Narrative ---
     const narrative = {
-        intro: `A traditional shellfish harvesting area with historic importance, Chico Bay sits at the mouth of Chico Creek, one of the most productive chum streams in the Sound. Since purchase in the late 2000s, the Suquamish Tribe has been seeding the tidelands with clams and oysters, alongside harvesting a booming wild Manila clam population around the corner near Erlands Point. Also at Erlands Point, a small, wild aggregation of Olympia oysters sparked inspiration for native oyster restoration in Chico Bay.`,
+        intro: `A traditional shellfish harvesting area with historic importance, Chico Bay sits at the mouth of Chico Creek, one of the most productive chum streams in the Sound. Since purchase in the late 2000s, the Suquamish Tribe has been seeding the Chico tidelands with clams, in addition to supplementing a booming wild Manila clam population around the corner near Erlands Point. Also at Erlands Point, a small, wild aggregation of Olympia oysters sparked inspiration for native oyster restoration in Chico Bay.`,
 
         context: `With U.S. Department of Agriculture conservation funding in hand and permission to work on a stretch of Tribally-owned tideland, the team moved cautiously, staking out a series of 10-by-10 foot shell plots across the tideland to first test whether the small, wild aggregation of Olympia oysters at Erlands Point could take hold on a larger scale. Before committing to a project design, we let those plots simmer for nearly a year. Results upon our return catalyzed restoration actions. High in the intertidal the shell plots sat mostly empty. But lower, near -1.5 feet MLLW, recruitment to the shell showed promise. Then, a closer look at the deepest reaches of the flat, around -3 feet, turned up something else: a scatter of wild, old, solitary Olys, likely survivors of rare and irregular recruitment events rather than a self-sustaining population. Guided by these findings, we shifted the project footprint down the beach from the initially anticipated plot, toward elevations where the bay was calling us to work.`,
 
