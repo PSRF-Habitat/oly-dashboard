@@ -5404,11 +5404,11 @@ setTimeout(() => {
             }
 
             .custom-tooltip img {
-                height: 90px !important;
+                height: 160px !important;
             }
 
             .tooltip-photo-wrap {
-                height: 90px !important;
+                height: 160px !important;
             }
 
             .custom-tooltip div[style*="padding:12px"] {
