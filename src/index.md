@@ -32,6 +32,10 @@ pager: false
       </h1>
       <p style="color:#333; margin-bottom:8px;">
         This map tracks over two decades of work to reestablish Puget Sound's only native oyster. Explore the map below and dig into data showcasing the approach and scale of enhancement projects, results from population surveys following restoration action, and recruitment monitoring tracking annual larval settlement across the Sound.
+      </p>
+      <p style="color:#333; font-size:0.9rem; margin-bottom:0;">
+        This work is highly collaborative. It reflects the efforts of tribes, agencies, and community partners across Puget Sound, including many partners who lead enhancement and recruitment monitoring at their own sites.
+      </p>
     </div>
 
     <!-- RIGHT: two stacked "About the Data" callout cards -->
@@ -45,8 +49,7 @@ pager: false
           </a>
         </div>
         <p>
-          In this map view, explore our project work alongside population or density estimates and shell height data from field surveys at our enhancement sites.
-        </p>
+          In this map view, explore enhancement projects PSRF has led or supported, alongside population or density estimates and shell height data from field surveys. This includes projects where we provided hatchery-grown oyster seed to partners who led and implemented all other aspects of the project.
         </p>
       </div>
 
@@ -59,7 +62,8 @@ pager: false
           </a>
         </div>
         <p>
-          In this map view, compare recruitment index values across stations and years.
+          In this map view, compare recruitment index values across stations and years. 
+          Many of these stations are monitored by partners who lead the work at their sites.
         </p>
       </div>
     </div>
@@ -1225,6 +1229,25 @@ function buildTooltipHTML(site, timelineData, isStorySite, photoUrl, isMobile = 
     </div>
     `;
 
+    // --- Project Leads (optional) ---
+    const leadsList = (site.project_leads && site.project_leads !== "NA")
+        ? site.project_leads.split(';').map(s => s.trim()).filter(Boolean)
+        : [];
+
+    const leadsHTML = leadsList.length > 0 ? `
+        <p style="font-size:11px; font-weight:600; color:#045B4C;
+            text-transform:uppercase; letter-spacing:0.5px; margin:0 0 7px 0;">
+            Project Leads
+        </p>
+        ${leadsList.map(lead => `
+            <div style="display:flex; align-items:baseline; gap:8px;
+                font-size:12px; margin-bottom:5px;">
+                <span style="color:#ccc; font-size:10px; flex-shrink:0;">●</span>
+                <span style="line-height:1.4; color:#444;">${lead}</span>
+            </div>
+        `).join('')}
+    ` : "";
+
     // --- Timeline rows ---
     // Story sites: show up to 4 rows, then a "more on site page" hint to click
     // Non-story sites: show all rows bc tooltip is the full story
@@ -1292,6 +1315,8 @@ function buildTooltipHTML(site, timelineData, isStorySite, photoUrl, isMobile = 
                      ${exploreBanner}
                 </p>
                 ${metaHTML}
+                ${leadsList.length > 0 ? '<div style="height:1px; background:#e8e8e8; margin:8px 0;"></div>' : ""}
+                ${leadsHTML}
                 <div style="height:1px; background:#e8e8e8; margin:8px 0;"></div>
                 ${timelineHTML}
             </div>
@@ -4442,7 +4467,7 @@ setTimeout(() => {
             min-width: 0;
         }
 
-        @media (max-width: 700px) {
+        @media (max-width: 800px) {
             .intro-hero-grid {
                 grid-template-columns: 1fr;
             }
@@ -4709,6 +4734,20 @@ setTimeout(() => {
             z-index: 1;
             opacity: 0;
             transition: opacity 0.3s ease;
+        }
+
+        .tooltip-lead-note {
+            margin-top: 8px;
+            padding: 7px 9px;
+            background: #f0f7f6;
+            border-left: 3px solid #045B4C;
+            border-radius: 4px;
+            font-size: 11px;
+            line-height: 1.45;
+            color: #444;
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
     /* ---------- Mobile Centered Tooltip ---------- */
