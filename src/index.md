@@ -5403,7 +5403,7 @@ setTimeout(() => {
                 max-width: 78vw !important;
             }
 
-            .custom-tooltip img {
+            .tooltip-photo-img {
                 height: 160px !important;
             }
 
