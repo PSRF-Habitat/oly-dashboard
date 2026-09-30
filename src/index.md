@@ -5562,3 +5562,11 @@ setTimeout(() => {
     </p>
 </div>
 
+<div class="card" id="contact-card" style="grid-column: span 3; box-sizing: border-box;">
+    <p style="max-width: none; margin: 0; font-size: 13px; line-height: 1.6; color: #444;">
+        <strong style="color:#045B4C;">Questions or feedback?</strong>
+        Contact
+        <a href="mailto:marina@restorationfund.org" style="color:#045B4C; font-weight:600;">marina@restorationfund.org</a>.
+    </p>
+</div>
+
