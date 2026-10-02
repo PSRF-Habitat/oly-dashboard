@@ -1,5 +1,6 @@
 ---
 toc: false
+title: "Olympia Oyster Restoration Map | Puget Sound Restoration Fund"
 theme: [dashboard, light]
 header: "<a href='https://restorationfund.org'><img src='data/images/logo-transwhite.png' alt='Logo' style='height: 120px;'></a>"
 pager: false
@@ -28,7 +29,7 @@ pager: false
     <!-- LEFT: title + intro text card -->
     <div class="intro-panel">
       <h1 style="margin-top:0; color:#045B4C;">
-        DRAFT - Mapping Olympia Oyster Restoration Across Puget Sound
+        Mapping Olympia Oyster Restoration Across Puget Sound
       </h1>
       <p style="color:#333; margin-bottom:8px;">
         This map tracks over two decades of work to reestablish Puget Sound's only native oyster. Explore the map below and dig into data showcasing the approach and scale of enhancement projects, results from population surveys following restoration action, and recruitment monitoring tracking annual larval settlement across the Sound.
@@ -77,8 +78,7 @@ pager: false
       <strong>enhancement projects</strong> and <strong>recruitment monitoring</strong>. In the
       Enhancement view, sites marked with a
       <span style="color:var(--marker-story); font-weight:600;">green dot</span>
-      have a story — select one from the dropdown or click it directly. In the Recruitment view,
-      click any station to see its settlement history.
+      have a story — select one from the dropdown or click it directly. In the Recruitment view, click any station to see its settlement history and compare to other stations around the Sound.
     </span>
   </div>
 
